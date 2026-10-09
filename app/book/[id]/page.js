@@ -69,7 +69,7 @@ export default function BookPage() {
     setBook({ ...data, profiles: authorResult.data || null, genres: genreResult.data || null });
     setChapters(chaptersResult.data || []);
     setStats(statsResult.data || null);
-  }
+  }, [id]);
 
   useEffect(() => { load(); }, [load]);
 
