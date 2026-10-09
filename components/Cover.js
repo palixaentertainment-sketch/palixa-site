@@ -17,7 +17,6 @@ export default function Cover({ b }) {
   const storyLabels = { ongoing: 'Ongoing', completed: 'Completed', hiatus: 'Hiatus' };
   const tags = (
     <span className="ctags">
-      {b.story_status && <span className={'ctag ctag-story ' + b.story_status}>{storyLabels[b.story_status] || 'Ongoing'}</span>}
       {b.book_type === 'comic' && <span className="ctag">Comic</span>}
       {b.is_sample && <span className="ctag">Sample</span>}
     </span>
