@@ -160,6 +160,7 @@ export default function BookPage() {
       </div>
 
       <div className="row">
+        <LikeButton kind="book" id={book.id} count={book.like_count} authorId={book.author_id} />
         {readTarget ? (
           <Link className="btn" href={'/read/' + readTarget}>{resumeId ? 'Continue reading' : 'Read Now'}</Link>
         ) : (
