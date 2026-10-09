@@ -58,7 +58,17 @@ create policy "story world books are visible when public or owned"
     exists (
       select 1 from public.story_worlds w
       where w.id = world_id
-        and (w.status = 'published' or w.author_id = auth.uid() or public.is_admin())
+        and (
+          w.author_id = auth.uid()
+          or public.is_admin()
+          or (
+            w.status = 'published'
+            and exists (
+              select 1 from public.books b
+              where b.id = book_id and b.status = 'published'
+            )
+          )
+        )
     )
   );
 
