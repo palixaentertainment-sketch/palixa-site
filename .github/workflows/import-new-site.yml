@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - 'palixia-site.zip'
+      - 'site-payload.zip.b64.txt'
       - '.github/workflows/import-new-site.yml'
 permissions:
   contents: write
@@ -12,27 +13,33 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-      - name: Import site files from uploaded ZIP
+      - name: Decode uploaded archive if needed
         run: |
-          if [ ! -f palixia-site.zip ]; then
-            echo 'No site ZIP found; workflow setup only.'
+          if [ -f site-payload.zip.b64.txt ]; then
+            base64 -d site-payload.zip.b64.txt > /tmp/palixa-site.zip
+          elif [ -f palixia-site.zip ]; then
+            cp palixia-site.zip /tmp/palixa-site.zip
+          else
+            echo 'No site archive found; workflow setup only.'
             exit 0
           fi
+      - name: Import site files
+        run: |
           mkdir -p /tmp/palixa-extracted
-          unzip -q palixia-site.zip -d /tmp/palixa-extracted
+          unzip -q /tmp/palixa-site.zip -d /tmp/palixa-extracted
           if [ -d /tmp/palixa-extracted/palixa-site ]; then
             cp -a /tmp/palixa-extracted/palixa-site/. .
           else
-            echo 'Expected palixa-site folder not found in ZIP.'
+            echo 'Expected palixa-site folder not found in archive.'
             exit 1
           fi
-          rm -f palixia-site.zip
+          rm -f palixia-site.zip site-payload.zip.b64.txt
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
           if git diff --cached --quiet; then
             echo 'No site changes to commit.'
           else
-            git commit -m 'Update Palixa site files from new ZIP'
+            git commit -m 'Update Palixa site files from uploaded archive'
             git push
           fi
