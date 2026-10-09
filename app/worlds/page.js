@@ -13,7 +13,7 @@ export default function StoryWorldsPage() {
     if (!configured) { setWorlds([]); return; }
     let alive = true;
     supabase.from('story_worlds')
-      .select('id,title,description,author_id,created_at,profiles:author_id(name,username)')
+      .select('id,title,description,author_id,created_at,profiles(name,username)')
       .eq('status', 'published')
       .order('updated_at', { ascending: false })
       .limit(60)
