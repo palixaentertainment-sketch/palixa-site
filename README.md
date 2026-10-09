@@ -16,7 +16,7 @@ Palixia is a reading and publishing site for books and comics. This version cove
 
 **Security:** the database enforces all permissions with row level security, so the rules hold even if someone bypasses the website. Readers cannot change their role, feature a book or edit read counts. Authors can only touch their own books. Uploads go to a folder named after the signed-in user, with type and size limits set in storage.
 
-## Story Worlds (add-on migration)\n\nStory Worlds let authors group connected books and comics into a public series/universe page. After deploying this update, open `supabase/story_worlds.sql`, copy the whole file into Supabase → SQL Editor → New query, and press Run once. This is an additive migration: it creates two new tables and does not delete or rewrite existing books or chapters. Authors can manage worlds at `/dashboard/worlds`; readers can browse `/worlds`.\n\n## 1. Create the database (Supabase)
+## 1. Create the database (Supabase)
 
 1. Create a free account at supabase.com and click **New project**. Name it `palixa`, set and save a database password, and pick the region nearest your readers.
 2. Open **SQL Editor** > **New query**. Paste all of `supabase/schema.sql` and click **Run**. It should say "Success".
