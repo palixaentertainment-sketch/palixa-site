@@ -106,6 +106,32 @@ export default function BookPage() {
     }
   }
 
+  async function shareBook() {
+    setMsg('');
+    const url = typeof window !== 'undefined' ? window.location.href : '';
+    const shareData = { title: book.title, text: 'Read ' + book.title + ' on Palixia', url };
+    try {
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        await navigator.share(shareData);
+        return;
+      }
+      if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(url);
+        setMsg('Book link copied. Share it with your friends.');
+        return;
+      }
+      setMsg('Copy this book link to share: ' + url);
+    } catch (error) {
+      if (error && error.name === 'AbortError') return;
+      try {
+        await navigator.clipboard.writeText(url);
+        setMsg('Book link copied. Share it with your friends.');
+      } catch {
+        setMsg('Copy this book link to share: ' + url);
+      }
+    }
+  }
+
   async function toggleFollow() {
     if (!user) { setMsg('Log in to follow authors.'); return; }
     if (user.id === book.author_id) { setMsg('You cannot follow yourself.'); return; }
@@ -161,6 +187,7 @@ export default function BookPage() {
 
       <div className="row">
         <LikeButton kind="book" id={book.id} count={book.like_count} authorId={book.author_id} />
+        <button type="button" className="btn ghost" onClick={shareBook}>Share</button>
         {readTarget ? (
           <Link className="btn" href={'/read/' + readTarget}>{resumeId ? 'Continue reading' : 'Read Now'}</Link>
         ) : (
