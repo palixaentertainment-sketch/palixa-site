@@ -1,4 +1,4 @@
--- Palixa database, phases 1 to 3 (accounts, reading, author publishing).
+-- Palixia database, phases 1 to 3 (accounts, reading, author publishing).
 -- Paste this whole file into Supabase > SQL Editor > New query, then press Run.
 -- It is safe to run on a fresh project. To start over, delete the project's tables first.
 --

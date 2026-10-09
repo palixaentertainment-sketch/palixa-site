@@ -1,6 +1,7 @@
 'use client';
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { usePublishHref } from '@/components/PublishLink';
 import Link from 'next/link';
 import { supabase, configured } from '@/lib/supabase';
 import BookCard from '@/components/BookCard';
@@ -16,6 +17,7 @@ const SORTS = [
 
 function Discover() {
   const router = useRouter();
+  const publishHref = usePublishHref();
   const params = useSearchParams();
   const q = params.get('q') || '';
   const type = params.get('type') || 'all';
@@ -122,7 +124,6 @@ function Discover() {
             </select>
           </div>
         </div>
-        <p className="fine">Free and paid filters and ratings arrive with the payments and reviews phases.</p>
       </div>
 
       {authors.length > 0 && (
@@ -147,7 +148,7 @@ function Discover() {
           q || genre || type !== 'all' ? (
             <Empty title="Nothing matches that." text="Try a different word, or clear the filters." href="/discover" cta="Clear filters" />
           ) : (
-            <Empty title="No stories are published yet." text="Be the first to publish on Palixa." href="/signup?as=author" cta="Publish Your Story" />
+            <Empty title="No stories are published yet." text="Be the first to publish on Palixia." href={publishHref} cta="Publish Your Story" />
           )
         )}
         {rows && rows.length > 0 && (

@@ -1,4 +1,4 @@
-/* Palixa design system: white and purple, literary display type, mobile first. */
+/* Palixia design system: white and purple, literary display type, mobile first. */
 :root {
   --bg: #ffffff;
   --surface: #faf8ff;
@@ -38,6 +38,8 @@ img { max-width: 100%; }
 .page { padding-block: 1.25rem 3rem; display: grid; gap: 1.75rem; align-content: start; min-height: 70vh; }
 .narrow { max-width: 38rem; }
 .stack { display: grid; gap: 1rem; }
+/* Let grid children shrink to the screen so sideways-scrolling rows scroll inside themselves instead of widening the whole page. */
+.page > *, .stack > * { min-width: 0; }
 .row { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
 .between { justify-content: space-between; }
 .muted { color: var(--muted); }
@@ -52,13 +54,26 @@ img { max-width: 100%; }
 /* header and navigation */
 .top { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bottom: 1px solid var(--line); }
 .top .wrap { display: flex; align-items: center; gap: 1.2rem; padding-block: 0.65rem; }
-.mark { display: flex; align-items: center; gap: 0.5rem; font-family: var(--display); font-style: italic; font-weight: 900; font-size: 1.6rem; line-height: 1; letter-spacing: 0.01em; }
-.mark i { width: 0.7rem; height: 0.7rem; border-radius: 50%; background: var(--lav); display: block; }
+/* Palixia logo. One image file, three sizes. Height sets the size and the width follows the file's
+   own proportions (width: auto), so the logo is never stretched or squashed. The file has a white
+   background, so it is only placed on white surfaces. Keep the same spacing rules everywhere. */
+.logo-link { display: inline-flex; align-items: center; flex: none; line-height: 0; border-radius: 4px; }
+.logo-img { display: block; width: auto; max-width: none; }
+.logo-header { height: 2.3rem; }
+.logo-auth { height: 4.5rem; }
+.logo-footer { height: 1.9rem; }
 .navlinks { display: none; gap: 1.2rem; font-weight: 500; }
 .navlinks a { padding: 0.3rem 0; border-bottom: 2px solid transparent; }
 .navlinks a[aria-current="page"] { border-bottom-color: var(--accent); color: var(--accent); }
 .topright { margin-left: auto; display: flex; align-items: center; gap: 0.6rem; }
-.hsearch { display: flex; }
+.hsearch { display: none; }
+.guestlinks { display: flex; gap: 0.5rem; align-items: center; }
+.authbar { background: var(--bg); }
+.authbar .wrap { display: flex; justify-content: center; padding-block: 2rem 0.5rem; }
+.authcol { width: 100%; max-width: 26rem; margin-inline: auto; }
+.authcol > .h1, .authcol > p { text-align: center; }
+.authcol > div { display: flex; justify-content: center; }
+.foot .logo-link { justify-self: start; margin-bottom: 0.4rem; }
 .hsearch input { width: 9.5rem; padding: 0.45rem 0.7rem; border: 1px solid var(--line); border-radius: var(--r) 0 0 var(--r); background: var(--surface); min-width: 0; }
 .hsearch button { padding: 0 0.7rem; border: 1px solid var(--line); border-left: 0; border-radius: 0 var(--r) var(--r) 0; background: var(--soft); color: var(--accent); font-weight: 600; }
 .authlinks { display: none; gap: 0.5rem; align-items: center; }
@@ -85,7 +100,13 @@ img { max-width: 100%; }
   .navlinks { display: flex; }
   .authlinks { display: flex; }
   .bottomnav { display: none; }
+  .hsearch { display: flex; }
   .hsearch input { width: 13rem; }
+  .top .wrap { gap: 2rem; padding-block: 0.8rem; }
+  .logo-header { height: 2.75rem; }
+  .logo-footer { height: 2.1rem; }
+  .authbar .wrap { padding-block: 3rem 0.75rem; }
+  .logo-auth { height: 5.25rem; }
   .page { padding-block: 2rem 4rem; gap: 2.5rem; }
 }
 
@@ -135,7 +156,7 @@ img { max-width: 100%; }
 .hero > * { position: relative; z-index: 1; }
 .hero h1 { font-family: var(--display); font-style: italic; font-weight: 900; font-size: clamp(2.4rem, 9vw, 4rem); line-height: 0.98; max-width: 11ch; }
 .hero p { margin-top: 0.8rem; max-width: 30rem; color: rgba(255, 255, 255, 0.9); font-size: 1.05rem; }
-.hero .row { margin-top: 1.2rem; }
+.hero .row { margin-top: 0; }
 .hero .btn { background: #fff; color: var(--accent-deep); }
 .hero .btn.ghost { background: transparent; color: #fff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55); }
 .hero .btn.ghost:hover { background: rgba(255, 255, 255, 0.12); }
@@ -258,3 +279,9 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .rtext p + p { margin-top: 1.15em; }
 
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; animation: none !important; } }
+
+/* Continue with Google (login and signup) */
+.oauth { display: grid; gap: 0.9rem; }
+.oauth .btn { width: 100%; }
+.orline { display: flex; align-items: center; gap: 0.8rem; color: var(--muted); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.orline::before, .orline::after { content: ""; flex: 1; height: 1px; background: var(--line); }

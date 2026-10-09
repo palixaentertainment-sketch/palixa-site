@@ -116,7 +116,7 @@ export default function BookForm({ userId, book, locked, onSaved }) {
           <Cover b={shownCover} />
           <div className="stack" style={{ gap: '0.5rem' }}>
             <input id="b-cover" className="in" type="file" accept="image/png,image/jpeg,image/webp" onChange={pick} />
-            <span className="fine">Best at a 2:3 ratio, for example 800 by 1200 pixels. JPG, PNG or WebP, up to 2 MB. Without a cover, Palixa makes a purple one from your title.</span>
+            <span className="fine">Best at a 2:3 ratio, for example 800 by 1200 pixels. JPG, PNG or WebP, up to 2 MB. Without a cover, Palixia makes a purple one from your title.</span>
           </div>
         </div>
       </div>

@@ -1,12 +1,14 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { usePublishHref } from '@/components/PublishLink';
 import { supabase, configured } from '@/lib/supabase';
 import { fmtNum } from '@/lib/format';
 import Avatar from '@/components/Avatar';
 import Empty from '@/components/Empty';
 
 export default function Authors() {
+  const publishHref = usePublishHref();
   const [list, setList] = useState(null);
   useEffect(() => {
     if (!configured) { setList([]); return; }
@@ -17,7 +19,7 @@ export default function Authors() {
       <h1 className="h1">Authors</h1>
       {list === null && <p className="muted">Loading...</p>}
       {list && list.length === 0 && (
-        <Empty title="No authors have published yet." text="Publish a book and your profile will appear here." href="/signup?as=author" cta="Publish Your Story" />
+        <Empty title="No authors have published yet." text="Publish a book and your profile will appear here." href={publishHref} cta="Publish Your Story" />
       )}
       {list && list.length > 0 && (
         <div className="alist">

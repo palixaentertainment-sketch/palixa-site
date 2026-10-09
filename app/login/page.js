@@ -1,8 +1,10 @@
 'use client';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase, configured } from '@/lib/supabase';
+import { useAuth } from '@/lib/auth';
+import GoogleButton, { useOAuthReturnError } from '@/components/GoogleButton';
 import { friendlyAuth } from '@/lib/errors';
 import { safeNext } from '@/lib/next';
 
@@ -10,15 +12,23 @@ function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
   const next = safeNext(params.get('next'), '/');
+  const { user, loading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
 
+  useOAuthReturnError(setErr);
+
+  // Already signed in: go straight where you were headed.
+  useEffect(() => {
+    if (!loading && user) router.replace(next);
+  }, [loading, user, router, next]);
+
   async function submit(e) {
     e.preventDefault();
     setErr('');
-    if (!configured) { setErr('Palixa is not connected to its database yet. See README.md.'); return; }
+    if (!configured) { setErr('Palixia is not connected to its database yet. See README.md.'); return; }
     if (!email.trim() || !password) { setErr('Enter your email and password.'); return; }
     setBusy(true);
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
@@ -28,8 +38,9 @@ function LoginForm() {
   }
 
   return (
-    <div className="stack narrow">
+    <div className="stack authcol">
       <h1 className="h1">Log in</h1>
+      <GoogleButton returnTo={'/login?next=' + encodeURIComponent(next)} onError={setErr} />
       <form className="card" onSubmit={submit} noValidate>
         <div className="field">
           <label htmlFor="email">Email</label>
@@ -42,7 +53,7 @@ function LoginForm() {
         <p className="msg-err" role="alert">{err}</p>
         <button className="btn" type="submit" disabled={busy}>{busy ? 'Logging in...' : 'Log in'}</button>
       </form>
-      <p className="muted">New to Palixa? <Link className="linkbtn" href={'/signup' + (params.get('next') ? '?next=' + encodeURIComponent(next) : '')}>Create an account</Link></p>
+      <p className="muted">New to Palixia? <Link className="linkbtn" href={'/signup' + (params.get('next') ? '?next=' + encodeURIComponent(next) : '')}>Create an account</Link></p>
     </div>
   );
 }

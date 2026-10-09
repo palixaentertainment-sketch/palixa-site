@@ -107,7 +107,6 @@ function Shelf() {
           </ol>
         )
       )}
-      <p className="fine">Purchased books appear here when payments launch.</p>
     </>
   );
 }

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import Avatar from '@/components/Avatar';
+import Logo from '@/components/Logo';
 
 const LINKS = [
   ['/', 'Home'],
@@ -29,7 +30,7 @@ export default function Header() {
   return (
     <header className="top">
       <div className="wrap">
-        <Link href="/" className="mark"><i aria-hidden="true" />Palixa</Link>
+        <Logo size="header" />
         <nav className="navlinks" aria-label="Main">
           {LINKS.map(([href, label]) => (
             <Link key={href} href={href} aria-current={(href === '/' ? pathname === '/' : pathname.startsWith(href)) ? 'page' : undefined}>{label}</Link>
@@ -42,7 +43,7 @@ export default function Header() {
             <button type="submit" aria-label="Search">Go</button>
           </form>
           {!loading && !user && (
-            <div className="authlinks">
+            <div className="guestlinks">
               <Link className="btn ghost small" href="/login">Log in</Link>
               <Link className="btn small" href="/signup">Sign up</Link>
             </div>

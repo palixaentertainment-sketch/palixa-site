@@ -1,6 +1,6 @@
-# Palixa: setup guide (Phases 1 to 3)
+# Palixia: setup guide (Phases 1 to 3)
 
-Palixa is a reading and publishing site for books and comics. This version covers the first three phases of your specification: accounts and roles, the reader experience, and author publishing. Payments, reviews, withdrawals and the admin dashboard are not built yet.
+Palixia is a reading and publishing site for books and comics. This version covers the first three phases of your specification: accounts and roles, the reader experience, and author publishing. Payments, reviews, withdrawals and the admin dashboard are not built yet.
 
 **Important:** this code was written and syntax-checked, but it has not been run against a real database. Expect to fix a few small things on first deploy. Test each step below and send the exact error message if something fails.
 
@@ -23,6 +23,12 @@ Palixa is a reading and publishing site for books and comics. This version cover
 3. Optional but recommended: paste all of `supabase/seed.sql` into a new query and run it. This adds 5 fictional authors and 10 fictional books (8 text, 2 comics with placeholder art) so the site is not empty. To remove them later, run: `delete from auth.users where email like '%@sample.palixa.test';`
 4. Open **Project Settings** > **API** and copy the **Project URL** and the **anon public** key.
 5. For testing, open **Authentication** > **Providers** > **Email** and turn off "Confirm email" so new accounts can log in immediately. Turn it back on before a public launch.
+
+**Starting over:** if the schema ever half-runs, paste `supabase/reset.sql` and run it, then run `schema.sql` again. Check with: `select count(*) from information_schema.tables where table_schema='public';` (should show 9 before seeding).
+
+## Brand assets
+
+One logo file is used everywhere: `public/brand/palixa-logo.png`, rendered only by `components/Logo.js` (sizes: header, auth, footer). Never set a width on it; height only. Favicon and app icons (`app/icon.png`, `app/apple-icon.png`, `app/favicon.ico`, `public/brand/icon-*.png`) use the symbol from the same artwork. The site name is spelled "Palixia" to match the logo; the web address stays palixa.com. When your designer supplies a transparent PNG or SVG, replace `palixa-logo.png` (keep the name) and the symbol files.
 
 ## 2. Put the code on GitHub
 
@@ -82,3 +88,15 @@ npm install
 cp .env.example .env.local   # then fill in the two values
 npm run dev
 ```
+
+## Google sign-in (optional)
+
+The login and signup pages have a "Continue with Google" button. It stays inactive until you finish these steps. Email and password keep working either way.
+
+1. In Google Cloud Console (console.cloud.google.com) create a project, open **APIs & Services** > **OAuth consent screen**, choose External, and fill in the app name (Palixia), your support email and developer email.
+2. Open **Credentials** > **Create credentials** > **OAuth client ID**, type **Web application**.
+3. Under **Authorized redirect URIs** add the callback address shown in Supabase at **Authentication** > **Providers** > **Google** (it looks like `https://YOUR-PROJECT.supabase.co/auth/v1/callback`). Under **Authorized JavaScript origins** add your site address (your Vercel address now, `https://palixa.com` later).
+4. Copy the **Client ID** and **Client secret** into Supabase at **Authentication** > **Providers** > **Google**, turn it on and save.
+5. In Supabase **Authentication** > **URL Configuration**, set Site URL to your site address and add it (and `https://palixa.com/**`) to **Redirect URLs**.
+6. Test with a Google account that is not already on Palixia, then with one that is.
+

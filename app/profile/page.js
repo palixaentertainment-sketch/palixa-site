@@ -143,7 +143,7 @@ function ProfileForm() {
         ) : (
           <>
             <h2 className="h2">Become an author</h2>
-            <p className="muted">Publish your own books and comics on Palixa. It is free to start and your reader account stays the same.</p>
+            <p className="muted">Publish your own books and comics on Palixia. It is free to start and your reader account stays the same.</p>
             <p className="msg-err" role="alert">{aErr}</p>
             <div><button type="button" className="btn" onClick={becomeAuthor}>Become an author</button></div>
           </>

@@ -2,8 +2,8 @@ import './globals.css';
 import Providers from '@/components/Providers';
 
 export const metadata = {
-  title: { default: 'Palixa | Stories worth discovering', template: '%s | Palixa' },
-  description: 'Read stories from independent African writers and discover your next favourite book.',
+  title: { default: 'Palixia', template: '%s | Palixia' },
+  description: 'Read and publish books and comics on Palixia.',
 };
 
 export const viewport = {

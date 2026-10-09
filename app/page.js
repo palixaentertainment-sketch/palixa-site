@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import PublishLink from '@/components/PublishLink';
 import { supabase, configured } from '@/lib/supabase';
 import { fmtNum } from '@/lib/format';
 import { genreStyle } from '@/lib/genres';
@@ -43,12 +44,10 @@ export default function Home() {
     <>
       <section className="hero">
         <div>
-          <p className="mono" style={{ color: 'rgba(255,255,255,.8)' }}>African-first publishing</p>
-          <h1 style={{ marginTop: '0.6rem' }}>Stories worth discovering.</h1>
-          <p>Read stories from independent African writers and discover your next favourite book.</p>
+          <h1 className="sr-only">Palixia</h1>
           <div className="row">
             <Link className="btn" href="/discover">Start Reading</Link>
-            <Link className="btn ghost" href="/signup?as=author">Publish Your Story</Link>
+            <PublishLink className="btn ghost">Publish Your Story</PublishLink>
           </div>
         </div>
         {heroBooks.length > 0 && (
@@ -59,7 +58,7 @@ export default function Home() {
       </section>
 
       {!configured && (
-        <p className="notice">Palixa is not connected to its database yet. Follow the setup steps in README.md, then reload this page.</p>
+        <p className="notice">Palixia is not connected to its database yet. Follow the setup steps in README.md, then reload this page.</p>
       )}
       {failed && <p className="notice">We could not load stories right now. Check your connection and refresh.</p>}
       {data === null && <p className="muted">Loading stories...</p>}
@@ -70,7 +69,7 @@ export default function Home() {
             <b>No stories are published yet.</b>
             <p>Be the first. Create an author account and publish a book or comic.</p>
           </div>
-          <Link className="btn" href="/signup?as=author">Publish Your Story</Link>
+          <PublishLink className="btn">Publish Your Story</PublishLink>
         </div>
       )}
 
@@ -140,7 +139,7 @@ export default function Home() {
 
       <section className="cta">
         <h2 className="h2">Your story deserves readers.</h2>
-        <Link className="btn" href="/signup?as=author">Publish with Palixa</Link>
+        <PublishLink className="btn">Publish with Palixia</PublishLink>
       </section>
     </>
   );

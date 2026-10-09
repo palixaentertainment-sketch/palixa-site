@@ -53,7 +53,7 @@ function Dashboard() {
         <div className="stat"><span className="mono">Published</span><b>{published}</b></div>
         <div className="stat"><span className="mono">Followers</span><b>{stats ? fmtNum(stats.followers) : '0'}</b></div>
       </div>
-      <p className="fine">Earnings and ratings appear here when payments and reviews launch. A read counts the first time a signed-in reader opens any chapter of your book.</p>
+      <p className="fine">A read counts the first time a signed-in reader opens any chapter of your book.</p>
 
       {failed && <p className="notice">We could not load your books. Check your connection and refresh.</p>}
       {books === null && <p className="muted">Loading...</p>}

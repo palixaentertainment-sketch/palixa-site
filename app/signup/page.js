@@ -1,8 +1,11 @@
 'use client';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase, configured } from '@/lib/supabase';
+import { useAuth } from '@/lib/auth';
+import GoogleButton, { useOAuthReturnError } from '@/components/GoogleButton';
+import { usePublishHref } from '@/components/PublishLink';
 import { friendlyAuth } from '@/lib/errors';
 import { validUsername } from '@/lib/format';
 import { safeNext } from '@/lib/next';
@@ -10,6 +13,8 @@ import { safeNext } from '@/lib/next';
 function SignupForm() {
   const router = useRouter();
   const params = useSearchParams();
+  const { user, profile, loading } = useAuth();
+  const publishHref = usePublishHref();
   const [kind, setKind] = useState(params.get('as') === 'author' ? 'author' : 'reader');
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
@@ -19,12 +24,21 @@ function SignupForm() {
   const [country, setCountry] = useState('');
   const [err, setErr] = useState('');
   const [done, setDone] = useState(false);
+  const justSignedUp = useRef(false);
   const [busy, setBusy] = useState(false);
+
+  useOAuthReturnError(setErr);
+
+  // Already signed in: no need to create another account.
+  useEffect(() => {
+    if (loading || !user || !profile || done || justSignedUp.current) return;
+    router.replace(params.get('as') === 'author' ? publishHref : safeNext(params.get('next'), '/'));
+  }, [loading, user, profile, done, router, params, publishHref]);
 
   async function submit(e) {
     e.preventDefault();
     setErr('');
-    if (!configured) { setErr('Palixa is not connected to its database yet. See README.md.'); return; }
+    if (!configured) { setErr('Palixia is not connected to its database yet. See README.md.'); return; }
     const u = username.trim().toLowerCase();
     if (!name.trim()) { setErr('Enter your full name.'); return; }
     if (!validUsername(u)) { setErr('Choose a username of 3 to 24 letters, numbers or underscores.'); return; }
@@ -41,13 +55,14 @@ function SignupForm() {
     });
     setBusy(false);
     if (error) { setErr(friendlyAuth(error)); return; }
+    justSignedUp.current = true;
     if (data.session) router.push(safeNext(params.get('next'), kind === 'author' ? '/dashboard' : '/discover'));
     else setDone(true);
   }
 
   if (done) {
     return (
-      <div className="stack narrow">
+      <div className="stack authcol">
         <h1 className="h1">Check your email</h1>
         <p>We sent a confirmation link to <b>{email}</b>. Open it, then log in to finish setting up your account.</p>
         <div><Link className="btn" href="/login">Log in</Link></div>
@@ -56,8 +71,9 @@ function SignupForm() {
   }
 
   return (
-    <div className="stack narrow">
+    <div className="stack authcol">
       <h1 className="h1">Create your account</h1>
+      <GoogleButton returnTo={'/signup?' + (params.get('as') === 'author' ? 'as=author&' : '') + 'next=' + encodeURIComponent(safeNext(params.get('next'), '/'))} onError={setErr} />
       <form className="card" onSubmit={submit} noValidate>
         <div className="field">
           <span className="lab" id="lab-kind">I want to</span>

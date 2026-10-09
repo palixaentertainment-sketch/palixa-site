@@ -20,7 +20,7 @@ export default function Guard({ roles, children }) {
     return <p className="notice">We could not load your account. Refresh the page, or sign out and back in.</p>;
   }
   if (profile.status === 'suspended') {
-    return <p className="notice">This account has been suspended. Contact Palixa support if you think this is a mistake.</p>;
+    return <p className="notice">This account has been suspended. Contact Palixia support if you think this is a mistake.</p>;
   }
   if (roles && !roles.includes(profile.role)) {
     return (
