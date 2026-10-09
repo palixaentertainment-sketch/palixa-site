@@ -36,7 +36,7 @@ export default function BookPage() {
     // differently named relationship can make a real book look unpublished/missing.
     const { data, error } = await supabase
       .from('books')
-      .select('id,author_id,title,description,cover_url,book_type,status,story_status,reads,is_sample,genre_id,like_count')
+      .select('id,author_id,title,description,cover_url,book_type,status,reads,is_sample,genre_id,like_count')
       .eq('id', bookId)
       .maybeSingle();
 
@@ -175,7 +175,6 @@ export default function BookPage() {
         <Cover b={{ ...book, author_name: author && author.name }} />
         <div className="stack">
           <p className="mono">{book.genres ? book.genres.name : 'Story'} &middot; {typeLabel(book.book_type)}</p>
-          <p><span className={'badge story-badge ' + (book.story_status || 'ongoing')}>{({ ongoing: 'Ongoing', completed: 'Completed', hiatus: 'On hiatus' })[book.story_status] || 'Ongoing'}</span></p>
           <h1 className="h1">{book.title}</h1>
           <p className="muted">by <Link className="linkbtn" href={'/author/' + (author ? author.username : '')}>{author ? author.name : 'Unknown'}</Link></p>
           <dl className="facts">
