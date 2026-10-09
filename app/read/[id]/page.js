@@ -5,6 +5,8 @@ import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 import { friendly } from '@/lib/errors';
+import LikeButton from '@/components/LikeButton';
+import Comments from '@/components/Comments';
 
 function load(key, fallback) {
   try { const v = window.localStorage.getItem(key); return v === null ? fallback : v; } catch (e) { return fallback; }
@@ -41,7 +43,7 @@ export default function Reader() {
     setCh(undefined);
     const { data, error } = await supabase
       .from('chapters')
-      .select('id,book_id,chapter_number,title,content,status')
+      .select('id,book_id,chapter_number,title,content,status,like_count')
       .eq('id', id)
       .maybeSingle();
     if (error || !data) { setCh(null); return; }
@@ -225,6 +227,13 @@ export default function Reader() {
             {paragraphs.length === 0 && <p>This chapter has no text yet.</p>}
             {paragraphs.map((p, n) => <p key={n}>{p}</p>)}
           </article>
+        )}
+
+        {ch.status === 'published' && book.status === 'published' && (
+          <>
+            <div className="rlike"><LikeButton kind="chapter" id={ch.id} count={ch.like_count} authorId={book.author_id} /></div>
+            <Comments chapterId={ch.id} authorId={book.author_id} />
+          </>
         )}
 
         <nav className="rnav" aria-label="Chapters">
