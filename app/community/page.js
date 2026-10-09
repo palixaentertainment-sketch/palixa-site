@@ -35,6 +35,7 @@ export default function CommunityPage() {
   const [comments, setComments] = useState({});
   const [commentDrafts, setCommentDrafts] = useState({});
   const [sendingComment, setSendingComment] = useState({});
+  const [commentErrors, setCommentErrors] = useState({});
   const [openComments, setOpenComments] = useState({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -115,26 +116,29 @@ export default function CommunityPage() {
   }
 
   async function addComment(postId, parentId = null) {
-    if (!user) { setNotice('Log in to reply.'); return; }
     const key = postId + (parentId || '');
     const text = (commentDrafts[key] || '').trim();
-    if (!text) { setNotice('Please type a comment before sending.'); return; }
+    if (!user) { setCommentErrors((old) => ({ ...old, [key]: 'Please log in to reply.' })); return; }
+    if (!text) { setCommentErrors((old) => ({ ...old, [key]: 'Type your comment first.' })); return; }
     if (sendingComment[key]) return;
     setSendingComment((old) => ({ ...old, [key]: true }));
+    setCommentErrors((old) => ({ ...old, [key]: '' }));
     setNotice('');
-    const { error: commentError } = await supabase.from('community_comments').insert({
-      post_id: postId, user_id: user.id, parent_id: parentId, body: text,
-    });
-    setSendingComment((old) => ({ ...old, [key]: false }));
-    if (commentError) {
+    try {
+      const { error: commentError } = await supabase.from('community_comments').insert({
+        post_id: postId, user_id: user.id, parent_id: parentId, body: text,
+      });
+      if (commentError) throw commentError;
+      setCommentDrafts((old) => ({ ...old, [key]: '' }));
+      setComments((old) => ({ ...old, [postId]: null }));
+      await loadComments(postId, true);
+      await loadPosts();
+    } catch (commentError) {
       console.error('Community comment could not be posted:', commentError);
-      setNotice('Your comment could not be posted. Details: ' + (commentError.message || 'Unknown database error'));
-      return;
+      setCommentErrors((old) => ({ ...old, [key]: 'Could not send: ' + (commentError?.message || 'Please refresh and try again.') }));
+    } finally {
+      setSendingComment((old) => ({ ...old, [key]: false }));
     }
-    setCommentDrafts((old) => ({ ...old, [key]: '' }));
-    setComments((old) => ({ ...old, [postId]: null }));
-    await loadComments(postId, true);
-    await loadPosts();
   }
 
   async function deletePost(postId) {
@@ -256,13 +260,15 @@ export default function CommunityPage() {
                       ))}
                       {user && <form className="community-reply-form" onSubmit={(e) => { e.preventDefault(); addComment(post.id, comment.id); }}>
                         <input className="in" maxLength={1000} placeholder="Reply to this comment…" value={commentDrafts[post.id + comment.id] || ''} onChange={(e) => setCommentDrafts((old) => ({ ...old, [post.id + comment.id]: e.target.value }))} />
-                        <button className="btn ghost small" disabled={Boolean(sendingComment[post.id + comment.id])}>{sendingComment[post.id + comment.id] ? 'Sending…' : 'Reply'}</button>
+                        <button type="submit" className="btn ghost small" disabled={Boolean(sendingComment[post.id + comment.id])}>{sendingComment[post.id + comment.id] ? 'Sending…' : 'Reply'}</button>
+                        {commentErrors[post.id + comment.id] && <p className="msg-err" role="alert">{commentErrors[post.id + comment.id]}</p>}
                       </form>}
                     </div>
                   ))}
                   {user && <form className="community-reply-form" onSubmit={(e) => { e.preventDefault(); addComment(post.id); }}>
                     <input className="in" maxLength={1000} placeholder="Write a reply…" value={commentDrafts[post.id] || ''} onChange={(e) => setCommentDrafts((old) => ({ ...old, [post.id]: e.target.value }))} />
-                    <button className="btn small" disabled={Boolean(sendingComment[post.id])}>{sendingComment[post.id] ? 'Sending…' : 'Comment'}</button>
+                    <button type="submit" className="btn small" disabled={Boolean(sendingComment[post.id])}>{sendingComment[post.id] ? 'Sending…' : 'Comment'}</button>
+                    {commentErrors[post.id] && <p className="msg-err" role="alert">{commentErrors[post.id]}</p>}
                   </form>}
                 </div>
               )}
