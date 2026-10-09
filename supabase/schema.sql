@@ -41,6 +41,7 @@ create table public.books (
   genre_id uuid references public.genres(id) on delete set null,
   tags text[] not null default '{}',
   book_type text not null default 'text' check (book_type in ('text', 'comic')),
+  story_status text not null default 'ongoing' check (story_status in ('ongoing', 'completed', 'hiatus')),
   price numeric(10, 2) not null default 0,          -- used from the payments phase
   is_free boolean not null default true,            -- used from the payments phase
   status text not null default 'draft' check (status in ('draft', 'published', 'unpublished')),
@@ -261,7 +262,8 @@ select
   p.name as author_name, p.username as author_username, p.avatar_url as author_avatar,
   (select count(*) from public.chapters c where c.book_id = b.id and c.status = 'published')::int as chapter_count,
   lower(b.title || ' ' || p.name || ' ' || p.username || ' ' || coalesce(g.name, '') || ' ' ||
-        coalesce(array_to_string(b.tags, ' '), '')) as search
+        coalesce(array_to_string(b.tags, ' '), '')) as search,
+  b.story_status
 from public.books b
 join public.profiles p on p.id = b.author_id
 left join public.genres g on g.id = b.genre_id
