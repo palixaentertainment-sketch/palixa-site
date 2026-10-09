@@ -28,6 +28,7 @@ export default function CommunityPage() {
   const { user, profile } = useAuth();
   const [posts, setPosts] = useState(null);
   const [category, setCategory] = useState('all');
+  const [postCategory, setPostCategory] = useState('general');
   const [body, setBody] = useState('');
   const [bookId, setBookId] = useState('');
   const [books, setBooks] = useState([]);
@@ -76,7 +77,7 @@ export default function CommunityPage() {
     if (!body.trim()) { setError('Write something before posting.'); return; }
     setBusy(true); setError(''); setNotice('');
     const { error: insertError } = await supabase.from('community_posts').insert({
-      user_id: user.id, category: category === 'all' ? 'general' : category,
+      user_id: user.id, category: postCategory,
       body: body.trim(), book_id: bookId || null,
     });
     setBusy(false);
@@ -84,7 +85,7 @@ export default function CommunityPage() {
       setError('Your post could not be published. Please check the Community setup and try again.');
       return;
     }
-    setBody(''); setBookId(''); setCategory('all');
+    setBody(''); setBookId(''); setPostCategory('general');
     setNotice('Your post is live.');
     await loadPosts();
   }
@@ -99,9 +100,9 @@ export default function CommunityPage() {
     await loadPosts();
   }
 
-  async function loadComments(postId) {
+  async function loadComments(postId, force = false) {
     setOpenComments((old) => ({ ...old, [postId]: true }));
-    if (comments[postId]) return;
+    if (comments[postId] && !force) return;
     const { data, error: commentError } = await supabase.from('community_comments')
       .select('id,post_id,user_id,parent_id,body,created_at,profiles(name,username)')
       .eq('post_id', postId).eq('status', 'visible').order('created_at').limit(100);
@@ -120,7 +121,7 @@ export default function CommunityPage() {
     if (commentError) { setNotice('Your reply could not be posted. Please try again.'); return; }
     setCommentDrafts((old) => ({ ...old, [key]: '' }));
     setComments((old) => ({ ...old, [postId]: null }));
-    await loadComments(postId);
+    await loadComments(postId, true);
     await loadPosts();
   }
 
@@ -175,7 +176,7 @@ export default function CommunityPage() {
               onChange={(e) => setBody(e.target.value)} />
             <div className="community-compose-controls">
               <label className="field community-field"><span className="sr-only">Choose a category</span>
-                <select className="in" value={category} onChange={(e) => setCategory(e.target.value)} aria-label="Post category">
+                <select className="in" value={postCategory} onChange={(e) => setPostCategory(e.target.value)} aria-label="Post category">
                   {CATEGORIES.filter(([id]) => id !== 'all').map(([id, label]) => <option key={id} value={id}>{label}</option>)}
                 </select>
               </label>
