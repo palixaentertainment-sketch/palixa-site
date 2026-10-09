@@ -187,7 +187,6 @@ export default function BookPage() {
 
       <div className="row">
         <LikeButton kind="book" id={book.id} count={book.like_count} authorId={book.author_id} />
-        <button type="button" className="btn ghost" onClick={shareBook}>Share</button>
         {readTarget ? (
           <Link className="btn" href={'/read/' + readTarget}>{resumeId ? 'Continue reading' : 'Read Now'}</Link>
         ) : (
@@ -198,6 +197,7 @@ export default function BookPage() {
           <button type="button" className={'btn ghost' + (following ? ' on' : '')} aria-pressed={following} onClick={toggleFollow}>{following ? 'Following' : 'Follow Author'}</button>
         )}
         {isOwner && <Link className="btn ghost" href={'/dashboard/books/' + book.id}>Edit</Link>}
+        <button type="button" className="btn ghost" onClick={shareBook}>Share</button>
       </div>
       {resumeId && progress && <p className="fine">You are {progress.progress}% through this book.</p>}
       {msg && <p className="msg-err" role="alert">{msg} {!user && <Link className="linkbtn" href={'/login?next=/book/' + id}>Log in</Link>}</p>}
