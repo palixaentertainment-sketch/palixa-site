@@ -23,7 +23,6 @@ function Discover() {
   const type = params.get('type') || 'all';
   const genre = params.get('genre') || '';
   const sort = params.get('sort') || 'popular';
-  const storyStatus = params.get('story') || 'all';
 
   const [input, setInput] = useState(q);
   const [genres, setGenres] = useState([]);
@@ -52,7 +51,6 @@ function Discover() {
     let query = supabase.from('book_cards').select('*');
     if (type === 'text') query = query.eq('book_type', 'text');
     if (type === 'comic') query = query.eq('book_type', 'comic');
-    if (storyStatus !== 'all') query = query.eq('story_status', storyStatus);
     if (genre) query = query.eq('genre_slug', genre);
     const term = q.trim().toLowerCase().replace(/[%,()]/g, ' ');
     if (term) query = query.ilike('search', '%' + term + '%');
@@ -81,7 +79,7 @@ function Discover() {
     }
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, type, genre, sort, storyStatus]);
+  }, [q, type, genre, sort]);
 
   async function loadMore() {
     setBusy(true);
@@ -110,14 +108,6 @@ function Discover() {
           {[['all', 'All'], ['text', 'Books'], ['comic', 'Comics']].map(([v, label]) => (
             <button key={v} type="button" className="chip" aria-pressed={type === v} onClick={() => go({ type: v === 'all' ? '' : v })}>{label}</button>
           ))}
-        </div>
-        <div className="field">
-          <label htmlFor="story-status-filter">Story status</label>
-          <div className="chips" id="story-status-filter" role="group" aria-label="Story status">
-            {[[ 'all', 'All stories' ], [ 'ongoing', 'Ongoing' ], [ 'completed', 'Completed' ], [ 'hiatus', 'On hiatus' ]].map(([v, label]) => (
-              <button key={v} type="button" className="chip" aria-pressed={storyStatus === v} onClick={() => go({ story: v === 'all' ? '' : v })}>{label}</button>
-            ))}
-          </div>
         </div>
         <div className="row">
           <div className="field" style={{ minWidth: '10rem', flex: 1 }}>
