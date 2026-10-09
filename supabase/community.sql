@@ -151,6 +151,10 @@ drop policy if exists "community reporter or admin read reports" on public.commu
 create policy "community reporter or admin read reports" on public.community_reports
   for select to authenticated using (reporter_id = auth.uid() or public.is_admin());
 
+drop policy if exists "community admins update reports" on public.community_reports;
+create policy "community admins update reports" on public.community_reports
+  for update to authenticated using (public.is_admin()) with check (public.is_admin());
+
 -- Restrict writes to intended fields. Moderation status is reserved for admins.
 revoke all on public.community_posts, public.community_comments, public.community_likes, public.community_reports from anon, authenticated;
 grant select on public.community_posts, public.community_comments, public.community_likes to anon, authenticated;
@@ -164,3 +168,5 @@ grant insert (post_id, user_id) on public.community_likes to authenticated;
 grant delete on public.community_likes to authenticated;
 grant select on public.community_reports to authenticated;
 grant insert (post_id, reporter_id, reason) on public.community_reports to authenticated;
+
+grant update (status) on public.community_reports to authenticated;
