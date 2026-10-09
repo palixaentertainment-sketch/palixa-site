@@ -430,3 +430,40 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   .homehero:hover .hero-book-back { transform: translate(-35%, -2%) rotate(-12deg); }
   .homehero:hover .hero-book-front { transform: translate(25%, 3%) rotate(10deg); }
 }
+
+
+/* Story Worlds */
+.worlds-hero, .world-detail-hero {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: clamp(1.25rem, 5vw, 2.5rem);
+  background: linear-gradient(135deg, var(--surface), #fff 70%);
+  display: grid;
+  gap: .8rem;
+}
+.worlds-hero p, .world-detail-hero p { max-width: 42rem; color: var(--muted); font-size: 1.02rem; }
+.world-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+.world-card {
+  position: relative; display: flex; flex-direction: column; align-items: flex-start;
+  gap: .65rem; min-width: 0; padding: 1.3rem; border: 1px solid var(--line);
+  border-radius: 10px; background: var(--surface); transition: transform .16s ease, border-color .16s ease;
+}
+.world-card:hover { transform: translateY(-2px); border-color: var(--lav); }
+.world-card h2 { font: italic 700 1.55rem/1.15 var(--display); overflow-wrap: anywhere; }
+.world-card p { color: var(--muted); }
+.world-card-mark { color: var(--accent); font-size: 1.7rem; line-height: 1; }
+.world-card-author, .world-card-link { font-size: .85rem; }
+.world-card-author { color: var(--muted); margin-top: auto; }
+.world-card-link { color: var(--accent); font-weight: 700; }
+.world-form, .world-manage-card { border: 1px solid var(--line); border-radius: 10px; padding: 1rem; background: #fff; }
+.world-form { background: var(--surface); }
+.world-book-option { display: flex; gap: .7rem; align-items: flex-start; padding: .75rem; border: 1px solid var(--line); border-radius: 7px; cursor: pointer; }
+.world-book-option input { margin-top: .25rem; accent-color: var(--accent); width: 1rem; height: 1rem; flex: none; }
+.world-book-option span { display: grid; gap: .15rem; min-width: 0; }
+.world-book-option b { overflow-wrap: anywhere; }
+.world-book-option small { color: var(--muted); font-size: .8rem; text-transform: capitalize; }
+.world-detail-hero h1 { overflow-wrap: anywhere; }
+@media (min-width: 42rem) {
+  .world-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .world-form, .world-manage-card { padding: 1.4rem; }
+}
