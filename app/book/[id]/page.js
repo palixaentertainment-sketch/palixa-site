@@ -9,6 +9,7 @@ import { fmtNum, typeLabel } from '@/lib/format';
 import Cover from '@/components/Cover';
 import Avatar from '@/components/Avatar';
 import Empty from '@/components/Empty';
+import LikeButton from '@/components/LikeButton';
 
 export default function BookPage() {
   const { id } = useParams();
@@ -35,7 +36,7 @@ export default function BookPage() {
     // differently named relationship can make a real book look unpublished/missing.
     const { data, error } = await supabase
       .from('books')
-      .select('id,author_id,title,description,cover_url,book_type,status,reads,is_sample,genre_id')
+      .select('id,author_id,title,description,cover_url,book_type,status,reads,is_sample,genre_id,like_count')
       .eq('id', bookId)
       .maybeSingle();
 
