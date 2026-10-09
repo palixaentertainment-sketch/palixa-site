@@ -1,0 +1,39 @@
+name: Import updated Palixa site
+on:
+  push:
+    paths:
+      - 'site-payload.zip.b64'
+      - '.github/workflows/import-new-site.yml'
+permissions:
+  contents: write
+jobs:
+  import-site:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Import site files from uploaded archive
+        run: |
+          if [ ! -f site-payload.zip.b64 ]; then
+            echo 'No site archive to import; workflow setup only.'
+            exit 0
+          fi
+          base64 -d site-payload.zip.b64 > /tmp/palixa-site.zip
+          mkdir -p /tmp/palixa-extracted
+          unzip -q /tmp/palixa-site.zip -d /tmp/palixa-extracted
+          if [ -d /tmp/palixa-extracted/palixa-site ]; then
+            cp -a /tmp/palixa-extracted/palixa-site/. .
+          else
+            echo 'Expected palixa-site folder not found in ZIP.'
+            exit 1
+          fi
+          rm -f site-payload.zip.b64
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'No site changes to commit.'
+          else
+            git commit -m 'Update Palixa site files from new ZIP'
+            git push
+          fi
