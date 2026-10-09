@@ -54,7 +54,7 @@ export default function NotificationsPage() {
       <div className="sechead"><h1 className="h1">Notifications</h1><button className="btn ghost small" onClick={markAllRead}>Mark all read</button></div>
       {error && <p className="notice">{error} Run <code>supabase/notifications.sql</code> in Supabase SQL Editor, then refresh.</p>}
       {busy && <p className="muted">Loading notifications…</p>}
-      {!busy && !error && items.length === 0 && <div className="empty"><b>You’re all caught up.</b><p className="muted">Likes, comments and new followers will show up here.</p></div>}
+      {!busy && !error && items.length === 0 && <div className="empty"><b>You’re all caught up.</b><p className="muted">Likes, comments, new followers, new books from authors you follow, and new chapters from followed or saved books will show up here.</p></div>}
       {items.map((item) => {
         const actor = item.profiles;
         return <button key={item.id} type="button" onClick={() => openNotification(item)} className="notification-item" style={{ background: item.read_at ? 'var(--bg)' : 'var(--surface)' }}>
