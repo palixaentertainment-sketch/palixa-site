@@ -11,6 +11,7 @@ const LINKS = [
   ['/', 'Home'],
   ['/discover', 'Discover'],
   ['/community', 'Community'],
+  ['/worlds', 'Story Worlds'],
   ['/categories', 'Categories'],
   ['/authors', 'Authors'],
   ['/about', 'About'],
