@@ -34,6 +34,7 @@ export default function CommunityPage() {
   const [books, setBooks] = useState([]);
   const [comments, setComments] = useState({});
   const [commentDrafts, setCommentDrafts] = useState({});
+  const [sendingComment, setSendingComment] = useState({});
   const [openComments, setOpenComments] = useState({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -117,11 +118,19 @@ export default function CommunityPage() {
     if (!user) { setNotice('Log in to reply.'); return; }
     const key = postId + (parentId || '');
     const text = (commentDrafts[key] || '').trim();
-    if (!text) return;
+    if (!text) { setNotice('Please type a comment before sending.'); return; }
+    if (sendingComment[key]) return;
+    setSendingComment((old) => ({ ...old, [key]: true }));
+    setNotice('');
     const { error: commentError } = await supabase.from('community_comments').insert({
       post_id: postId, user_id: user.id, parent_id: parentId, body: text,
     });
-    if (commentError) { setNotice('Your reply could not be posted. Please try again.'); return; }
+    setSendingComment((old) => ({ ...old, [key]: false }));
+    if (commentError) {
+      console.error('Community comment could not be posted:', commentError);
+      setNotice('Your comment could not be posted. Details: ' + (commentError.message || 'Unknown database error'));
+      return;
+    }
     setCommentDrafts((old) => ({ ...old, [key]: '' }));
     setComments((old) => ({ ...old, [postId]: null }));
     await loadComments(postId, true);
@@ -247,13 +256,13 @@ export default function CommunityPage() {
                       ))}
                       {user && <form className="community-reply-form" onSubmit={(e) => { e.preventDefault(); addComment(post.id, comment.id); }}>
                         <input className="in" maxLength={1000} placeholder="Reply to this comment…" value={commentDrafts[post.id + comment.id] || ''} onChange={(e) => setCommentDrafts((old) => ({ ...old, [post.id + comment.id]: e.target.value }))} />
-                        <button className="btn ghost small">Reply</button>
+                        <button className="btn ghost small" disabled={Boolean(sendingComment[post.id + comment.id])}>{sendingComment[post.id + comment.id] ? 'Sending…' : 'Reply'}</button>
                       </form>}
                     </div>
                   ))}
                   {user && <form className="community-reply-form" onSubmit={(e) => { e.preventDefault(); addComment(post.id); }}>
                     <input className="in" maxLength={1000} placeholder="Write a reply…" value={commentDrafts[post.id] || ''} onChange={(e) => setCommentDrafts((old) => ({ ...old, [post.id]: e.target.value }))} />
-                    <button className="btn small">Comment</button>
+                    <button className="btn small" disabled={Boolean(sendingComment[post.id])}>{sendingComment[post.id] ? 'Sending…' : 'Comment'}</button>
                   </form>}
                 </div>
               )}
