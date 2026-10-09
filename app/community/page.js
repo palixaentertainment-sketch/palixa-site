@@ -39,9 +39,10 @@ export default function CommunityPage() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [loadError, setLoadError] = useState(false);
+  const [loadErrorMessage, setLoadErrorMessage] = useState('');
 
   const loadPosts = useCallback(async () => {
-    if (!configured) { setPosts([]); setLoadError(true); return; }
+    if (!configured) { setPosts([]); setLoadError(true); setLoadErrorMessage('Supabase is not configured in this deployment.'); return; }
     const { data, error: queryError } = await supabase
       .from('community_posts')
       .select('id,user_id,category,body,book_id,created_at,profiles(name,username,avatar_url),books(id,title,book_type),community_likes(user_id),community_comments(id)')
@@ -52,9 +53,11 @@ export default function CommunityPage() {
       console.error('Community feed could not load:', queryError);
       setPosts([]);
       setLoadError(true);
+      setLoadErrorMessage(queryError.message || 'Unknown database error');
       return;
     }
     setLoadError(false);
+    setLoadErrorMessage('');
     setPosts((data || []).map((post) => ({
       ...post,
       likeCount: (post.community_likes || []).length,
@@ -158,7 +161,7 @@ export default function CommunityPage() {
       {loadError && (
         <div className="notice">
           <b>Community setup is not finished yet.</b>
-          <p>The new Community database migration must be applied in Supabase before the feed can load. Your existing books and chapters are not changed by this migration.</p>
+          <p>The Community feed could not load. Your tables exist, so we’re checking the exact database error.</p><p className="fine">Technical detail: {loadErrorMessage || 'No details returned.'}</p>
         </div>
       )}
 
