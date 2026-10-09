@@ -17,7 +17,7 @@ export default function StoryWorldPage() {
     let alive = true;
     (async () => {
       const { data, error } = await supabase.from('story_worlds')
-        .select('id,title,description,author_id,status,profiles:author_id(name,username)')
+        .select('id,title,description,author_id,status,profiles(name,username)')
         .eq('id', String(id)).eq('status', 'published').maybeSingle();
       if (!alive) return;
       if (error) { setFailed(true); setWorld(null); return; }
