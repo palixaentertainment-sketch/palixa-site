@@ -37,24 +37,19 @@ export default function Home() {
     })();
   }, []);
 
-  const heroBooks = data ? (data.featured.length ? data.featured : data.trending).slice(0, 3) : [];
   const featured = data && data.featured.length ? data.featured : data ? data.trending.slice(0, 3) : [];
 
   return (
     <>
       <section className="hero">
         <div>
-          <h1 className="sr-only">Palixia</h1>
+          <h1>Read books and comics. Publish your own.</h1>
+          <p>Discover new stories, follow the writers you like, and share your own work with readers.</p>
           <div className="row">
             <Link className="btn" href="/discover">Start Reading</Link>
             <PublishLink className="btn ghost">Publish Your Story</PublishLink>
           </div>
         </div>
-        {heroBooks.length > 0 && (
-          <div className="herocovers" aria-hidden="true">
-            {heroBooks.map((b) => <Cover key={b.id} b={b} />)}
-          </div>
-        )}
       </section>
 
       {!configured && (
