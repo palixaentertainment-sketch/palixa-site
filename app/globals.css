@@ -284,3 +284,23 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .oauth .btn { width: 100%; }
 .orline { display: flex; align-items: center; gap: 0.8rem; color: var(--muted); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; }
 .orline::before, .orline::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+
+/* Likes and chapter comments */
+.likewrap { display: inline-flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.comments { max-width: 44rem; margin: 2.5rem auto 0; padding: 0 18px; display: grid; gap: 1rem; }
+.clist { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; }
+.comment { display: grid; gap: 0.35rem; min-width: 0; }
+.comment.reply { padding-left: 0.9rem; border-left: 2px solid var(--line); }
+.comment .clist { margin-top: 0.6rem; }
+.chead { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.cbody { white-space: pre-line; overflow-wrap: anywhere; }
+.cact { display: flex; gap: 0.9rem; flex-wrap: wrap; align-items: flex-start; }
+.cform { display: grid; gap: 0.5rem; }
+.reader .comments .in { background: var(--bg); color: var(--fg); }
+.reader .comments .btn { color: var(--accent-fg); }
+.reader .comments .btn.ghost { color: var(--fg); }
+.reader .comments .linkbtn { color: var(--accent); }
+.reader .comments .badge { background: var(--soft); color: var(--accent); }
+.reader .rlike { max-width: 44rem; margin: 2rem auto 0; padding: 0 18px; }
+.reader .rlike .btn.ghost { color: var(--fg); }
