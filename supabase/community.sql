@@ -164,5 +164,3 @@ grant insert (post_id, user_id) on public.community_likes to authenticated;
 grant delete on public.community_likes to authenticated;
 grant select on public.community_reports to authenticated;
 grant insert (post_id, reporter_id, reason) on public.community_reports to authenticated;
-grant update (status) on public.community_posts, public.community_comments to authenticated;
-grant update (status) on public.community_reports to authenticated;
