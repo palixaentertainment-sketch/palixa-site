@@ -45,7 +45,7 @@ export default function CommunityPage() {
     if (!configured) { setPosts([]); setLoadError(true); setLoadErrorMessage('Supabase is not configured in this deployment.'); return; }
     const { data, error: queryError } = await supabase
       .from('community_posts')
-      .select('id,user_id,category,body,book_id,created_at,profiles(name,username,avatar_url),books(id,title,book_type),community_likes(user_id),community_comments(id)')
+      .select('id,user_id,category,body,book_id,created_at,profiles!community_posts_user_id_fkey(name,username,avatar_url),books(id,title,book_type),community_likes(user_id),community_comments(id)')
       .eq('status', 'visible')
       .order('created_at', { ascending: false })
       .limit(60);
@@ -107,7 +107,7 @@ export default function CommunityPage() {
     setOpenComments((old) => ({ ...old, [postId]: true }));
     if (comments[postId] && !force) return;
     const { data, error: commentError } = await supabase.from('community_comments')
-      .select('id,post_id,user_id,parent_id,body,created_at,profiles(name,username)')
+      .select('id,post_id,user_id,parent_id,body,created_at,profiles!community_comments_user_id_fkey(name,username)')
       .eq('post_id', postId).eq('status', 'visible').order('created_at').limit(100);
     if (commentError) { setNotice('Comments could not load right now.'); return; }
     setComments((old) => ({ ...old, [postId]: data || [] }));
