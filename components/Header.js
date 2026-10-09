@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import Avatar from '@/components/Avatar';
 import Logo from '@/components/Logo';
+import NotificationsBell from '@/components/NotificationsBell';
 
 const LINKS = [
   ['/', 'Home'],
@@ -51,6 +52,7 @@ export default function Header() {
           )}
           {!loading && user && (
             <>
+              <NotificationsBell user={user} />
               <Link className="authlinks linkbtn" href="/library">Library</Link>
               {isAuthor && <Link className="authlinks linkbtn" href="/dashboard">Dashboard</Link>}
               <details className="menu" key={pathname}>
