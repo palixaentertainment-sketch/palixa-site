@@ -9,6 +9,7 @@ import Logo from '@/components/Logo';
 const LINKS = [
   ['/', 'Home'],
   ['/discover', 'Discover'],
+  ['/community', 'Community'],
   ['/categories', 'Categories'],
   ['/authors', 'Authors'],
   ['/about', 'About'],
