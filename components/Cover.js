@@ -14,8 +14,10 @@ export default function Cover({ b }) {
   const author = b.author_name || (b.profiles && b.profiles.name) || '';
   const sum = Array.from(title).reduce((a, c) => a + c.charCodeAt(0), 0);
   const pair = PAIRS[sum % PAIRS.length];
+  const storyLabels = { ongoing: 'Ongoing', completed: 'Completed', hiatus: 'Hiatus' };
   const tags = (
     <span className="ctags">
+      {b.story_status && <span className={'ctag ctag-story ' + b.story_status}>{storyLabels[b.story_status] || 'Ongoing'}</span>}
       {b.book_type === 'comic' && <span className="ctag">Comic</span>}
       {b.is_sample && <span className="ctag">Sample</span>}
     </span>
@@ -34,7 +36,7 @@ export default function Cover({ b }) {
       <span className="cv-type">{b.book_type === 'comic' ? 'Comic' : 'Book'}</span>
       <span className="cv-title">{title}</span>
       <span className="cv-by">{author}</span>
-      {b.is_sample && <span className="ctags"><span className="ctag">Sample</span></span>}
+      {tags}
     </div>
   );
 }
