@@ -24,13 +24,30 @@ export default function BookPage() {
   const [msg, setMsg] = useState('');
 
   const load = useCallback(async () => {
+    // Fetch the book row separately from its related records. This avoids a
+    // relationship-embedding error causing an existing book to appear missing.
     const { data, error } = await supabase
       .from('books')
-      .select('id,author_id,title,description,cover_url,book_type,status,reads,is_sample,genres(name,slug),profiles(id,name,username,avatar_url,bio)')
+      .select('id,author_id,title,description,cover_url,genre_id,book_type,status,reads,is_sample')
       .eq('id', id)
       .maybeSingle();
-    if (error || !data) { setBook(null); return; }
-    setBook(data);
+    if (error) {
+      console.error('Palixia book load failed:', error.message);
+      setBook(null);
+      return;
+    }
+    if (!data) { setBook(null); return; }
+
+    const [authorResult, genreResult] = await Promise.all([
+      supabase.from('profiles').select('id,name,username,avatar_url,bio').eq('id', data.author_id).maybeSingle(),
+      data.genre_id
+        ? supabase.from('genres').select('name,slug').eq('id', data.genre_id).maybeSingle()
+        : Promise.resolve({ data: null, error: null }),
+    ]);
+    if (authorResult.error) console.error('Palixia author load failed:', authorResult.error.message);
+    if (genreResult.error) console.error('Palixia genre load failed:', genreResult.error.message);
+    const bookData = { ...data, profiles: authorResult.data || null, genres: genreResult.data || null };
+    setBook(bookData);
     const { data: chs } = await supabase
       .from('chapters')
       .select('id,chapter_number,title,status,reads')
