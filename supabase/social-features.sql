@@ -50,7 +50,7 @@ grant select, insert, delete on public.book_likes, public.chapter_likes to authe
 
 drop policy if exists "palixia read comments" on public.comments;
 create policy "palixia read comments" on public.comments for select to anon, authenticated using (
-  user_id = auth.uid() or exists (select 1 from public.chapters c join public.books b on b.id = c.book_id where c.id = chapter_id and (b.author_id = auth.uid() or (status = 'visible' and c.status = 'published' and b.status = 'published')))
+  user_id = auth.uid() or exists (select 1 from public.chapters c join public.books b on b.id = c.book_id where c.id = chapter_id and (b.author_id = auth.uid() or (comments.status = 'visible' and c.status = 'published' and b.status = 'published')))
 );
 drop policy if exists "palixia post comments" on public.comments;
 create policy "palixia post comments" on public.comments for insert to authenticated with check (
