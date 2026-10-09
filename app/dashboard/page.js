@@ -43,6 +43,7 @@ function Dashboard() {
         <h1 className="h1">Welcome back, {first}</h1>
         <div className="row">
           <Link className="btn" href="/dashboard/books/new">Create New Book</Link>
+          <Link className="btn ghost" href="/dashboard/worlds">Manage Story Worlds</Link>
           <Link className="btn ghost" href={'/author/' + profile.username}>View public page</Link>
         </div>
       </div>
