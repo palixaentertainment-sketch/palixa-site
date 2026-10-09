@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import PublishLink from '@/components/PublishLink';
 import { supabase, configured } from '@/lib/supabase';
+import { useAuth } from '@/lib/auth';
 import { fmtNum } from '@/lib/format';
 import { genreStyle } from '@/lib/genres';
 import Cover from '@/components/Cover';
@@ -10,78 +11,178 @@ import BookCard from '@/components/BookCard';
 import Avatar from '@/components/Avatar';
 
 export default function Home() {
+  const { user } = useAuth();
   const [data, setData] = useState(null);
   const [genres, setGenres] = useState([]);
   const [authors, setAuthors] = useState([]);
+  const [continueReading, setContinueReading] = useState([]);
+  const [recommended, setRecommended] = useState([]);
+  const [recommendationNote, setRecommendationNote] = useState('');
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    if (!configured) { setData({ featured: [], trending: [], fresh: [] }); return; }
+    let cancelled = false;
+    if (!configured) {
+      setData({ featured: [], trending: [], fresh: [] });
+      setContinueReading([]);
+      setRecommended([]);
+      return () => { cancelled = true; };
+    }
+
     (async () => {
       try {
         const [f, t, n, g, a] = await Promise.all([
           supabase.from('book_cards').select('*').eq('featured', true).order('reads', { ascending: false }).limit(6),
-          supabase.from('book_cards').select('*').order('reads', { ascending: false }).limit(10),
-          supabase.from('book_cards').select('*').order('created_at', { ascending: false }).limit(10),
+          supabase.from('book_cards').select('*').order('reads', { ascending: false }).limit(12),
+          supabase.from('book_cards').select('*').order('created_at', { ascending: false }).limit(12),
           supabase.from('genres').select('*').order('sort'),
           supabase.rpc('popular_authors', { lim: 8 }),
         ]);
-        if (f.error || t.error || n.error) throw new Error('load');
-        setData({ featured: f.data || [], trending: t.data || [], fresh: n.data || [] });
+        if (f.error || t.error || n.error) throw new Error('Could not load books');
+        if (cancelled) return;
+
+        const featured = f.data || [];
+        const trending = t.data || [];
+        const fresh = n.data || [];
+        setData({ featured, trending, fresh });
         setGenres(g.data || []);
         setAuthors(a.data || []);
+        setFailed(false);
+
+        if (!user) {
+          setContinueReading([]);
+          setRecommended([]);
+          setRecommendationNote('');
+          return;
+        }
+
+        const [pr, sv, fo] = await Promise.all([
+          supabase.from('reading_progress').select('book_id,chapter_id,progress,updated_at')
+            .eq('user_id', user.id).lt('progress', 100).order('updated_at', { ascending: false }).limit(8),
+          supabase.from('bookmarks').select('book_id').eq('user_id', user.id).is('chapter_id', null),
+          supabase.from('follows').select('author_id').eq('user_id', user.id),
+        ]);
+        if (pr.error || sv.error || fo.error) throw new Error('Could not load personalised books');
+
+        const progressRows = pr.data || [];
+        const savedIds = (sv.data || []).map((r) => r.book_id).filter(Boolean);
+        const progressIds = progressRows.map((r) => r.book_id).filter(Boolean);
+        const followedAuthors = new Set((fo.data || []).map((r) => r.author_id));
+        const historyIds = [...new Set([...savedIds, ...progressIds])];
+
+        let historyBooks = [];
+        if (historyIds.length) {
+          const historyResult = await supabase.from('book_cards').select('*').in('id', historyIds);
+          if (historyResult.error) throw new Error('Could not load reading history');
+          historyBooks = historyResult.data || [];
+        }
+        const historyById = new Map(historyBooks.map((b) => [b.id, b]));
+        const continueRows = progressRows.map((row) => {
+          const book = historyById.get(row.book_id);
+          return book ? { ...book, progress: row.progress, chapter_id: row.chapter_id, updated_at: row.updated_at } : null;
+        }).filter(Boolean);
+        if (cancelled) return;
+        setContinueReading(continueRows);
+
+        const genreWeights = new Map();
+        const tagWeights = new Map();
+        for (const book of historyBooks) {
+          if (book.genre_id) genreWeights.set(book.genre_id, (genreWeights.get(book.genre_id) || 0) + 2);
+          for (const tag of (book.tags || [])) {
+            const key = String(tag).toLowerCase().trim();
+            if (key) tagWeights.set(key, (tagWeights.get(key) || 0) + 1);
+          }
+        }
+
+        const candidatesResult = await supabase.from('book_cards').select('*').order('reads', { ascending: false }).limit(100);
+        if (candidatesResult.error) throw new Error('Could not load recommendations');
+        const alreadyKnown = new Set(historyIds);
+        const candidates = (candidatesResult.data || []).filter((b) => !alreadyKnown.has(b.id));
+        const hasHistory = genreWeights.size > 0 || tagWeights.size > 0 || followedAuthors.size > 0;
+        const ranked = candidates.map((book) => {
+          let score = 0;
+          if (book.genre_id) score += genreWeights.get(book.genre_id) || 0;
+          for (const tag of (book.tags || [])) score += tagWeights.get(String(tag).toLowerCase().trim()) || 0;
+          if (followedAuthors.has(book.author_id)) score += 3;
+          return { book, score };
+        }).sort((x, y) => y.score - x.score || (y.book.reads || 0) - (x.book.reads || 0));
+        if (cancelled) return;
+        setRecommended(ranked.slice(0, 8).map((r) => r.book));
+        setRecommendationNote(hasHistory
+          ? 'Based on genres, tags and authors connected to your reading activity.'
+          : 'Popular stories to get you started. Your picks will become more personal as you read and save books.');
       } catch (e) {
-        setFailed(true);
-        setData({ featured: [], trending: [], fresh: [] });
+        console.error('[Palixia home] Could not load homepage:', e);
+        if (!cancelled) setFailed(true);
       }
     })();
-  }, []);
+
+    return () => { cancelled = true; };
+  }, [user?.id]);
 
   const featured = data && data.featured.length ? data.featured : data ? data.trending.slice(0, 3) : [];
+  const picks = user ? (recommended.length ? recommended : (data ? data.trending.slice(0, 8) : [])) : [];
 
   return (
     <>
-      <section className="hero">
-        <div>
-          <h1>Read books and comics. Publish your own.</h1>
-          <p>Discover new stories, follow the writers you like, and share your own work with readers.</p>
-          <div className="row">
-            <Link className="btn" href="/discover">Start Reading</Link>
-            <PublishLink className="btn ghost">Publish Your Story</PublishLink>
+      <section className="homehero">
+        <div className="homehero-copy">
+          <span className="home-eyebrow">YOUR NEXT FAVOURITE STORY STARTS HERE</span>
+          <h1>Stories worth staying up for.</h1>
+          <p>Discover books and comics from independent creators. Find your next read, follow the writers you love, or share a story of your own.</p>
+          <div className="row homehero-actions">
+            <Link className="btn" href="/discover">Explore stories</Link>
+            <PublishLink className="btn ghost">Publish your story</PublishLink>
           </div>
+          <div className="homehero-note"><span>Books</span><i /> <span>Comics</span><i /> <span>Independent voices</span></div>
+        </div>
+        <div className="homehero-art" aria-hidden="true">
+          <div className="hero-book hero-book-back"><span>NEW WORLDS</span><b>Find a story<br />that stays.</b></div>
+          <div className="hero-book hero-book-front"><span>PALIXIA PICKS</span><b>Turn the<br />next page.</b><small>READ SOMETHING DIFFERENT</small></div>
+          <div className="hero-spark">✦</div>
         </div>
       </section>
 
-      {!configured && (
-        <p className="notice">Palixia is not connected to its database yet. Follow the setup steps in README.md, then reload this page.</p>
-      )}
-      {failed && <p className="notice">We could not load stories right now. Check your connection and refresh.</p>}
+      {!configured && <p className="notice">Palixia is not connected to its database yet. Follow the setup steps in README.md, then reload this page.</p>}
+      {failed && <p className="notice">Some stories could not load right now. Please refresh the page and try again.</p>}
       {data === null && <p className="muted">Loading stories...</p>}
 
       {data && data.trending.length === 0 && configured && !failed && (
         <div className="empty">
-          <div>
-            <b>No stories are published yet.</b>
-            <p>Be the first. Create an author account and publish a book or comic.</p>
-          </div>
-          <PublishLink className="btn">Publish Your Story</PublishLink>
+          <div><b>No stories are published yet.</b><p>Be the first. Create an author account and publish a book or comic.</p></div>
+          <PublishLink className="btn">Publish your story</PublishLink>
         </div>
+      )}
+
+      {user && continueReading.length > 0 && (
+        <section>
+          <div className="sechead"><div><h2 className="h2">Pick up where you left off</h2><p className="fine">Your reading, right where you stopped.</p></div><Link href="/library">Your library</Link></div>
+          <div className="shelf">
+            {continueReading.map((b) => (
+              <Link key={b.id} href={b.chapter_id ? '/read/' + b.chapter_id : '/book/' + b.id} className="bcard continue-card">
+                <Cover b={b} />
+                <div><h3>{b.title}</h3><span className="sub">{b.author_name}</span><div className="progress"><b style={{ width: (b.progress || 0) + '%' }} /></div><span className="sub">{b.progress || 0}% read · Continue</span></div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {user && (
+        <section>
+          <div className="sechead"><div><h2 className="h2">Picked for you</h2><p className="fine">{recommendationNote || 'Finding stories you might enjoy.'}</p></div><Link href="/discover">Explore all</Link></div>
+          {picks.length > 0 ? <div className="shelf">{picks.map((b) => <BookCard key={b.id} b={b} />)}</div> : <p className="muted">More recommendations will appear as stories are published.</p>}
+        </section>
       )}
 
       {featured.length > 0 && (
         <section>
-          <div className="sechead"><h2 className="h2">Featured</h2></div>
+          <div className="sechead"><div><h2 className="h2">Featured stories</h2><p className="fine">Stories worth a closer look.</p></div><Link href="/discover">Explore</Link></div>
           <div className="featured">
             {featured.map((b) => (
               <article className="fcard" key={b.id}>
                 <Link href={'/book/' + b.id} aria-label={'Open ' + b.title}><Cover b={b} /></Link>
-                <div>
-                  <p className="mono">{b.genre_name || 'Story'}{b.book_type === 'comic' ? ' · Comic' : ''}</p>
-                  <h3>{b.title}</h3>
-                  <p className="fine">by {b.author_name}</p>
-                  <p>{b.description}</p>
-                  <Link className="btn small" href={'/book/' + b.id}>Read</Link>
-                </div>
+                <div><p className="mono">{b.genre_name || 'Story'}{b.book_type === 'comic' ? ' · Comic' : ''}</p><h3>{b.title}</h3><p className="fine">by {b.author_name}</p><p>{b.description}</p><Link className="btn small" href={'/book/' + b.id}>Read story</Link></div>
               </article>
             ))}
           </div>
@@ -89,53 +190,22 @@ export default function Home() {
       )}
 
       {data && data.trending.length > 0 && (
-        <section>
-          <div className="sechead"><h2 className="h2">Trending</h2><Link href="/discover?sort=most_read">See all</Link></div>
-          <div className="shelf">
-            {data.trending.map((b) => <BookCard key={b.id} b={b} />)}
-          </div>
-        </section>
+        <section><div className="sechead"><div><h2 className="h2">Trending now</h2><p className="fine">Popular with readers.</p></div><Link href="/discover?sort=most_read">See all</Link></div><div className="shelf">{data.trending.map((b) => <BookCard key={b.id} b={b} />)}</div></section>
       )}
 
       {data && data.fresh.length > 0 && (
-        <section>
-          <div className="sechead"><h2 className="h2">New releases</h2><Link href="/discover?sort=newest">See all</Link></div>
-          <div className="shelf">
-            {data.fresh.map((b) => <BookCard key={b.id} b={b} />)}
-          </div>
-        </section>
+        <section><div className="sechead"><div><h2 className="h2">Just released</h2><p className="fine">Fresh stories and new chapters to discover.</p></div><Link href="/discover?sort=newest">See all</Link></div><div className="shelf">{data.fresh.map((b) => <BookCard key={b.id} b={b} />)}</div></section>
       )}
 
       {genres.length > 0 && (
-        <section>
-          <div className="sechead"><h2 className="h2">Discover by genre</h2><Link href="/categories">All categories</Link></div>
-          <div className="genres">
-            {genres.map((g) => (
-              <Link key={g.id} href={'/discover?genre=' + g.slug} className="gcard" style={genreStyle(g.slug)}>{g.name}</Link>
-            ))}
-          </div>
-        </section>
+        <section><div className="sechead"><div><h2 className="h2">Find your kind of story</h2><p className="fine">Browse by the mood or genre you love.</p></div><Link href="/categories">All genres</Link></div><div className="genres">{genres.map((g) => <Link key={g.id} href={'/discover?genre=' + g.slug} className="gcard" style={genreStyle(g.slug)}>{g.name}</Link>)}</div></section>
       )}
 
       {authors.length > 0 && (
-        <section>
-          <div className="sechead"><h2 className="h2">Popular authors</h2><Link href="/authors">All authors</Link></div>
-          <div className="authors">
-            {authors.map((a) => (
-              <Link key={a.id} href={'/author/' + a.username} className="acard">
-                <Avatar src={a.avatar_url} name={a.name} size="4.2rem" />
-                <b>{a.name}</b>
-                <span className="fine">{fmtNum(a.total_reads)} reads</span>
-              </Link>
-            ))}
-          </div>
-        </section>
+        <section><div className="sechead"><div><h2 className="h2">Meet the authors</h2><p className="fine">Follow writers and keep up with their work.</p></div><Link href="/authors">All authors</Link></div><div className="authors">{authors.map((a) => <Link key={a.id} href={'/author/' + a.username} className="acard"><Avatar src={a.avatar_url} name={a.name} size="4.2rem" /><b>{a.name}</b><span className="fine">{fmtNum(a.total_reads)} reads</span></Link>)}</div></section>
       )}
 
-      <section className="cta">
-        <h2 className="h2">Your story deserves readers.</h2>
-        <PublishLink className="btn">Publish with Palixia</PublishLink>
-      </section>
+      <section className="home-cta"><div><span className="home-eyebrow">MADE FOR STORYTELLERS</span><h2>Your story deserves readers.</h2><p>Publish your work, grow your audience, and give readers something new to love.</p></div><PublishLink className="btn">Start publishing</PublishLink></section>
     </>
   );
 }
