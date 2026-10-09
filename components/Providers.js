@@ -11,7 +11,7 @@ import MobileNav from '@/components/MobileNav';
 export default function Providers({ children }) {
   const pathname = usePathname() || '/';
   const reading = pathname.startsWith('/read/');
-  const signingIn = pathname.startsWith('/login') || pathname.startsWith('/signup');
+  const signingIn = ['/login', '/signup', '/forgot-password', '/reset-password'].some((p) => pathname.startsWith(p));
   return (
     <AuthProvider>
       {reading ? (
@@ -27,6 +27,8 @@ export default function Providers({ children }) {
               <Link href="/categories">Categories</Link>
               <Link href="/authors">Authors</Link>
               <Link href="/about">About</Link>
+              <Link href="/terms">Terms</Link>
+              <Link href="/privacy">Privacy</Link>
               <PublishLink className="">Publish with Palixia</PublishLink>
             </nav>
             <p className="fine">&copy; Palixia.</p>

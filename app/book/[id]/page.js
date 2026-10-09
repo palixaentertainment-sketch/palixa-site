@@ -5,10 +5,11 @@ import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 import { friendly } from '@/lib/errors';
-import { fmtNum, typeLabel } from '@/lib/format';
+import { fmtNum, typeLabel, SHOW_PUBLIC_READS } from '@/lib/format';
 import Cover from '@/components/Cover';
 import Avatar from '@/components/Avatar';
 import Empty from '@/components/Empty';
+import ShareButton from '@/components/ShareButton';
 
 export default function BookPage() {
   const { id } = useParams();
@@ -120,7 +121,7 @@ export default function BookPage() {
           <h1 className="h1">{book.title}</h1>
           <p className="muted">by <Link className="linkbtn" href={'/author/' + (author ? author.username : '')}>{author ? author.name : 'Unknown'}</Link></p>
           <dl className="facts">
-            <div><dt>Reads</dt><dd>{fmtNum(book.reads)}</dd></div>
+            {(SHOW_PUBLIC_READS || isOwner) && <div><dt>Reads</dt><dd>{fmtNum(book.reads)}</dd></div>}
             <div><dt>Chapters</dt><dd>{live.length}</dd></div>
             <div><dt>Format</dt><dd>{typeLabel(book.book_type)}</dd></div>
           </dl>
@@ -137,6 +138,7 @@ export default function BookPage() {
         {!isOwner && (
           <button type="button" className={'btn ghost' + (following ? ' on' : '')} aria-pressed={following} onClick={toggleFollow}>{following ? 'Following' : 'Follow Author'}</button>
         )}
+        <ShareButton title={book.title} author={author && author.name} path={'/book/' + book.id} />
         {isOwner && <Link className="btn ghost" href={'/dashboard/books/' + book.id}>Edit</Link>}
       </div>
       {resumeId && progress && <p className="fine">You are {progress.progress}% through this book.</p>}

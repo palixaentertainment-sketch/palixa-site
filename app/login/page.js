@@ -49,6 +49,7 @@ function LoginForm() {
         <div className="field">
           <label htmlFor="password">Password</label>
           <input id="password" className="in" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
+          <Link className="linkbtn fine" href="/forgot-password">Forgot password?</Link>
         </div>
         <p className="msg-err" role="alert">{err}</p>
         <button className="btn" type="submit" disabled={busy}>{busy ? 'Logging in...' : 'Log in'}</button>

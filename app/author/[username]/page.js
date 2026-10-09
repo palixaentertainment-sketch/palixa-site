@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 import { friendly } from '@/lib/errors';
-import { fmtNum } from '@/lib/format';
+import { fmtNum, SHOW_PUBLIC_READS } from '@/lib/format';
 import Avatar from '@/components/Avatar';
 import BookCard from '@/components/BookCard';
 import Empty from '@/components/Empty';
@@ -67,7 +67,7 @@ export default function AuthorPage() {
           <p style={{ maxWidth: '38rem' }}>{p.bio || 'This author has not added a bio yet.'}</p>
           <dl className="facts">
             <div><dt>Followers</dt><dd>{stats ? fmtNum(stats.followers) : '0'}</dd></div>
-            <div><dt>Total reads</dt><dd>{stats ? fmtNum(stats.reads) : '0'}</dd></div>
+            {SHOW_PUBLIC_READS && <div><dt>Total reads</dt><dd>{stats ? fmtNum(stats.reads) : '0'}</dd></div>}
             <div><dt>Books</dt><dd>{stats ? stats.books : books.length}</dd></div>
           </dl>
           <div className="row">

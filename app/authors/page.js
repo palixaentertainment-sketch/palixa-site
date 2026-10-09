@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePublishHref } from '@/components/PublishLink';
 import { supabase, configured } from '@/lib/supabase';
-import { fmtNum } from '@/lib/format';
+import { fmtNum, SHOW_PUBLIC_READS } from '@/lib/format';
 import Avatar from '@/components/Avatar';
 import Empty from '@/components/Empty';
 
@@ -29,7 +29,7 @@ export default function Authors() {
               <div>
                 <b>{a.name}</b>
                 <p>{a.bio || '@' + a.username}</p>
-                <span className="fine">{a.book_count} {a.book_count === 1 ? 'book' : 'books'} &middot; {fmtNum(a.total_reads)} reads</span>
+                <span className="fine">{a.book_count} {a.book_count === 1 ? 'book' : 'books'} {SHOW_PUBLIC_READS ? <> &middot; {fmtNum(a.total_reads)} reads</> : null}</span>
               </div>
             </Link>
           ))}
