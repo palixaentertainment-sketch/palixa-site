@@ -310,3 +310,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .reader .comments .badge { background: var(--soft); color: var(--accent); }
 .reader .rlike { max-width: 44rem; margin: 2rem auto 0; padding: 0 18px; }
 .reader .rlike .btn.ghost { color: var(--fg); }
+
+/* Keep button text readable when a button link sits inside a section heading. */
+.sechead a.btn { color: var(--accent-fg); }
+.sechead a.btn.ghost { color: var(--fg); }
