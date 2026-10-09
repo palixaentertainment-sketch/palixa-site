@@ -21,24 +21,55 @@ export default function BookPage() {
   const [progress, setProgress] = useState(null);
   const [marked, setMarked] = useState({});
   const [msg, setMsg] = useState('');
+  const [loadError, setLoadError] = useState('');
 
   const load = useCallback(async () => {
+    setLoadError('');
+    const bookId = Array.isArray(id) ? id[0] : id;
+    if (!bookId) {
+      setBook(null);
+      return;
+    }
+
+    // Fetch the book first. Avoid nested PostgREST joins here: a missing or
+    // differently named relationship can make a real book look unpublished/missing.
     const { data, error } = await supabase
       .from('books')
-      .select('id,author_id,title,description,cover_url,book_type,status,reads,is_sample,genres(name,slug),profiles(id,name,username,avatar_url,bio)')
-      .eq('id', id)
+      .select('id,author_id,title,description,cover_url,book_type,status,reads,is_sample,genre_id')
+      .eq('id', bookId)
       .maybeSingle();
-    if (error || !data) { setBook(null); return; }
-    setBook(data);
-    const { data: chs } = await supabase
-      .from('chapters')
-      .select('id,chapter_number,title,status,reads')
-      .eq('book_id', id)
-      .order('chapter_number');
-    setChapters(chs || []);
-    const { data: st } = await supabase.rpc('author_stats', { p_author: data.author_id });
-    setStats(st || null);
-  }, [id]);
+
+    if (error) {
+      console.error('Palixia book lookup failed:', error);
+      setLoadError(friendly(error) || 'Please try again in a moment.');
+      setBook(null);
+      return;
+    }
+    if (!data) {
+      setBook(null);
+      return;
+    }
+
+    // Load optional author/genre details separately so their failure cannot
+    // prevent the actual book page from opening.
+    const [authorResult, genreResult, chaptersResult, statsResult] = await Promise.all([
+      supabase.from('profiles').select('id,name,username,avatar_url,bio').eq('id', data.author_id).maybeSingle(),
+      data.genre_id
+        ? supabase.from('genres').select('name,slug').eq('id', data.genre_id).maybeSingle()
+        : Promise.resolve({ data: null, error: null }),
+      supabase.from('chapters').select('id,chapter_number,title,status,reads').eq('book_id', bookId).order('chapter_number'),
+      supabase.rpc('author_stats', { p_author: data.author_id }),
+    ]);
+
+    if (authorResult.error) console.warn('Palixia author details unavailable:', authorResult.error);
+    if (genreResult.error) console.warn('Palixia genre details unavailable:', genreResult.error);
+    if (chaptersResult.error) console.warn('Palixia chapters unavailable:', chaptersResult.error);
+    if (statsResult.error) console.warn('Palixia author stats unavailable:', statsResult.error);
+
+    setBook({ ...data, profiles: authorResult.data || null, genres: genreResult.data || null });
+    setChapters(chaptersResult.data || []);
+    setStats(statsResult.data || null);
+  }
 
   useEffect(() => { load(); }, [load]);
 
@@ -93,7 +124,7 @@ export default function BookPage() {
 
   if (book === undefined) return <p className="muted">Loading...</p>;
   if (book === null) {
-    return <Empty title="We could not find that book." text="It may have been unpublished or the link may be wrong." href="/discover" cta="Discover Stories" />;
+    return <Empty title={loadError ? "We couldn't load this book." : "We could not find that book."} text={loadError || "It may have been unpublished or the link may be wrong."} href="/discover" cta="Discover Stories" />;
   }
 
   const author = book.profiles;
