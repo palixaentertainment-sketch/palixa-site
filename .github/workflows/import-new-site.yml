@@ -4,6 +4,7 @@ on:
     paths:
       - 'palixia-site.zip'
       - 'site-payload.zip.b64.txt'
+      - 'site-payload.zip.b64-1.txt'
       - '.github/workflows/import-new-site.yml'
 permissions:
   contents: write
@@ -17,6 +18,8 @@ jobs:
         run: |
           if [ -f site-payload.zip.b64.txt ]; then
             base64 -d site-payload.zip.b64.txt > /tmp/palixa-site.zip
+          elif [ -f site-payload.zip.b64-1.txt ]; then
+            base64 -d site-payload.zip.b64-1.txt > /tmp/palixa-site.zip
           elif [ -f palixia-site.zip ]; then
             cp palixia-site.zip /tmp/palixa-site.zip
           else
@@ -33,7 +36,7 @@ jobs:
             echo 'Expected palixa-site folder not found in archive.'
             exit 1
           fi
-          rm -f palixia-site.zip site-payload.zip.b64.txt
+          rm -f palixia-site.zip site-payload.zip.b64.txt site-payload.zip.b64-1.txt
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
