@@ -94,6 +94,27 @@ create policy "community read comments" on public.community_comments
     or public.is_admin()
   );
 
+-- SECURITY DEFINER helper avoids recursive RLS when validating a reply's parent comment.
+create or replace function public.community_parent_comment_is_valid(p_parent_id uuid, p_post_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $
+  select exists (
+    select 1
+    from public.community_comments parent
+    where parent.id = p_parent_id
+      and parent.post_id = p_post_id
+      and parent.parent_id is null
+      and parent.status = 'visible'
+  );
+$;
+
+revoke all on function public.community_parent_comment_is_valid(uuid, uuid) from public, anon;
+grant execute on function public.community_parent_comment_is_valid(uuid, uuid) to authenticated;
+
 drop policy if exists "community create comments" on public.community_comments;
 create policy "community create comments" on public.community_comments
   for insert to authenticated
@@ -105,11 +126,8 @@ create policy "community create comments" on public.community_comments
       where p.id = post_id and p.status = 'visible'
     )
     and (
-      parent_id is null or exists (
-        select 1 from public.community_comments parent
-        where parent.id = parent_id and parent.post_id = post_id and parent.parent_id is null
-          and parent.status = 'visible'
-      )
+      parent_id is null
+      or public.community_parent_comment_is_valid(parent_id, post_id)
     )
   );
 
