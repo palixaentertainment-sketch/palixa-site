@@ -29,16 +29,71 @@ function Shelf() {
 
   useEffect(() => {
     if (!user) return;
+    let cancelled = false;
     (async () => {
-      const sel = 'id,title,cover_url,book_type,is_sample,status,profiles(name)';
-      const [pr, sv] = await Promise.all([
-        supabase.from('reading_progress').select('book_id,chapter_id,progress,updated_at,books(' + sel + ')').eq('user_id', user.id).order('updated_at', { ascending: false }),
-        supabase.from('bookmarks').select('book_id,created_at,books(' + sel + ')').eq('user_id', user.id).is('chapter_id', null).order('created_at', { ascending: false }),
-      ]);
-      if (pr.error || sv.error) { setFailed(true); setReading([]); setSaved([]); return; }
-      setReading((pr.data || []).filter((r) => r.books && r.books.status === 'published'));
-      setSaved((sv.data || []).filter((r) => r.books && r.books.status === 'published'));
+      try {
+        // Fetch progress and saved-book rows separately from book/author details.
+        // Deep nested Supabase joins can fail when relationship metadata is stale.
+        const [pr, sv] = await Promise.all([
+          supabase.from('reading_progress')
+            .select('book_id,chapter_id,progress,updated_at')
+            .eq('user_id', user.id)
+            .order('updated_at', { ascending: false }),
+          supabase.from('bookmarks')
+            .select('book_id,created_at')
+            .eq('user_id', user.id)
+            .is('chapter_id', null)
+            .order('created_at', { ascending: false }),
+        ]);
+
+        if (pr.error) throw new Error('Reading progress: ' + pr.error.message);
+        if (sv.error) throw new Error('Saved books: ' + sv.error.message);
+
+        const progressRows = pr.data || [];
+        const savedRows = sv.data || [];
+        const ids = [...new Set([...progressRows, ...savedRows].map((r) => r.book_id).filter(Boolean))];
+        let books = [];
+        if (ids.length) {
+          const br = await supabase.from('books')
+            .select('id,title,cover_url,book_type,is_sample,status,author_id')
+            .in('id', ids);
+          if (br.error) throw new Error('Book details: ' + br.error.message);
+          books = br.data || [];
+        }
+
+        const authorIds = [...new Set(books.map((b) => b.author_id).filter(Boolean))];
+        let profiles = [];
+        if (authorIds.length) {
+          const ar = await supabase.from('profiles').select('id,name').in('id', authorIds);
+          if (ar.error) throw new Error('Author details: ' + ar.error.message);
+          profiles = ar.data || [];
+        }
+
+        const authorById = Object.fromEntries(profiles.map((p) => [p.id, p]));
+        const bookById = Object.fromEntries(books.map((b) => [
+          b.id,
+          { ...b, profiles: authorById[b.author_id] ? { name: authorById[b.author_id].name } : null },
+        ]));
+        const visible = (row) => {
+          const book = bookById[row.book_id];
+          return book && book.status === 'published' ? { ...row, books: book } : null;
+        };
+
+        if (!cancelled) {
+          setReading(progressRows.map(visible).filter(Boolean));
+          setSaved(savedRows.map(visible).filter(Boolean));
+          setFailed(false);
+        }
+      } catch (error) {
+        console.error('[Palixia library] Could not load library:', error);
+        if (!cancelled) {
+          setFailed(true);
+          setReading([]);
+          setSaved([]);
+        }
+      }
     })();
+    return () => { cancelled = true; };
   }, [user]);
 
   const current = reading ? reading.filter((r) => r.progress < 100) : null;
@@ -51,7 +106,7 @@ function Shelf() {
           <button key={v} type="button" role="tab" aria-selected={tab === v} className="chip" aria-pressed={tab === v} onClick={() => setTab(v)}>{label}</button>
         ))}
       </div>
-      {failed && <p className="notice">We could not load your library. Check your connection and refresh.</p>}
+      {failed && <p className="notice">We could not load your library. Please refresh the page. If the problem continues, the library database request needs checking.</p>}
       {reading === null && <p className="muted">Loading...</p>}
 
       {tab === 'reading' && current && (
