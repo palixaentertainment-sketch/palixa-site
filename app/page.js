@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import PublishLink from '@/components/PublishLink';
 import { supabase, configured } from '@/lib/supabase';
-import { fmtNum, SHOW_PUBLIC_READS } from '@/lib/format';
+import { fmtNum } from '@/lib/format';
 import { genreStyle } from '@/lib/genres';
 import Cover from '@/components/Cover';
 import BookCard from '@/components/BookCard';
@@ -125,7 +125,7 @@ export default function Home() {
               <Link key={a.id} href={'/author/' + a.username} className="acard">
                 <Avatar src={a.avatar_url} name={a.name} size="4.2rem" />
                 <b>{a.name}</b>
-                <span className="fine">{SHOW_PUBLIC_READS ? fmtNum(a.total_reads) + ' reads' : a.book_count + (a.book_count === 1 ? ' book' : ' books')}</span>
+                <span className="fine">{fmtNum(a.total_reads)} reads</span>
               </Link>
             ))}
           </div>

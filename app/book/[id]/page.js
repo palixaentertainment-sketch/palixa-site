@@ -5,11 +5,10 @@ import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 import { friendly } from '@/lib/errors';
-import { fmtNum, typeLabel, SHOW_PUBLIC_READS } from '@/lib/format';
+import { fmtNum, typeLabel } from '@/lib/format';
 import Cover from '@/components/Cover';
 import Avatar from '@/components/Avatar';
 import Empty from '@/components/Empty';
-import ShareButton from '@/components/ShareButton';
 
 export default function BookPage() {
   const { id } = useParams();
@@ -24,30 +23,13 @@ export default function BookPage() {
   const [msg, setMsg] = useState('');
 
   const load = useCallback(async () => {
-    // Fetch the book row separately from its related records. This avoids a
-    // relationship-embedding error causing an existing book to appear missing.
     const { data, error } = await supabase
       .from('books')
-      .select('id,author_id,title,description,cover_url,genre_id,book_type,status,reads,is_sample')
+      .select('id,author_id,title,description,cover_url,book_type,status,reads,is_sample,genres(name,slug),profiles(id,name,username,avatar_url,bio)')
       .eq('id', id)
       .maybeSingle();
-    if (error) {
-      console.error('Palixia book load failed:', error.message);
-      setBook(null);
-      return;
-    }
-    if (!data) { setBook(null); return; }
-
-    const [authorResult, genreResult] = await Promise.all([
-      supabase.from('profiles').select('id,name,username,avatar_url,bio').eq('id', data.author_id).maybeSingle(),
-      data.genre_id
-        ? supabase.from('genres').select('name,slug').eq('id', data.genre_id).maybeSingle()
-        : Promise.resolve({ data: null, error: null }),
-    ]);
-    if (authorResult.error) console.error('Palixia author load failed:', authorResult.error.message);
-    if (genreResult.error) console.error('Palixia genre load failed:', genreResult.error.message);
-    const bookData = { ...data, profiles: authorResult.data || null, genres: genreResult.data || null };
-    setBook(bookData);
+    if (error || !data) { setBook(null); return; }
+    setBook(data);
     const { data: chs } = await supabase
       .from('chapters')
       .select('id,chapter_number,title,status,reads')
@@ -138,7 +120,7 @@ export default function BookPage() {
           <h1 className="h1">{book.title}</h1>
           <p className="muted">by <Link className="linkbtn" href={'/author/' + (author ? author.username : '')}>{author ? author.name : 'Unknown'}</Link></p>
           <dl className="facts">
-            {(SHOW_PUBLIC_READS || isOwner) && <div><dt>Reads</dt><dd>{fmtNum(book.reads)}</dd></div>}
+            <div><dt>Reads</dt><dd>{fmtNum(book.reads)}</dd></div>
             <div><dt>Chapters</dt><dd>{live.length}</dd></div>
             <div><dt>Format</dt><dd>{typeLabel(book.book_type)}</dd></div>
           </dl>
@@ -155,7 +137,6 @@ export default function BookPage() {
         {!isOwner && (
           <button type="button" className={'btn ghost' + (following ? ' on' : '')} aria-pressed={following} onClick={toggleFollow}>{following ? 'Following' : 'Follow Author'}</button>
         )}
-        <ShareButton title={book.title} author={author && author.name} path={'/book/' + book.id} />
         {isOwner && <Link className="btn ghost" href={'/dashboard/books/' + book.id}>Edit</Link>}
       </div>
       {resumeId && progress && <p className="fine">You are {progress.progress}% through this book.</p>}

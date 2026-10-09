@@ -100,9 +100,3 @@ The login and signup pages have a "Continue with Google" button. It stays inacti
 5. In Supabase **Authentication** > **URL Configuration**, set Site URL to your site address and add it (and `https://palixa.com/**`) to **Redirect URLs**.
 6. Test with a Google account that is not already on Palixia, then with one that is.
 
-
-## Password reset, sharing, terms and privacy
-
-- **Forgot password:** the login page links to `/forgot-password`, which emails a reset link that lands on `/reset-password`. For the link to work, your site address followed by `/**` (for example `https://palixa.com/**` and your Vercel address with `/**`) must be listed under Supabase **Authentication** > **URL Configuration** > **Redirect URLs**.
-- **Share button:** each book page has a Share button. On phones it opens the share sheet, elsewhere it copies the link. Shared links show the book's title, description and cover.
-- **Terms and Privacy:** `/terms` and `/privacy` are plain-language drafts linked from the footer and signup. Have a lawyer review them before launch, and before any payments.

@@ -115,7 +115,6 @@ function SignupForm() {
         )}
         <p className="msg-err" role="alert">{err}</p>
         <button className="btn" type="submit" disabled={busy}>{busy ? 'Creating account...' : 'Create account'}</button>
-        <p className="fine">By creating an account you agree to the <Link className="linkbtn" href="/terms">Terms of Use</Link> and <Link className="linkbtn" href="/privacy">Privacy Policy</Link>.</p>
       </form>
       <p className="muted">Already have an account? <Link className="linkbtn" href="/login">Log in</Link></p>
     </div>

@@ -49,7 +49,7 @@ img { max-width: 100%; }
 .h1 { font-family: var(--display); font-style: italic; font-weight: 900; font-size: clamp(1.8rem, 6vw, 2.6rem); line-height: 1.05; }
 .h2 { font-family: var(--display); font-style: italic; font-weight: 700; font-size: 1.45rem; line-height: 1.15; }
 .sechead { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-bottom: 0.8rem; }
-.sechead a:not(.btn) { color: var(--accent); font-weight: 600; font-size: 0.9rem; }
+.sechead a { color: var(--accent); font-weight: 600; font-size: 0.9rem; }
 
 /* header and navigation */
 .top { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bottom: 1px solid var(--line); }
@@ -284,8 +284,3 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .oauth .btn { width: 100%; }
 .orline { display: flex; align-items: center; gap: 0.8rem; color: var(--muted); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; }
 .orline::before, .orline::after { content: ""; flex: 1; height: 1px; background: var(--line); }
-
-/* Terms and privacy pages, and the forgot-password link */
-.legal ul { padding-left: 1.2rem; display: grid; gap: 0.5rem; list-style: disc; }
-.legal .h2 { margin-top: 0.8rem; }
-.field > .linkbtn.fine { justify-self: start; }
