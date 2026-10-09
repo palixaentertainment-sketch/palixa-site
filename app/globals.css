@@ -87,7 +87,7 @@ img { max-width: 100%; }
 .menu .pop .who b { display: block; overflow-wrap: anywhere; }
 
 .bottomnav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; background: var(--bg); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
-.bottomnav .wrap { display: grid; grid-template-columns: repeat(4, 1fr); padding-inline: 0; }
+.bottomnav .wrap { display: grid; grid-template-columns: repeat(5, 1fr); padding-inline: 0; }
 .bn { display: grid; justify-items: center; gap: 0.1rem; padding: 0.5rem 0 0.4rem; font-size: 0.72rem; font-weight: 600; color: var(--muted); }
 .bn svg { width: 1.4rem; height: 1.4rem; }
 .bn[aria-current="page"] { color: var(--accent); }
@@ -314,3 +314,61 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 /* Keep button text readable when a button link sits inside a section heading. */
 .sechead a.btn { color: var(--accent-fg); }
 .sechead a.btn.ghost { color: var(--fg); }
+
+
+/* Community */
+.community { gap: 1.25rem; }
+.community-hero {
+  padding: clamp(1.25rem, 4vw, 2.25rem);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--surface), #fff);
+  display: grid;
+  gap: 0.7rem;
+}
+.community-hero > p:last-child { max-width: 42rem; color: var(--muted); }
+.community-compose, .community-post {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  padding: clamp(0.9rem, 3vw, 1.25rem);
+}
+.community-compose { display: grid; gap: 1rem; }
+.community-compose-head, .community-post-head {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 0;
+}
+.community-compose-head > span, .community-post-by { display: grid; min-width: 0; }
+.community-textarea { width: 100%; resize: vertical; min-height: 7rem; }
+.community-compose-controls { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+.community-field { flex: 1 1 12rem; min-width: 0; }
+.community-field .in { width: 100%; }
+.community-feed-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+.community-categories { display: flex; gap: 0.5rem; overflow-x: auto; padding: 0.15rem 0 0.35rem; }
+.community-categories .chip { flex: none; }
+.community-categories .chip.active { background: var(--accent); border-color: var(--accent); color: white; }
+.community-post { display: grid; gap: 0.9rem; }
+.community-post-by { flex: 1; overflow-wrap: anywhere; }
+.community-category { flex: none; max-width: 48%; padding: 0.25rem 0.5rem; border-radius: 99px; background: var(--soft); color: var(--accent-deep); font-size: 0.72rem; font-weight: 600; }
+.community-post-body { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.7; }
+.community-book-link { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; border: 1px solid var(--line); border-radius: 7px; padding: 0.7rem; background: var(--surface); font-weight: 600; overflow-wrap: anywhere; }
+.community-book-link span { color: var(--accent); font-size: 0.85rem; white-space: nowrap; }
+.community-post-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; border-top: 1px solid var(--line); padding-top: 0.75rem; }
+.community-post-actions button { font-size: 0.85rem; }
+.community-liked { color: var(--danger) !important; }
+.community-comments { display: grid; gap: 0.8rem; padding-top: 0.2rem; }
+.community-comment { display: grid; gap: 0.4rem; border-left: 2px solid var(--line); padding: 0.2rem 0 0.2rem 0.8rem; min-width: 0; }
+.community-comment > p:not(.fine), .community-reply > p:not(.fine) { white-space: pre-wrap; overflow-wrap: anywhere; }
+.community-reply { display: grid; gap: 0.3rem; margin: 0.4rem 0 0 0.6rem; padding: 0.55rem 0 0.2rem 0.75rem; border-left: 2px solid var(--soft); }
+.community-reply-form { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.45rem; }
+.community-reply-form .in { min-width: 0; flex: 1; }
+.community-reply-form .btn { flex: none; }
+
+@media (max-width: 360px) {
+  .bn { font-size: 0.65rem; }
+  .bn svg { width: 1.25rem; height: 1.25rem; }
+  .community-category { display: none; }
+  .community-reply-form { align-items: stretch; flex-direction: column; }
+}
