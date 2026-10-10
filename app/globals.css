@@ -87,7 +87,7 @@ img { max-width: 100%; }
 .menu .pop .who b { display: block; overflow-wrap: anywhere; }
 
 .bottomnav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; background: var(--bg); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
-.bottomnav .wrap { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding-inline: 0; }
+.bottomnav .wrap { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); padding-inline: 0; }
 .bn { display: grid; justify-items: center; gap: 0.1rem; padding: 0.5rem 0 0.4rem; font-size: 0.72rem; font-weight: 600; color: var(--muted); }
 .bn svg { width: 1.4rem; height: 1.4rem; }
 .bn[aria-current="page"] { color: var(--accent); }
@@ -498,3 +498,40 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .creator-week-copy > p:not(.fine) { color: var(--muted); font-size: 0.92rem; }
 .creator-week-cover { width: 100%; max-width: 10rem; justify-self: end; }
 @media (max-width: 420px) { .publish-benefits { gap: 0.9rem; } .publish-benefit-card { min-height: 6.5rem; padding: 0.9rem; gap: 0.75rem; } .creator-week { grid-template-columns: minmax(0, 1fr) 6.5rem; gap: 0.8rem; } }
+
+
+/* Installable Palixia app prompt */
+.get-app-trigger { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; padding: 0.42rem 0.7rem; min-height: 2.1rem; border: 1px solid var(--lav); border-radius: var(--r); color: var(--accent); background: var(--surface); font-size: 0.84rem; font-weight: 700; white-space: nowrap; }
+.get-app-trigger:hover { background: var(--soft); }
+.get-app-trigger svg { width: 1rem; height: 1rem; flex: none; }
+.bn-app { color: var(--accent); }
+.install-overlay { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 1rem; background: rgba(20, 10, 38, 0.55); }
+.install-dialog { position: relative; width: min(100%, 25rem); display: grid; justify-items: center; gap: 0.9rem; padding: 2rem 1.4rem 1.35rem; border: 1px solid var(--line); border-radius: 16px; background: var(--bg); box-shadow: 0 24px 70px rgba(20, 10, 38, 0.25); text-align: center; }
+.install-dialog h2 { font: italic 900 2rem/1.05 var(--display); }
+.install-dialog > p:not(.mono) { line-height: 1.65; }
+.install-icon { width: 4rem; height: 4rem; border-radius: 12px; }
+.install-close { position: absolute; top: 0.65rem; right: 0.8rem; font-size: 1.7rem; color: var(--muted); line-height: 1; }
+.install-primary { width: 100%; margin-top: 0.2rem; }
+.install-later { padding: 0.5rem 0.8rem; color: var(--muted); font-weight: 600; }
+.install-help { padding: 0.75rem; border-radius: 8px; background: var(--soft); color: var(--fg); font-size: 0.9rem; text-align: left; }
+@media (min-width: 52rem) { .get-app-mobile { display: none; } }
+@media (max-width: 360px) { .get-app-trigger { padding-inline: 0.45rem; font-size: 0.78rem; } }
+
+/* Installable Palixia app prompt */
+.get-app-trigger { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; padding: 0.42rem 0.7rem; min-height: 2.1rem; border: 1px solid var(--lav); border-radius: var(--r); color: var(--accent); background: var(--surface); font-size: 0.84rem; font-weight: 700; white-space: nowrap; }
+.get-app-trigger:hover { background: var(--soft); }
+.bn-app { color: var(--accent); }
+.install-overlay { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 1rem; background: rgba(20, 10, 38, 0.55); }
+.install-dialog { position: relative; width: min(100%, 25rem); display: grid; justify-items: center; gap: 0.9rem; padding: 2rem 1.4rem 1.35rem; border: 1px solid var(--line); border-radius: 16px; background: var(--bg); box-shadow: 0 24px 70px rgba(20, 10, 38, 0.25); text-align: center; }
+.install-dialog h2 { font: italic 900 2rem/1.05 var(--display); }
+.install-dialog > p:not(.mono) { line-height: 1.65; }
+.install-icon { width: 4rem; height: 4rem; border-radius: 12px; }
+.install-close { position: absolute; top: 0.65rem; right: 0.8rem; font-size: 1.7rem; color: var(--muted); line-height: 1; }
+.install-primary { width: 100%; margin-top: 0.2rem; }
+.install-later { padding: 0.5rem 0.8rem; color: var(--muted); font-weight: 600; }
+.install-help { padding: 0.75rem; border-radius: 8px; background: var(--soft); color: var(--fg); font-size: 0.9rem; text-align: left; }
+@media (min-width: 52rem) { .get-app-mobile { display: none; } }
+@media (max-width: 360px) { .get-app-trigger { padding-inline: 0.45rem; font-size: 0.78rem; } .bn { font-size: 0.62rem; } }
+
+@media (max-width: 831px) { .get-app-desktop { display: none; } }
+html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobile { display: none !important; }

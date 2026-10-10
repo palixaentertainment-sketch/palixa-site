@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth';
 import Avatar from '@/components/Avatar';
 import Logo from '@/components/Logo';
 import NotificationsBell from '@/components/NotificationsBell';
+import { openInstallApp } from '@/components/InstallAppPrompt';
 
 const LINKS = [
   ['/', 'Home'],
@@ -40,6 +41,7 @@ export default function Header() {
           ))}
         </nav>
         <div className="topright">
+          <button type="button" className="get-app-trigger get-app-desktop" onClick={openInstallApp} aria-label="Get the Palixia app">↓ Get the App</button>
           <form className="hsearch" onSubmit={search} role="search">
             <label className="sr-only" htmlFor="hq">Search books, authors or genres</label>
             <input id="hq" type="search" placeholder="Search" value={q} onChange={(e) => setQ(e.target.value)} />
