@@ -25,6 +25,7 @@ export default function InstallAppPrompt() {
 
   useEffect(() => {
     setInstalled(isStandalone());
+    if (isStandalone()) document.documentElement.classList.add("palixia-standalone");
     const ua = window.navigator.userAgent || '';
     setIos(/iphone|ipad|ipod/i.test(ua) && !window.MSStream);
 
@@ -34,6 +35,7 @@ export default function InstallAppPrompt() {
     };
     const onInstalled = () => {
       setInstalled(true);
+      document.documentElement.classList.add("palixia-standalone");
       setOpen(false);
       setInstallPrompt(null);
     };
@@ -48,7 +50,11 @@ export default function InstallAppPrompt() {
     window.addEventListener('appinstalled', onInstalled);
     window.addEventListener('palixia:open-install', onOpen);
     const media = window.matchMedia('(display-mode: standalone)');
-    const onDisplayChange = () => setInstalled(isStandalone());
+    const onDisplayChange = () => {
+      const standalone = isStandalone();
+      setInstalled(standalone);
+      document.documentElement.classList.toggle("palixia-standalone", standalone);
+    };
     media.addEventListener?.('change', onDisplayChange);
 
     return () => {
