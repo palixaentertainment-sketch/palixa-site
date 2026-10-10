@@ -13,6 +13,7 @@ export default function BookForm({ userId, book, locked, onSaved }) {
   const [genreId, setGenreId] = useState(book ? book.genre_id || '' : '');
   const [tags, setTags] = useState(book ? (book.tags || []).filter((t) => t !== 'sample').join(', ') : '');
   const [type, setType] = useState(book ? book.book_type : 'text');
+  const [storyStatus, setStoryStatus] = useState(book ? (book.story_status || 'ongoing') : 'ongoing');
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState('');
   const [err, setErr] = useState('');
@@ -56,6 +57,7 @@ export default function BookForm({ userId, book, locked, onSaved }) {
         tags: tagList,
         cover_url,
         book_type: type,
+        story_status: storyStatus,
       };
       if (book) {
         const patch = { ...fields, updated_at: new Date().toISOString() };
@@ -93,6 +95,15 @@ export default function BookForm({ userId, book, locked, onSaved }) {
           <input type="radio" name="type" id="t-comic" checked={type === 'comic'} disabled={locked} onChange={() => setType('comic')} /><label htmlFor="t-comic">Comic</label>
         </div>
         <span className="fine">{locked ? 'The format cannot change once chapters exist.' : type === 'comic' ? 'Comics are chapters made of page images, read top to bottom.' : 'Text books are chapters of written text.'}</span>
+      </div>
+      <div className="field">
+        <label htmlFor="b-story-status">Story status</label>
+        <select id="b-story-status" className="in" value={storyStatus} onChange={(e) => setStoryStatus(e.target.value)}>
+          <option value="ongoing">Ongoing — new chapters coming</option>
+          <option value="completed">Completed — story has ended</option>
+          <option value="hiatus">On hiatus — updates paused</option>
+        </select>
+        <span className="fine">You can change this later from the book editor.</span>
       </div>
       <div className="field">
         <label htmlFor="b-desc">Description</label>
