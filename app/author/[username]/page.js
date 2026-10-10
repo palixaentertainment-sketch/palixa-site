@@ -9,6 +9,7 @@ import Avatar from '@/components/Avatar';
 import BookCard from '@/components/BookCard';
 import Empty from '@/components/Empty';
 import Link from 'next/link';
+import ProfileBadge from '@/components/ProfileBadge';
 
 export default function AuthorPage() {
   const { username } = useParams();
@@ -18,12 +19,15 @@ export default function AuthorPage() {
   const [stats, setStats] = useState(null);
   const [following, setFollowing] = useState(false);
   const [msg, setMsg] = useState('');
+  const [badge, setBadge] = useState(null);
 
   useEffect(() => {
     (async () => {
       const { data } = await supabase.from('profiles').select('id,name,username,avatar_url,bio,country,role,status').eq('username', String(username).toLowerCase()).maybeSingle();
       if (!data || data.status !== 'active') { setP(null); return; }
       setP(data);
+      const { data: badgeRow } = await supabase.from('profile_badges').select('badge_type').eq('profile_id', data.id).maybeSingle();
+      setBadge(badgeRow ? badgeRow.badge_type : null);
       const { data: bk } = await supabase.from('book_cards').select('*').eq('author_id', data.id).order('created_at', { ascending: false });
       setBooks(bk || []);
       const { data: st } = await supabase.rpc('author_stats', { p_author: data.id });
@@ -62,7 +66,7 @@ export default function AuthorPage() {
       <section className="row" style={{ alignItems: 'flex-start', flexWrap: 'nowrap', gap: '1.1rem' }}>
         <Avatar src={p.avatar_url} name={p.name} size="5.5rem" />
         <div className="stack" style={{ gap: '0.5rem', minWidth: 0 }}>
-          <h1 className="h1">{p.name}</h1>
+          <div className="row" style={{ alignItems: 'center', gap: '0.6rem' }}><h1 className="h1">{p.name}</h1><ProfileBadge type={badge} /></div>
           <p className="muted">@{p.username}{p.country ? ' · ' + p.country : ''}</p>
           <p style={{ maxWidth: '38rem' }}>{p.bio || 'This author has not added a bio yet.'}</p>
           <dl className="facts">
