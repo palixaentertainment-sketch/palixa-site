@@ -12,3 +12,9 @@ alter table public.books
 insert into public.genres (name, slug, sort)
 values ('Poetry', 'poetry', 11)
 on conflict (slug) do nothing;
+
+-- The author form also writes story_status; allow that column for poem/book metadata.
+grant insert (author_id, title, description, cover_url, genre_id, tags, book_type, story_status, status)
+  on public.books to authenticated;
+grant update (title, description, cover_url, genre_id, tags, book_type, story_status, status, updated_at)
+  on public.books to authenticated;
