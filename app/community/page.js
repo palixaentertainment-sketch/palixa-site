@@ -30,6 +30,8 @@ export default function CommunityPage() {
   const [category, setCategory] = useState('all');
   const [postCategory, setPostCategory] = useState('general');
   const [body, setBody] = useState('');
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
   const [bookId, setBookId] = useState('');
   const [books, setBooks] = useState([]);
   const [comments, setComments] = useState({});
@@ -47,7 +49,7 @@ export default function CommunityPage() {
     if (!configured) { setPosts([]); setLoadError(true); setLoadErrorMessage('Supabase is not configured in this deployment.'); return; }
     const { data, error: queryError } = await supabase
       .from('community_posts')
-      .select('id,user_id,category,body,book_id,created_at,profiles!community_posts_user_id_fkey(name,username,avatar_url),books(id,title,book_type),community_likes(user_id),community_comments(id)')
+      .select('id,user_id,category,body,image_url,book_id,created_at,profiles!community_posts_user_id_fkey(name,username,avatar_url),books(id,title,book_type),community_likes(user_id),community_comments(id)')
       .eq('status', 'visible')
       .order('created_at', { ascending: false })
       .limit(60);
@@ -76,21 +78,63 @@ export default function CommunityPage() {
       .then(({ data }) => setBooks(data || []));
   }, []);
 
+  function handleImageChange(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
+      setError('Choose a JPG, PNG, WebP, or GIF image.');
+      e.target.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Images must be 5 MB or smaller.');
+      e.target.value = '';
+      return;
+    }
+    setError('');
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  }
+
   async function createPost(e) {
     e.preventDefault();
     if (!user) { setError('Log in to post in the Community.'); return; }
-    if (!body.trim()) { setError('Write something before posting.'); return; }
+    if (!body.trim()) { setError('Write a caption or message before posting.'); return; }
     setBusy(true); setError(''); setNotice('');
+    let imageUrl = null;
+    let uploadedPath = null;
+
+    if (imageFile) {
+      const extension = imageFile.name.split('.').pop().toLowerCase();
+      uploadedPath = user.id + '/' + Date.now() + '-' + Math.random().toString(36).slice(2, 9) + '.' + extension;
+      const { error: uploadError } = await supabase.storage.from('community-images').upload(uploadedPath, imageFile, {
+        cacheControl: '3600', contentType: imageFile.type, upsert: false,
+      });
+      if (uploadError) {
+        console.error('Community image upload failed:', uploadError);
+        setBusy(false);
+        setError('The image could not be uploaded. Please check the Community image setup and try again.');
+        return;
+      }
+      imageUrl = supabase.storage.from('community-images').getPublicUrl(uploadedPath).data.publicUrl;
+    }
+
     const { error: insertError } = await supabase.from('community_posts').insert({
       user_id: user.id, category: postCategory,
-      body: body.trim(), book_id: bookId || null,
+      body: body.trim(), image_url: imageUrl, book_id: bookId || null,
     });
-    setBusy(false);
     if (insertError) {
-      setError('Your post could not be published. Please check the Community setup and try again.');
+      console.error('Community post could not be published:', insertError);
+      if (uploadedPath) await supabase.storage.from('community-images').remove([uploadedPath]);
+      setBusy(false);
+      setError('Your post could not be published. Please check the Community image setup and try again.');
       return;
     }
+    setBusy(false);
     setBody(''); setBookId(''); setPostCategory('general');
+    setImageFile(null); setImagePreview('');
+    const fileInput = document.getElementById('community-image');
+    if (fileInput) fileInput.value = '';
     setNotice('Your post is live.');
     await loadPosts();
   }
@@ -194,6 +238,22 @@ export default function CommunityPage() {
             <textarea id="community-body" className="in community-textarea" maxLength={2000} rows={4}
               placeholder="What are you reading, writing, or thinking about?" value={body}
               onChange={(e) => setBody(e.target.value)} />
+            <div className="community-image-picker">
+              <label className="btn ghost small" htmlFor="community-image">＋ Add image</label>
+              <input id="community-image" className="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/gif"
+                onChange={handleImageChange} disabled={busy} />
+              <span className="fine">JPG, PNG, WebP or GIF · max 5 MB</span>
+              {imagePreview && (
+                <div className="community-image-preview">
+                  <img src={imagePreview} alt="Preview of the image attached to your post" />
+                  <button type="button" className="linkbtn" onClick={() => {
+                    setImageFile(null); setImagePreview('');
+                    const input = document.getElementById('community-image');
+                    if (input) input.value = '';
+                  }} disabled={busy}>Remove image</button>
+                </div>
+              )}
+            </div>
             <div className="community-compose-controls">
               <label className="field community-field"><span className="sr-only">Choose a category</span>
                 <select className="in" value={postCategory} onChange={(e) => setPostCategory(e.target.value)} aria-label="Post category">
@@ -244,6 +304,7 @@ export default function CommunityPage() {
                 <span className="community-category">{LABELS[post.category] || 'General Lounge'}</span>
               </div>
               <p className="community-post-body">{post.body}</p>
+              {post.image_url && <a className="community-post-image-link" href={post.image_url} target="_blank" rel="noreferrer" aria-label="Open attached image in full size"><img className="community-post-image" src={post.image_url} alt={'Image shared by ' + (post.profiles ? post.profiles.name : 'a community member')} loading="lazy" /></a>}
               {post.books && <Link className="community-book-link" href={'/book/' + post.books.id}>📚 {post.books.title}{post.books.book_type === 'comic' ? ' · Comic' : ''} <span>Open story →</span></Link>}
               <div className="community-post-actions">
                 <button className={'linkbtn' + (post.liked ? ' community-liked' : '')} type="button" onClick={() => toggleLike(post)} aria-pressed={post.liked}>♥ {post.likeCount} {post.likeCount === 1 ? 'like' : 'likes'}</button>
