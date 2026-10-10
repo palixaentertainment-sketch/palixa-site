@@ -10,6 +10,7 @@ import Cover from '@/components/Cover';
 import Avatar from '@/components/Avatar';
 import Empty from '@/components/Empty';
 import LikeButton from '@/components/LikeButton';
+import ProfileBadge from '@/components/ProfileBadge';
 
 export default function BookPage() {
   const { id } = useParams();
@@ -23,6 +24,7 @@ export default function BookPage() {
   const [marked, setMarked] = useState({});
   const [msg, setMsg] = useState('');
   const [loadError, setLoadError] = useState('');
+  const [authorBadge, setAuthorBadge] = useState(null);
 
   const load = useCallback(async () => {
     setLoadError('');
@@ -53,13 +55,14 @@ export default function BookPage() {
 
     // Load optional author/genre details separately so their failure cannot
     // prevent the actual book page from opening.
-    const [authorResult, genreResult, chaptersResult, statsResult] = await Promise.all([
+    const [authorResult, genreResult, chaptersResult, statsResult, badgeResult] = await Promise.all([
       supabase.from('profiles').select('id,name,username,avatar_url,bio').eq('id', data.author_id).maybeSingle(),
       data.genre_id
         ? supabase.from('genres').select('name,slug').eq('id', data.genre_id).maybeSingle()
         : Promise.resolve({ data: null, error: null }),
       supabase.from('chapters').select('id,chapter_number,title,status,reads').eq('book_id', bookId).order('chapter_number'),
       supabase.rpc('author_stats', { p_author: data.author_id }),
+      supabase.from('profile_badges').select('badge_type').eq('profile_id', data.author_id).maybeSingle(),
     ]);
 
     if (authorResult.error) console.warn('Palixia author details unavailable:', authorResult.error);
@@ -70,6 +73,7 @@ export default function BookPage() {
     setBook({ ...data, profiles: authorResult.data || null, genres: genreResult.data || null });
     setChapters(chaptersResult.data || []);
     setStats(statsResult.data || null);
+    setAuthorBadge(badgeResult.data ? badgeResult.data.badge_type : null);
   }, [id]);
 
   useEffect(() => { load(); }, [load]);
@@ -176,7 +180,7 @@ export default function BookPage() {
         <div className="stack">
           <p className="mono">{book.genres ? book.genres.name : 'Story'} &middot; {typeLabel(book.book_type)}</p>
           <h1 className="h1">{book.title}</h1>
-          <p className="muted">by <Link className="linkbtn" href={'/author/' + (author ? author.username : '')}>{author ? author.name : 'Unknown'}</Link></p>
+          <p className="muted">by <Link className="linkbtn" href={'/author/' + (author ? author.username : '')}>{author ? author.name : 'Unknown'}</Link>{' '}<ProfileBadge type={authorBadge} /></p>
           <dl className="facts">
             <div><dt>Reads</dt><dd>{fmtNum(book.reads)}</dd></div>
             <div><dt>Chapters</dt><dd>{live.length}</dd></div>
@@ -234,7 +238,7 @@ export default function BookPage() {
           <div className="authorbox">
             <Avatar src={author.avatar_url} name={author.name} size="4rem" />
             <div className="stack" style={{ gap: '0.5rem' }}>
-              <b>{author.name}</b>
+              <div className="row" style={{ gap: '0.5rem' }}><b>{author.name}</b><ProfileBadge type={authorBadge} /></div>
               <p className="muted">{author.bio || 'This author has not added a bio yet.'}</p>
               <p className="fine">{stats ? stats.books + ' published ' + (stats.books === 1 ? 'book' : 'books') + ' · ' + fmtNum(stats.followers) + ' followers' : ''}</p>
               <div><Link className="btn ghost small" href={'/author/' + author.username}>View Author</Link></div>
