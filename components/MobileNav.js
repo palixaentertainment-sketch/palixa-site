@@ -25,6 +25,7 @@ export default function MobileNav() {
             {it.label}
           </Link>
         ))}
+        <button type="button" className="bn bn-app get-app-mobile" onClick={openInstallApp} aria-label="Get the Palixia app"><svg viewBox="0 0 24 24" {...ICON}><path d="M12 3v12m-5-5 5 5 5-5" /><path d="M5 17v3h14v-3" /></svg>Get App</button>
       </div>
     </nav>
   );
