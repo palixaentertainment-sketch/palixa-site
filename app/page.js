@@ -250,6 +250,16 @@ export default function Home() {
         <section><div className="sechead"><div><h2 className="h2">Trending now</h2><p className="fine">Popular with readers.</p></div><Link href="/discover?sort=most_read">See all</Link></div><div className="shelf">{data.trending.map((b) => <BookCard key={b.id} b={b} />)}</div></section>
       )}
 
+      <section className="games-promo" aria-labelledby="games-promo-title">
+        <div className="games-promo-icon" aria-hidden="true">✦</div>
+        <div className="games-promo-copy">
+          <span className="home-eyebrow">A LITTLE PLAY BETWEEN PAGES</span>
+          <h2 id="games-promo-title" className="h2">Ready to test your book knowledge?</h2>
+          <p>Play book trivia, guess the story, and discover books from the Palixia community.</p>
+        </div>
+        <Link className="btn games-promo-button" href="/games">Explore Games <span aria-hidden="true">→</span></Link>
+      </section>
+
       {data && data.fresh.length > 0 && (
         <section><div className="sechead"><div><h2 className="h2">Just released</h2><p className="fine">Fresh stories and new chapters to discover.</p></div><Link href="/discover?sort=newest">See all</Link></div><div className="shelf">{data.fresh.map((b) => <BookCard key={b.id} b={b} />)}</div></section>
       )}
