@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import PublishLink from '@/components/PublishLink';
 
+
 export const metadata = {
   title: 'About Palixia',
   description: 'Meet Palixia and learn why we are building a place for independent writers, books, comics, and readers.',
