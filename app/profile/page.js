@@ -150,6 +150,14 @@ function ProfileForm() {
         )}
       </section>
 
+      {profile.role === 'admin' && (
+        <section className="card">
+          <h2 className="h2">Administration</h2>
+          <p className="muted">Manage Palixia and official verification badges.</p>
+          <div><Link className="btn" href="/admin">Open Admin Dashboard</Link></div>
+        </section>
+      )}
+
       <div><button type="button" className="btn ghost" onClick={signOut}>Sign out</button></div>
     </div>
   );
