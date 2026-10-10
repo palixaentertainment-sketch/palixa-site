@@ -127,11 +127,6 @@ export default function GamesPage() {
     }
   }
 
-  const correctCount = questions.reduce((count, question, i) => {
-    if (i < index && question) return count;
-    return count;
-  }, 0);
-
   return (
     <main className="wrap games-page">
       <div className="games-heading">
