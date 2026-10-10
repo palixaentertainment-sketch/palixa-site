@@ -150,14 +150,18 @@ export default function CommunityPage() {
   }
 
   async function reportPost(postId) {
-    if (!user) { setNotice('Log in to report a post.'); return; }
-    const reason = window.prompt('Briefly tell us why you are reporting this post:');
+    await reportCommunityItem('community_post', postId, 'Briefly tell us why you are reporting this post:');
+  }
+
+  async function reportCommunityItem(targetType, targetId, promptText = 'Briefly tell us why you are reporting this item:') {
+    if (!user) { setNotice('Log in to report this item.'); return; }
+    const reason = window.prompt(promptText);
     if (reason === null) return;
     if (reason.trim().length < 3) { setNotice('Please enter a short reason for the report.'); return; }
-    const { error: reportError } = await supabase.from('community_reports').insert({
-      post_id: postId, reporter_id: user.id, reason: reason.trim().slice(0, 500),
+    const { error: reportError } = await supabase.rpc('submit_moderation_report', {
+      p_target_type: targetType, p_target_id: targetId, p_reason: reason.trim().slice(0, 500),
     });
-    setNotice(reportError ? 'You may already have reported this post, or the report could not be saved.' : 'Thank you. Your report has been submitted.');
+    setNotice(reportError ? 'The report could not be saved. Please try again.' : 'Thank you. Your report has been submitted to Palixia moderation.');
   }
 
   const visiblePosts = (posts || []).filter((post) => category === 'all' || post.category === category);
@@ -255,8 +259,9 @@ export default function CommunityPage() {
                     <div className="community-comment" key={comment.id}>
                       <p className="fine"><b>{comment.profiles ? comment.profiles.name : 'Reader'}</b> · {timeLabel(comment.created_at)}</p>
                       <p>{comment.body}</p>
+                      {user && user.id !== comment.user_id && <button type="button" className="linkbtn fine" onClick={() => reportCommunityItem('community_comment', comment.id, 'Why are you reporting this comment?')}>Report comment</button>}
                       {(comments[post.id] || []).filter((reply) => reply.parent_id === comment.id).map((reply) => (
-                        <div className="community-reply" key={reply.id}><p className="fine"><b>{reply.profiles ? reply.profiles.name : 'Reader'}</b> · {timeLabel(reply.created_at)}</p><p>{reply.body}</p></div>
+                        <div className="community-reply" key={reply.id}><p className="fine"><b>{reply.profiles ? reply.profiles.name : 'Reader'}</b> · {timeLabel(reply.created_at)}</p><p>{reply.body}</p>{user && user.id !== reply.user_id && <button type="button" className="linkbtn fine" onClick={() => reportCommunityItem('community_comment', reply.id, 'Why are you reporting this reply?')}>Report reply</button>}</div>
                       ))}
                       {user && <form className="community-reply-form" onSubmit={(e) => { e.preventDefault(); addComment(post.id, comment.id); }}>
                         <input className="in" maxLength={1000} placeholder="Reply to this comment…" value={commentDrafts[post.id + comment.id] || ''} onChange={(e) => setCommentDrafts((old) => ({ ...old, [post.id + comment.id]: e.target.value }))} />
