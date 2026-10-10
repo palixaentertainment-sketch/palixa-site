@@ -6,6 +6,7 @@ import { AuthProvider } from '@/lib/auth';
 import Header from '@/components/Header';
 import AuthHeader from '@/components/AuthHeader';
 import Logo from '@/components/Logo';
+import SocialLinks from '@/components/SocialLinks';
 import MobileNav from '@/components/MobileNav';
 
 export default function Providers({ children }) {
@@ -30,6 +31,10 @@ export default function Providers({ children }) {
               <Link href="/about">About</Link>
               <PublishLink className="">Publish with Palixia</PublishLink>
             </nav>
+            <div className="foot-social">
+              <span className="fine">Follow Palixia</span>
+              <SocialLinks compact />
+            </div>
             <p className="fine">&copy; Palixia.</p>
           </footer>
           <MobileNav />
