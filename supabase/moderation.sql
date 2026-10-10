@@ -129,3 +129,51 @@ grant execute on function public.admin_set_community_comment_status(uuid,text) t
 grant execute on function public.admin_set_community_post_status(uuid,text) to authenticated;
 grant execute on function public.admin_set_book_status(uuid,text) to authenticated;
 grant execute on function public.admin_resolve_moderation_report(uuid,text,text) to authenticated;
+
+
+-- Suspended accounts may still sign in to see the suspension notice, but cannot create new content.
+drop policy if exists "palixia post comments" on public.comments;
+create policy "palixia post comments" on public.comments for insert to authenticated with check (
+  auth.uid() = user_id
+  and exists (select 1 from public.profiles p where p.id=auth.uid() and p.status='active')
+  and exists (select 1 from public.chapters c join public.books b on b.id=c.book_id where c.id=chapter_id and c.status='published' and b.status='published')
+  and (parent_id is null or exists (select 1 from public.comments parent where parent.id=parent_id and parent.chapter_id=chapter_id and parent.parent_id is null))
+);
+
+drop policy if exists "community create own posts" on public.community_posts;
+create policy "community create own posts" on public.community_posts for insert to authenticated
+with check (
+  user_id=auth.uid()
+  and exists (select 1 from public.profiles p where p.id=auth.uid() and p.status='active')
+  and status='visible'
+  and (book_id is null or exists(select 1 from public.books b where b.id=book_id and b.status='published'))
+);
+
+drop policy if exists "community create comments" on public.community_comments;
+create policy "community create comments" on public.community_comments for insert to authenticated
+with check (
+  user_id=auth.uid()
+  and exists (select 1 from public.profiles p where p.id=auth.uid() and p.status='active')
+  and status='visible'
+  and exists(select 1 from public.community_posts p where p.id=post_id and p.status='visible')
+  and (parent_id is null or public.community_parent_comment_is_valid(parent_id, post_id))
+);
+
+-- A suspended user cannot submit moderation reports.
+create or replace function public.submit_moderation_report(p_target_type text, p_target_id uuid, p_reason text)
+returns uuid language plpgsql security definer set search_path = public as $$
+declare new_id uuid;
+begin
+  if auth.uid() is null then raise exception 'login_required'; end if;
+  if not exists (select 1 from public.profiles where id = auth.uid() and status = 'active') then raise exception 'account_suspended'; end if;
+  if char_length(btrim(coalesce(p_reason,''))) < 3 or char_length(btrim(p_reason)) > 500 then raise exception 'invalid_reason'; end if;
+  if p_target_type not in ('chapter_comment','community_post','community_comment','book','user') then raise exception 'invalid_target'; end if;
+  if p_target_type = 'chapter_comment' and not exists(select 1 from public.comments where id=p_target_id) then raise exception 'target_not_found'; end if;
+  if p_target_type = 'community_post' and not exists(select 1 from public.community_posts where id=p_target_id) then raise exception 'target_not_found'; end if;
+  if p_target_type = 'community_comment' and not exists(select 1 from public.community_comments where id=p_target_id) then raise exception 'target_not_found'; end if;
+  if p_target_type = 'book' and not exists(select 1 from public.books where id=p_target_id) then raise exception 'target_not_found'; end if;
+  if p_target_type = 'user' and (not exists(select 1 from public.profiles where id=p_target_id) or p_target_id=auth.uid()) then raise exception 'invalid_target'; end if;
+  insert into public.moderation_reports(reporter_id,target_type,target_id,reason)
+  values(auth.uid(),p_target_type,p_target_id,btrim(p_reason)) returning id into new_id;
+  return new_id;
+end; $$;
