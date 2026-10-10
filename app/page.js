@@ -20,6 +20,13 @@ export default function Home() {
   const [recommendationNote, setRecommendationNote] = useState('');
   const [failed, setFailed] = useState(false);
   const [creatorBook, setCreatorBook] = useState(null);
+  const [benefitIndex, setBenefitIndex] = useState(0);
+  const publishBenefits = [
+    { icon: '✦', title: 'Free to publish', text: 'Share your stories without a publishing fee.' },
+    { icon: '♡', title: 'You keep your rights', text: 'Your original work remains yours.' },
+    { icon: '⌕', title: 'Get discovered', text: 'Help new readers find your books and comics.' },
+    { icon: '▤', title: 'Your own author page', text: 'Showcase your work in one place.' },
+  ];
 
   useEffect(() => {
     let cancelled = false;
@@ -152,11 +159,18 @@ export default function Home() {
           <h2 className="h2">Why publish on Palixia?</h2>
           <p className="fine">A place to share your work, build your presence, and help new readers discover your stories.</p>
         </div>
-        <div className="publish-benefits-grid">
-          <article><span aria-hidden="true">✦</span><h3>Free to publish</h3><p>Share your stories without a publishing fee.</p></article>
-          <article><span aria-hidden="true">♡</span><h3>You keep your rights</h3><p>Your original work remains yours.</p></article>
-          <article><span aria-hidden="true">⌕</span><h3>Get discovered</h3><p>Help new readers find your books and comics.</p></article>
-          <article><span aria-hidden="true">▤</span><h3>Your own author page</h3><p>Showcase your work in one place.</p></article>
+        <div className="publish-benefits-slider" aria-roledescription="carousel" aria-label="Reasons to publish on Palixia">
+          <article className="publish-benefit-card" aria-live="polite">
+            <span aria-hidden="true">{publishBenefits[benefitIndex].icon}</span>
+            <div><h3>{publishBenefits[benefitIndex].title}</h3><p>{publishBenefits[benefitIndex].text}</p></div>
+          </article>
+          <div className="publish-benefits-controls">
+            <button type="button" className="benefit-arrow" aria-label="Previous benefit" onClick={() => setBenefitIndex((i) => (i - 1 + publishBenefits.length) % publishBenefits.length)}>‹</button>
+            <div className="benefit-dots" aria-label="Choose a benefit">
+              {publishBenefits.map((benefit, i) => <button key={benefit.title} type="button" className={i === benefitIndex ? 'benefit-dot active' : 'benefit-dot'} aria-label={benefit.title} aria-pressed={i === benefitIndex} onClick={() => setBenefitIndex(i)} />)}
+            </div>
+            <button type="button" className="benefit-arrow" aria-label="Next benefit" onClick={() => setBenefitIndex((i) => (i + 1) % publishBenefits.length)}>›</button>
+          </div>
         </div>
       </section>
 
