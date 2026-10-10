@@ -25,6 +25,7 @@ export default function Providers({ children }) {
             <Logo size="footer" />
             <nav aria-label="Footer">
               <Link href="/discover">Discover</Link>
+              <Link href="/discover?type=poem">Poetry</Link>
               <Link href="/community">Community</Link>
               <Link href="/categories">Categories</Link>
               <Link href="/authors">Authors</Link>
