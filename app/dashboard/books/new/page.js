@@ -11,8 +11,8 @@ function NewBook() {
   return (
     <div className="stack narrow">
       <Link className="linkbtn" href="/dashboard">&larr; Dashboard</Link>
-      <h1 className="h1">Create New Book</h1>
-      <p className="muted">Fill in the details, then add chapters. A draft is only visible to you until you publish.</p>
+      <h1 className="h1">Create New Work</h1>
+      <p className="muted">Choose a format, fill in the details, then add chapters or write a poem. Drafts are only visible to you until you publish.</p>
       <BookForm userId={user.id} book={null} onSaved={(id) => router.push('/dashboard/books/' + id)} />
     </div>
   );

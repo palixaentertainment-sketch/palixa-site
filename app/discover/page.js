@@ -51,6 +51,7 @@ function Discover() {
     let query = supabase.from('book_cards').select('*');
     if (type === 'text') query = query.eq('book_type', 'text');
     if (type === 'comic') query = query.eq('book_type', 'comic');
+    if (type === 'poem') query = query.eq('book_type', 'poem');
     if (genre) query = query.eq('genre_slug', genre);
     const term = q.trim().toLowerCase().replace(/[%,()]/g, ' ');
     if (term) query = query.ilike('search', '%' + term + '%');
@@ -98,14 +99,14 @@ function Discover() {
   return (
     <>
       <div className="stack">
-        <h1 className="h1">Discover stories</h1>
+        <h1 className="h1">{type === 'poem' ? 'Discover poetry' : 'Discover stories'}</h1>
         <form onSubmit={submit} role="search" className="row" style={{ flexWrap: 'nowrap' }}>
           <label className="sr-only" htmlFor="dq">Search books, authors or genres</label>
-          <input id="dq" className="in" type="search" placeholder="Search books, authors or genres" value={input} onChange={(e) => setInput(e.target.value)} />
+          <input id="dq" className="in" type="search" placeholder="Search books, poems, authors or genres" value={input} onChange={(e) => setInput(e.target.value)} />
           <button className="btn" type="submit">Search</button>
         </form>
         <div className="chips" role="group" aria-label="Format">
-          {[['all', 'All'], ['text', 'Books'], ['comic', 'Comics']].map(([v, label]) => (
+          {[['all', 'All'], ['text', 'Books'], ['comic', 'Comics'], ['poem', 'Poetry']].map(([v, label]) => (
             <button key={v} type="button" className="chip" aria-pressed={type === v} onClick={() => go({ type: v === 'all' ? '' : v })}>{label}</button>
           ))}
         </div>
@@ -141,11 +142,13 @@ function Discover() {
       )}
 
       <section>
-        {q && <div className="sechead"><h2 className="h2">Books matching &ldquo;{q}&rdquo;</h2></div>}
+        {q && <div className="sechead"><h2 className="h2">{type === 'poem' ? 'Poems' : 'Stories'} matching &ldquo;{q}&rdquo;</h2></div>}
         {failed && <p className="notice">We could not load stories. Check your connection and try again.</p>}
         {rows === null && <p className="muted">Loading...</p>}
         {rows && rows.length === 0 && !failed && (
-          q || genre || type !== 'all' ? (
+          type === 'poem' && !q && !genre ? (
+            <Empty title="No poems have been published yet." text="Be the first to share a poem on Palixia." href={publishHref} cta="Publish a Poem" />
+          ) : q || genre || type !== 'all' ? (
             <Empty title="Nothing matches that." text="Try a different word, or clear the filters." href="/discover" cta="Clear filters" />
           ) : (
             <Empty title="No stories are published yet." text="Be the first to publish on Palixia." href={publishHref} cta="Publish Your Story" />

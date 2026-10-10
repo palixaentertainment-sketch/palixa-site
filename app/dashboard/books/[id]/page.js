@@ -80,7 +80,7 @@ function Manage() {
         <dl className="facts">
           <div><dt>Reads</dt><dd>{fmtNum(book.reads)}</dd></div>
           <div><dt>Chapters</dt><dd>{live} live of {chapters.length}</dd></div>
-          <div><dt>Format</dt><dd>{book.book_type === 'comic' ? 'Comic' : 'Text book'}</dd></div>
+          <div><dt>Format</dt><dd>{book.book_type === 'comic' ? 'Comic' : book.book_type === 'poem' ? 'Poem' : 'Text book'}</dd></div>
           <div><dt>Story</dt><dd>{book.story_status === 'completed' ? 'Completed' : book.story_status === 'hiatus' ? 'On hiatus' : 'Ongoing'}</dd></div>
         </dl>
         <div className="row">
@@ -97,11 +97,11 @@ function Manage() {
 
       <section className="stack">
         <div className="sechead" style={{ marginBottom: 0 }}>
-          <h2 className="h2">Chapters</h2>
-          <Link className="btn small" href={'/dashboard/books/' + book.id + '/chapters/new'}>Add Chapter</Link>
+          <h2 className="h2">{book.book_type === 'poem' ? 'Poem' : 'Chapters'}</h2>
+          <Link className="btn small" href={'/dashboard/books/' + book.id + '/chapters/new'}>{book.book_type === 'poem' ? 'Add Poem' : 'Add Chapter'}</Link>
         </div>
         {chapters.length === 0 ? (
-          <Empty title="No chapters yet." text={book.book_type === 'comic' ? 'Upload your first chapter as a set of page images.' : 'Write or paste your first chapter.'} href={'/dashboard/books/' + book.id + '/chapters/new'} cta="Add Chapter" />
+          <Empty title="No chapters yet." text={book.book_type === 'comic' ? 'Upload your first chapter as a set of page images.' : book.book_type === 'poem' ? 'Write or paste your poem as one piece.' : 'Write or paste your first chapter.'} href={'/dashboard/books/' + book.id + '/chapters/new'} cta={book.book_type === 'poem' ? "Add Poem" : "Add Chapter"} />
         ) : (
           <div className="tablewrap">
             <table>

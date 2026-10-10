@@ -43,7 +43,7 @@ export default function BookForm({ userId, book, locked, onSaved }) {
 
   async function save(status) {
     setErr(''); setOk('');
-    if (!title.trim()) { setErr('Add a book title.'); return; }
+    if (!title.trim()) { setErr(type === 'poem' ? 'Add a poem title.' : 'Add a title.'); return; }
     if (status === 'published' && !description.trim()) { setErr('Add a description before publishing.'); return; }
     setBusy(true);
     try {
@@ -57,7 +57,7 @@ export default function BookForm({ userId, book, locked, onSaved }) {
         tags: tagList,
         cover_url,
         book_type: type,
-        story_status: storyStatus,
+        story_status: type === 'poem' ? 'completed' : storyStatus,
       };
       if (book) {
         const patch = { ...fields, updated_at: new Date().toISOString() };
@@ -85,7 +85,7 @@ export default function BookForm({ userId, book, locked, onSaved }) {
   return (
     <form className="card" onSubmit={(e) => { e.preventDefault(); save(null); }} noValidate>
       <div className="field">
-        <label htmlFor="b-title">Book title</label>
+        <label htmlFor="b-title">{type === 'poem' ? 'Poem title' : 'Title'}</label>
         <input id="b-title" className="in" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} />
       </div>
       <div className="field">
@@ -93,21 +93,22 @@ export default function BookForm({ userId, book, locked, onSaved }) {
         <div className="seg" role="radiogroup" aria-labelledby="lab-type">
           <input type="radio" name="type" id="t-text" checked={type === 'text'} disabled={locked} onChange={() => setType('text')} /><label htmlFor="t-text">Text book</label>
           <input type="radio" name="type" id="t-comic" checked={type === 'comic'} disabled={locked} onChange={() => setType('comic')} /><label htmlFor="t-comic">Comic</label>
+          <input type="radio" name="type" id="t-poem" checked={type === 'poem'} disabled={locked} onChange={() => { setType('poem'); const poetry = genres.find((g) => g.slug === 'poetry'); if (poetry) setGenreId(poetry.id); setStoryStatus('completed'); }} /><label htmlFor="t-poem">Poem</label>
         </div>
-        <span className="fine">{locked ? 'The format cannot change once chapters exist.' : type === 'comic' ? 'Comics are chapters made of page images, read top to bottom.' : 'Text books are chapters of written text.'}</span>
+        <span className="fine">{locked ? 'The format cannot change once content exists.' : type === 'comic' ? 'Comics are chapters made of page images, read top to bottom.' : type === 'poem' ? 'Publish one poem as a single piece of writing.' : 'Books are made up of written chapters.'}</span>
       </div>
       <div className="field">
-        <label htmlFor="b-story-status">Story status</label>
-        <select id="b-story-status" className="in" value={storyStatus} onChange={(e) => setStoryStatus(e.target.value)}>
+        {type !== 'poem' && <label htmlFor="b-story-status">Story status</label>}
+        {type !== 'poem' && <select id="b-story-status" className="in" value={storyStatus} onChange={(e) => setStoryStatus(e.target.value)}>
           <option value="ongoing">Ongoing — new chapters coming</option>
           <option value="completed">Completed — story has ended</option>
           <option value="hiatus">On hiatus — updates paused</option>
-        </select>
-        <span className="fine">You can change this later from the book editor.</span>
+        </select>}
+        {type !== 'poem' && <span className="fine">You can change this later from the book editor.</span>}
       </div>
       <div className="field">
         <label htmlFor="b-desc">Description</label>
-        <textarea id="b-desc" className="in" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={2000} placeholder="What is this story about? Two or three sentences that make a stranger tap Read." />
+        <textarea id="b-desc" className="in" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={2000} placeholder={type === 'poem' ? 'A short note about your poem (optional).' : 'What is this story about? Two or three sentences that make a stranger tap Read.'} />
       </div>
       <div className="field">
         <label htmlFor="b-genre">Genre</label>

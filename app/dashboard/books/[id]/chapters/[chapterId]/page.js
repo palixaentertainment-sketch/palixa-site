@@ -31,7 +31,7 @@ function Editor() {
       const { data: b } = await supabase.from('books').select('id,title,author_id,book_type,status').eq('id', id).maybeSingle();
       if (!b || b.author_id !== user.id) { setBook(null); return; }
       setBook(b);
-      if (isNew) return;
+      if (isNew) { if (b.book_type === 'poem') setTitle(b.title); return; }
       const { data: c } = await supabase.from('chapters').select('id,book_id,chapter_number,title,content,status').eq('id', chapterId).maybeSingle();
       if (!c || c.book_id !== b.id) { setBook(null); return; }
       setChapter(c);
@@ -73,9 +73,10 @@ function Editor() {
   async function save(status) {
     setErr(''); setOk('');
     const isComic = book.book_type === 'comic';
-    if (!title.trim()) { setErr('Give the chapter a title.'); return; }
+    const isPoem = book.book_type === 'poem';
+    if (!title.trim()) { setErr(isPoem ? 'Give your poem a title.' : 'Give the chapter a title.'); return; }
     if (status === 'published') {
-      if (!isComic && !content.trim()) { setErr('Write some text before publishing this chapter.'); return; }
+      if (!isComic && !content.trim()) { setErr(isPoem ? 'Write your poem before publishing.' : 'Write some text before publishing this chapter.'); return; }
       if (isComic && items.length === 0) { setErr('Add at least one page image before publishing.'); return; }
     }
     setBusy(true);
@@ -116,7 +117,7 @@ function Editor() {
         }));
       }
       setChapter((c) => (c ? { ...c, status: finalStatus } : c));
-      setOk(finalStatus === 'published' ? 'Chapter published.' : 'Draft saved.');
+      setOk(finalStatus === 'published' ? (isPoem ? 'Poem published.' : 'Chapter published.') : 'Draft saved.');
       if (isNew) router.replace('/dashboard/books/' + book.id + '/chapters/' + cid);
     } catch (e) {
       setErr(friendly(e, 'We could not save this chapter. Your work is still on this page, so try again.'));
@@ -134,13 +135,13 @@ function Editor() {
     <div className="stack" style={{ maxWidth: '46rem' }}>
       <Link className="linkbtn" href={'/dashboard/books/' + book.id}>&larr; {book.title}</Link>
       <div className="row between">
-        <h1 className="h1">{chapter ? 'Chapter ' + chapter.chapter_number : 'New chapter'}</h1>
+        <h1 className="h1">{book.book_type === 'poem' ? (chapter ? 'Edit poem' : 'Write a poem') : chapter ? 'Chapter ' + chapter.chapter_number : 'New chapter'}</h1>
         {chapter && <span className={'badge ' + (published ? 'live' : 'draft')}>{published ? 'Published' : 'Draft'}</span>}
       </div>
 
       <div className="card">
         <div className="field">
-          <label htmlFor="c-title">Chapter title</label>
+          <label htmlFor="c-title">{book.book_type === 'poem' ? 'Poem title' : 'Chapter title'}</label>
           <input id="c-title" className="in" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} />
         </div>
 
@@ -172,8 +173,8 @@ function Editor() {
           </div>
         ) : (
           <div className="field">
-            <label htmlFor="c-body">Chapter text</label>
-            <textarea id="c-body" className="in tall" value={content} onChange={(e) => setContent(e.target.value)} placeholder="Write or paste your chapter here. Leave a blank line between paragraphs." />
+            <label htmlFor="c-body">{book.book_type === 'poem' ? 'Your poem' : 'Chapter text'}</label>
+            <textarea id="c-body" className="in tall" value={content} onChange={(e) => setContent(e.target.value)} placeholder={book.book_type === 'poem' ? 'Write your poem here. Keep the line breaks as you want readers to see them.' : 'Write or paste your chapter here. Leave a blank line between paragraphs.'} />
             <span className="fine">{content.trim() ? content.trim().split(/\s+/).length.toLocaleString() : 0} words</span>
           </div>
         )}
@@ -182,7 +183,7 @@ function Editor() {
         {ok && <p className="msg-ok" role="status">{ok}</p>}
         <div className="row">
           <button type="button" className="btn ghost" disabled={busy} onClick={() => save(published ? 'published' : 'draft')}>{busy ? 'Saving...' : published ? 'Save changes' : 'Save Draft'}</button>
-          {!published && <button type="button" className="btn" disabled={busy} onClick={() => save('published')}>Publish Chapter</button>}
+          {!published && <button type="button" className="btn" disabled={busy} onClick={() => save('published')}>{book.book_type === 'poem' ? 'Publish Poem' : 'Publish Chapter'}</button>}
           {published && <button type="button" className="btn ghost" disabled={busy} onClick={() => save('draft')}>Unpublish</button>}
           {chapter && <Link className="btn ghost" href={'/read/' + chapter.id}>Preview</Link>}
         </div>
