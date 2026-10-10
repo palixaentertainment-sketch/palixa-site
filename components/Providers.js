@@ -29,6 +29,7 @@ export default function Providers({ children }) {
               <Link href="/categories">Categories</Link>
               <Link href="/authors">Authors</Link>
               <Link href="/about">About</Link>
+              <Link href="/contact">Contact Us</Link>
               <PublishLink className="">Publish with Palixia</PublishLink>
             </nav>
             <div className="foot-social">
