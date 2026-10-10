@@ -34,7 +34,7 @@ function AdminPanel() {
       supabase.from('moderation_reports').select('id,target_type,target_id,reason,status,admin_note,created_at,profiles!moderation_reports_reporter_id_fkey(name,username)').order('created_at', { ascending: false }).limit(100),
       supabase.from('comments').select('id,body,status,created_at,user_id,chapter_id,profiles(name,username)').order('created_at', { ascending: false }).limit(100),
       supabase.from('community_comments').select('id,body,status,created_at,user_id,post_id,profiles!community_comments_user_id_fkey(name,username)').order('created_at', { ascending: false }).limit(100),
-      supabase.from('community_posts').select('id,body,status,created_at,user_id,profiles!community_posts_user_id_fkey(name,username)').order('created_at', { ascending: false }).limit(100),
+      supabase.from('community_posts').select('id,body,image_url,status,created_at,user_id,profiles!community_posts_user_id_fkey(name,username)').order('created_at', { ascending: false }).limit(100),
     ]);
     const failed = [r, c, cc, p].find(x => x.error);
     if (failed) setModerationError('Moderation tools need the database migration. In Supabase, run supabase/moderation.sql from GitHub. Details: ' + (failed.error.message || 'query failed'));
@@ -176,7 +176,7 @@ function AdminPanel() {
 
       <section className="stack">
         <h2 className="h2">Community post moderation</h2>
-        {moderationLoading ? <p className="muted">Loading posts…</p> : posts.map(p=><article key={p.id} className="panel stack" style={{padding:'1rem',border:'1px solid var(--border, #ddd)',borderRadius:'.75rem'}}><div className="sechead"><b>{p.profiles?.name||'User'} (@{p.profiles?.username||'unknown'})</b><span className="fine">{p.status}</span></div><p>{p.body}</p><p className="fine">{new Date(p.created_at).toLocaleString()}</p><button className="btn ghost small" disabled={busyId===p.id} onClick={()=>runAction(p.id,'Post status updated.',()=>supabase.rpc('admin_set_community_post_status',{p_post_id:p.id,p_status:p.status==='hidden'?'visible':'hidden'}))}>{p.status==='hidden'?'Restore post':'Hide post'}</button></article>)}
+        {moderationLoading ? <p className="muted">Loading posts…</p> : posts.map(p=><article key={p.id} className="panel stack" style={{padding:'1rem',border:'1px solid var(--border, #ddd)',borderRadius:'.75rem'}}><div className="sechead"><b>{p.profiles?.name||'User'} (@{p.profiles?.username||'unknown'})</b><span className="fine">{p.status}</span></div><p style={{whiteSpace:'pre-wrap'}}>{p.body}</p>{p.image_url&&<a href={p.image_url} target="_blank" rel="noreferrer" aria-label="Open community image"><img src={p.image_url} alt="Community post attachment" loading="lazy" style={{display:'block',width:'100%',maxWidth:'520px',maxHeight:'520px',objectFit:'contain',borderRadius:'.75rem',border:'1px solid var(--border, #ddd)'}} /></a>}<p className="fine">{new Date(p.created_at).toLocaleString()}</p><button className="btn ghost small" disabled={busyId===p.id} onClick={()=>runAction(p.id,'Post status updated.',()=>supabase.rpc('admin_set_community_post_status',{p_post_id:p.id,p_status:p.status==='hidden'?'visible':'hidden'}))}>{p.status==='hidden'?'Restore post':'Hide post'}</button></article>)}
         {!moderationLoading&&posts.length===0&&<p className="fine">No community posts found.</p>}
       </section>
 
