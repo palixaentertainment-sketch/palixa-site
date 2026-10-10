@@ -16,6 +16,7 @@ export default function Providers({ children }) {
   const signingIn = pathname.startsWith('/login') || pathname.startsWith('/signup');
   return (
     <AuthProvider>
+      <InstallAppPrompt />
       {reading ? (
         children
       ) : (
