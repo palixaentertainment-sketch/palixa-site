@@ -269,3 +269,13 @@ begin
   insert into public.moderation_actions(admin_id,action,target_type,target_id,reason)
   values(auth.uid(),'report_'||p_status,target_kind,target_uuid,left(coalesce(p_note,''),1000));
 end; $$;
+
+
+-- Keep one report per person per item and import any existing Community post reports.
+create unique index if not exists moderation_reports_one_per_reporter_target_idx
+  on public.moderation_reports(reporter_id, target_type, target_id);
+insert into public.moderation_reports(reporter_id,target_type,target_id,reason,status,created_at)
+select reporter_id,'community_post',post_id,reason,
+  case when status in ('reviewed','dismissed') then status else 'open' end,created_at
+from public.community_reports
+on conflict (reporter_id,target_type,target_id) do nothing;
