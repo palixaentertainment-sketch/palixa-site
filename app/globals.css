@@ -588,3 +588,13 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 .games-footer-note { margin: 2rem auto 0; color: var(--muted); font-size: 0.85rem; text-align: center; }
 @media (max-width: 760px) { .games-grid { grid-template-columns: 1fr; } .games-card { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 0.55rem 0.85rem; } .games-card-icon { grid-row: span 2; } .games-card-detail { align-self: end; } .games-card h2, .games-card p { grid-column: 1 / -1; } .games-card .games-play, .games-card .games-card-note { grid-column: 1 / -1; } }
 @media (max-width: 420px) { .games-heading { margin-top: 0.6rem; } .games-result-actions { width: 100%; flex-direction: column; } .games-result-actions .btn { width: 100%; } }
+
+
+/* Homepage entry point for Palixia Games */
+.home-games-card { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 1.1rem; padding: clamp(1rem, 3vw, 1.5rem); border: 1px solid var(--line); border-radius: 14px; background: var(--soft); }
+.home-games-art { display: grid; place-items: center; width: 4rem; height: 4rem; border-radius: 12px; background: var(--surface); font-size: 2rem; }
+.home-games-copy { display: grid; gap: 0.45rem; }
+.home-games-copy .home-eyebrow { color: var(--accent); }
+.home-games-copy p { max-width: 38rem; color: var(--muted); font-size: 0.93rem; line-height: 1.6; }
+.home-games-button { white-space: nowrap; }
+@media (max-width: 650px) { .home-games-card { grid-template-columns: auto minmax(0, 1fr); gap: 0.9rem; } .home-games-art { width: 3.2rem; height: 3.2rem; font-size: 1.6rem; } .home-games-button { grid-column: 1 / -1; width: 100%; } }
