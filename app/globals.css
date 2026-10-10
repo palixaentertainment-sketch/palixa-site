@@ -535,3 +535,8 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 
 @media (max-width: 831px) { .get-app-desktop { display: none; } }
 html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobile { display: none !important; }
+
+
+/* Keep the app install feature out of the interface for now. */
+.get-app-trigger, .get-app-mobile { display: none !important; }
+.bottomnav .wrap { grid-template-columns: repeat(5, minmax(0, 1fr)); }
