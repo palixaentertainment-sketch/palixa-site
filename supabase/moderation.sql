@@ -177,3 +177,95 @@ begin
   values(auth.uid(),p_target_type,p_target_id,btrim(p_reason)) returning id into new_id;
   return new_id;
 end; $$;
+
+
+-- Audit trail for administrator actions.
+create table if not exists public.moderation_actions (
+  id uuid primary key default gen_random_uuid(),
+  admin_id uuid references public.profiles(id) on delete set null,
+  action text not null,
+  target_type text not null,
+  target_id uuid not null,
+  reason text,
+  created_at timestamptz not null default now()
+);
+create index if not exists moderation_actions_created_idx on public.moderation_actions(created_at desc);
+alter table public.moderation_actions enable row level security;
+drop policy if exists "admins read moderation action log" on public.moderation_actions;
+create policy "admins read moderation action log" on public.moderation_actions
+  for select to authenticated using (public.is_admin());
+grant select on public.moderation_actions to authenticated;
+
+create or replace function public.admin_set_profile_status(p_user_id uuid, p_status text, p_reason text default null)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_admin() then raise exception 'admin_required'; end if;
+  if p_status not in ('active','suspended') then raise exception 'invalid_status'; end if;
+  if p_user_id = auth.uid() then raise exception 'cannot_change_own_status'; end if;
+  if exists(select 1 from public.profiles where id=p_user_id and role='admin') then raise exception 'cannot_suspend_admin'; end if;
+  update public.profiles set status=p_status where id=p_user_id;
+  if not found then raise exception 'user_not_found'; end if;
+  insert into public.moderation_actions(admin_id,action,target_type,target_id,reason)
+  values(auth.uid(),case when p_status='suspended' then 'suspend_user' else 'restore_user' end,'user',p_user_id,left(coalesce(p_reason,''),1000));
+end; $$;
+
+create or replace function public.admin_set_chapter_comment_status(p_comment_id uuid, p_status text)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_admin() then raise exception 'admin_required'; end if;
+  if p_status not in ('visible','hidden') then raise exception 'invalid_status'; end if;
+  update public.comments set status=p_status where id=p_comment_id;
+  if not found then raise exception 'comment_not_found'; end if;
+  insert into public.moderation_actions(admin_id,action,target_type,target_id)
+  values(auth.uid(),case when p_status='hidden' then 'hide_comment' else 'restore_comment' end,'chapter_comment',p_comment_id);
+end; $$;
+
+create or replace function public.admin_set_community_comment_status(p_comment_id uuid, p_status text)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_admin() then raise exception 'admin_required'; end if;
+  if p_status not in ('visible','hidden') then raise exception 'invalid_status'; end if;
+  update public.community_comments set status=p_status where id=p_comment_id;
+  if not found then raise exception 'comment_not_found'; end if;
+  insert into public.moderation_actions(admin_id,action,target_type,target_id)
+  values(auth.uid(),case when p_status='hidden' then 'hide_comment' else 'restore_comment' end,'community_comment',p_comment_id);
+end; $$;
+
+create or replace function public.admin_set_community_post_status(p_post_id uuid, p_status text)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_admin() then raise exception 'admin_required'; end if;
+  if p_status not in ('visible','hidden') then raise exception 'invalid_status'; end if;
+  update public.community_posts set status=p_status, updated_at=now() where id=p_post_id;
+  if not found then raise exception 'post_not_found'; end if;
+  insert into public.moderation_actions(admin_id,action,target_type,target_id)
+  values(auth.uid(),case when p_status='hidden' then 'hide_post' else 'restore_post' end,'community_post',p_post_id);
+end; $$;
+
+create or replace function public.admin_set_book_status(p_book_id uuid, p_status text)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_admin() then raise exception 'admin_required'; end if;
+  if p_status not in ('published','unpublished') then raise exception 'invalid_status'; end if;
+  update public.books set status=p_status, updated_at=now()
+  where id=p_book_id and status <> 'draft';
+  if not found then raise exception 'published_book_not_found'; end if;
+  insert into public.moderation_actions(admin_id,action,target_type,target_id)
+  values(auth.uid(),case when p_status='unpublished' then 'unpublish_book' else 'republish_book' end,'book',p_book_id);
+end; $$;
+
+create or replace function public.admin_resolve_moderation_report(p_report_id uuid, p_status text, p_note text default null)
+returns void language plpgsql security definer set search_path = public as $$
+declare target_kind text; target_uuid uuid;
+begin
+  if not public.is_admin() then raise exception 'admin_required'; end if;
+  if p_status not in ('reviewed','dismissed','open') then raise exception 'invalid_status'; end if;
+  select target_type,target_id into target_kind,target_uuid from public.moderation_reports where id=p_report_id;
+  if not found then raise exception 'report_not_found'; end if;
+  update public.moderation_reports set status=p_status, admin_note=left(coalesce(p_note,''),1000),
+    reviewed_by=case when p_status='open' then null else auth.uid() end,
+    reviewed_at=case when p_status='open' then null else now() end
+  where id=p_report_id;
+  insert into public.moderation_actions(admin_id,action,target_type,target_id,reason)
+  values(auth.uid(),'report_'||p_status,target_kind,target_uuid,left(coalesce(p_note,''),1000));
+end; $$;
