@@ -76,11 +76,12 @@ create policy "readers join groups as themselves" on public.community_group_memb
 drop policy if exists "readers leave groups or owners remove members" on public.community_group_members;
 create policy "readers leave groups or owners remove members" on public.community_group_members
   for delete to authenticated using (
-    user_id = auth.uid()
+    (user_id = auth.uid() and role <> 'owner')
     or exists (
       select 1 from public.community_groups g
-      where g.id = group_id and (g.owner_id = auth.uid() or public.is_admin())
+      where g.id = group_id and g.owner_id = auth.uid() and user_id <> g.owner_id
     )
+    or (public.is_admin() and role <> 'owner')
   );
 
 drop policy if exists "reader group posts are visible" on public.community_group_posts;
