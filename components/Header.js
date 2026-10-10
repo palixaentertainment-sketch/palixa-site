@@ -22,6 +22,7 @@ export default function Header() {
   const router = useRouter();
   const [q, setQ] = useState('');
   const isAuthor = profile && (profile.role === 'author' || profile.role === 'admin');
+  const isAdmin = profile && profile.role === 'admin';
 
   function search(e) {
     e.preventDefault();
@@ -55,6 +56,7 @@ export default function Header() {
               <NotificationsBell user={user} />
               <Link className="authlinks linkbtn" href="/library">Library</Link>
               {isAuthor && <Link className="authlinks linkbtn" href="/dashboard">Dashboard</Link>}
+              {isAdmin && <Link className="authlinks linkbtn" href="/admin">Admin</Link>}
               <details className="menu" key={pathname}>
                 <summary aria-label="Account menu"><Avatar src={profile && profile.avatar_url} name={profile ? profile.name : '?'} size="2.2rem" /></summary>
                 <div className="pop">
@@ -62,6 +64,7 @@ export default function Header() {
                   <Link href="/profile">Profile</Link>
                   <Link href="/library">Library</Link>
                   {isAuthor ? <Link href="/dashboard">Author dashboard</Link> : <Link href="/profile#author">Become an author</Link>}
+                  {isAdmin && <Link href="/admin">Admin dashboard</Link>}
                   <button type="button" onClick={signOut}>Sign out</button>
                 </div>
               </details>
