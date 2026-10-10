@@ -136,6 +136,15 @@ export default function BookPage() {
     }
   }
 
+  async function reportBook() {
+    if (!user) { setMsg('Log in to report this book.'); return; }
+    const reason = window.prompt('Why are you reporting this book?');
+    if (reason === null) return;
+    if (reason.trim().length < 3) { setMsg('Please enter a short reason for the report.'); return; }
+    const { error } = await supabase.rpc('submit_moderation_report', { p_target_type: 'book', p_target_id: book.id, p_reason: reason.trim().slice(0, 500) });
+    setMsg(error ? 'The report could not be saved. Please try again.' : 'Your report has been sent to Palixia moderation.');
+  }
+
   async function toggleFollow() {
     if (!user) { setMsg('Log in to follow authors.'); return; }
     if (user.id === book.author_id) { setMsg('You cannot follow yourself.'); return; }
@@ -191,6 +200,7 @@ export default function BookPage() {
 
       <div className="row">
         <LikeButton kind="book" id={book.id} count={book.like_count} authorId={book.author_id} />
+        {user && user.id !== book.author_id && <button type="button" className="btn ghost" onClick={reportBook}>Report book</button>}
         {readTarget ? (
           <Link className="btn" href={'/read/' + readTarget}>{resumeId ? 'Continue reading' : 'Read Now'}</Link>
         ) : (
