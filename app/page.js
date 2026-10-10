@@ -9,6 +9,7 @@ import { genreStyle } from '@/lib/genres';
 import Cover from '@/components/Cover';
 import BookCard from '@/components/BookCard';
 import Avatar from '@/components/Avatar';
+import SocialLinks from '@/components/SocialLinks';
 
 export default function Home() {
   const { user } = useAuth();
@@ -206,6 +207,10 @@ export default function Home() {
       )}
 
       <section className="home-cta"><div><span className="home-eyebrow">MADE FOR STORYTELLERS</span><h2>Your story deserves readers.</h2><p>Publish your work, grow your audience, and give readers something new to love.</p></div><PublishLink className="btn">Start publishing</PublishLink></section>
+      <section className="home-social" aria-labelledby="home-social-title">
+        <div><h2 id="home-social-title" className="h2">Stay connected with Palixia</h2><p className="fine">Follow us for updates, stories, and launch news.</p></div>
+        <SocialLinks />
+      </section>
     </>
   );
 }
