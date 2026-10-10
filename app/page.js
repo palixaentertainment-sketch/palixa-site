@@ -56,7 +56,7 @@ export default function Home() {
         setData({ featured, trending, fresh });
         setGenres(g.data || []);
         setAuthors(a.data || []);
-        setCreatorBook((own.data || [])[0] || null);
+        setCreatorBook((own.data || [])[0] || (n.data || [])[0] || null);
         setFailed(false);
 
         if (!user) {
@@ -174,21 +174,31 @@ export default function Home() {
         </div>
       </section>
 
-      {creatorBook && (
-        <section className="creator-week">
-          <div className="creator-week-copy">
-            <span className="home-eyebrow">CREATOR OF THE WEEK</span>
-            <h2 className="h2">Meet Paul Osula</h2>
-            <p className="fine">Discover a story from Palixia's creator.</p>
-            <h3>{creatorBook.title}</h3>
-            <p>{creatorBook.description || 'Discover this story on Palixia.'}</p>
-            <Link className="btn" href={'/book/' + creatorBook.id}>Read the book</Link>
-          </div>
+      <section className="creator-week">
+        <div className="creator-week-copy">
+          <span className="home-eyebrow">CREATOR OF THE WEEK</span>
+          {creatorBook ? (
+            <>
+              <h2 className="h2">{creatorBook.author_name || 'Meet a Palixia creator'}</h2>
+              <p className="fine">Discover a story from the Palixia community.</p>
+              <h3>{creatorBook.title}</h3>
+              <p>{creatorBook.description || 'Discover this story on Palixia.'}</p>
+              <Link className="btn" href={'/book/' + creatorBook.id}>Read the book</Link>
+            </>
+          ) : (
+            <>
+              <h2 className="h2">Your story could be next.</h2>
+              <p className="fine">We're making room for creators and their stories. Publish your book or comic on Palixia and be part of the community.</p>
+              <PublishLink className="btn">Publish your story</PublishLink>
+            </>
+          )}
+        </div>
+        {creatorBook && (
           <Link className="creator-week-cover" href={'/book/' + creatorBook.id} aria-label={'Read ' + creatorBook.title}>
             <Cover b={creatorBook} />
           </Link>
-        </section>
-      )}
+        )}
+      </section>
 
       {!configured && <p className="notice">Palixia is not connected to its database yet. Follow the setup steps in README.md, then reload this page.</p>}
       {failed && <p className="notice">Some stories could not load right now. Please refresh the page and try again.</p>}
