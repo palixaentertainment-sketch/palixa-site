@@ -472,3 +472,18 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .social-links-compact .social-link { width: 2.75rem; min-height: 2.75rem; padding: 0; border-radius: 50%; }
 .social-links-compact .social-link svg { width: 1.25rem; height: 1.25rem; }
 .foot-social { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+
+
+/* Reader Groups — additive styles */
+.community-group-nav{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-top:1rem}
+.community-group-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:1rem}
+.community-group-card{border:1px solid var(--line,#dedbd5);border-radius:1rem;padding:1rem;background:var(--surface,#fff);min-width:0}
+.community-group-card.selected{border-color:var(--ink,#222);box-shadow:0 0 0 1px var(--ink,#222)}
+.community-group-open{display:block;width:100%;padding:0;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}
+.community-group-open h3{font-size:1.15rem;margin:.65rem 0 .4rem;overflow-wrap:anywhere}
+.community-group-open p{margin:0 0 .8rem;color:var(--muted,#666);line-height:1.5;overflow-wrap:anywhere}
+.community-group-genre{display:inline-flex;align-items:center;border-radius:999px;padding:.25rem .65rem;background:var(--soft,#f2f0eb);font-size:.78rem;font-weight:600}
+.community-group-card-actions{display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;margin-top:1rem;padding-top:.8rem;border-top:1px solid var(--line,#dedbd5)}
+.community-group-discussion{margin-top:1rem}
+.community-group-post-form{display:grid;gap:.75rem}
+.community-group-post-form .btn{justify-self:start}

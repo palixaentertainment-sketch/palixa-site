@@ -172,6 +172,9 @@ export default function CommunityPage() {
         <p className="mono">READ · PUBLISH · CONNECT</p>
         <h1 className="h1">The Palixia Community</h1>
         <p>Talk about the stories you love, meet other writers, and share what you’re creating.</p>
+        <div className="community-group-nav">
+          <Link className="btn ghost small" href="/community/groups">Explore Reader Groups →</Link>
+        </div>
       </section>
 
       {notice && <p className="notice" role="status">{notice}</p>}
