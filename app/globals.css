@@ -461,3 +461,17 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .profile-badge-official > span { color: #fff; background: #2563eb; }
 .profile-badge-author { color: #5b21b6; background: #ede9fe; }
 .profile-badge-author > span { color: #fff; background: #7c3aed; }
+
+
+/* Palixia social links */
+.social-links { display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap; }
+.social-link { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 2.75rem; padding: 0.55rem 0.85rem; border: 1px solid var(--line); border-radius: 999px; color: var(--fg); background: var(--surface); font-weight: 600; transition: background 150ms ease, border-color 150ms ease, transform 150ms ease; }
+.social-link:hover { background: var(--soft); border-color: var(--lav); transform: translateY(-1px); }
+.social-link svg { display: block; width: 1.2rem; height: 1.2rem; flex: none; }
+.social-links-compact { gap: 0.5rem; }
+.social-links-compact .social-link { width: 2.75rem; min-height: 2.75rem; padding: 0; border-radius: 50%; }
+.social-links-compact .social-link svg { width: 1.25rem; height: 1.25rem; }
+.home-social { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; padding: 1.1rem 0 0.3rem; border-top: 1px solid var(--line); }
+.home-social > div { display: grid; gap: 0.3rem; }
+.foot-social { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+@media (max-width: 28rem) { .home-social { align-items: flex-start; flex-direction: column; } }
