@@ -42,7 +42,7 @@ function Dashboard() {
       <div className="stack">
         <h1 className="h1">Welcome back, {first}</h1>
         <div className="row">
-          <Link className="btn" href="/dashboard/books/new">Create New Book</Link>
+          <Link className="btn" href="/dashboard/books/new">Create New Work</Link>
           <Link className="btn ghost" href={'/author/' + profile.username}>View public page</Link>
         </div>
       </div>
@@ -59,7 +59,7 @@ function Dashboard() {
       {books === null && <p className="muted">Loading...</p>}
 
       {books && books.length === 0 && !failed && (
-        <Empty title="You haven't published anything yet." text="Start with a title, a cover and a description, then add your first chapter." href="/dashboard/books/new" cta="Create Your First Book" />
+        <Empty title="You haven't published anything yet." text="Start with a title, cover and description, then add your first chapter or poem." href="/dashboard/books/new" cta="Create Your First Work" />
       )}
 
       {books && books.length > 0 && (
