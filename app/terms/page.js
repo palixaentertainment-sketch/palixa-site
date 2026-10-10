@@ -40,7 +40,7 @@ export default function Terms() {
       <p>Palixia is provided as it is. We work to keep it running and your work safe, but we cannot promise it will always be available or free of errors, and we are not responsible for content written by authors. Keep your own copy of everything you publish.</p>
 
       <h2 className="h2">Changes and contact</h2>
-      <p>We may update these terms as Palixia grows, and the date at the top will change when we do. Continuing to use the site means you accept the update. To reach us, message Palixia Entertainment on X at @PALIXIANOVEL.</p>
+      <p>We may update these terms as Palixia grows, and the date at the top will change when we do. Continuing to use the site means you accept the update. To contact us, email palixia.official@gmail.com or visit our Contact Us page.</p>
     </div>
   );
 }
