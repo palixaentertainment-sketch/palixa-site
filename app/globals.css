@@ -540,3 +540,51 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 /* Keep the app install feature out of the interface for now. */
 .get-app-trigger, .get-app-mobile { display: none !important; }
 .bottomnav .wrap { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+
+/* Palixia Games */
+.games-page { padding-top: 1.25rem; padding-bottom: 3rem; }
+.games-heading { max-width: 43rem; margin: 1rem auto 2rem; text-align: center; display: grid; justify-items: center; gap: 0.8rem; }
+.games-back { justify-self: start; margin-right: auto; color: var(--muted); font-size: 0.92rem; }
+.games-heading .home-eyebrow { color: var(--accent); }
+.games-heading h1 { font: italic 900 clamp(2.2rem, 7vw, 3.6rem)/1.05 var(--display); letter-spacing: -0.04em; }
+.games-heading p { max-width: 34rem; color: var(--muted); line-height: 1.7; }
+.games-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.games-card { min-width: 0; padding: clamp(1rem, 2.8vw, 1.5rem); border: 1px solid var(--line); border-radius: 14px; background: var(--surface); display: flex; flex-direction: column; align-items: flex-start; gap: 0.8rem; }
+.games-card-icon { display: grid; place-items: center; width: 3.3rem; height: 3.3rem; border-radius: 12px; background: var(--soft); font-size: 1.7rem; }
+.games-card-detail { font-size: 0.76rem; color: var(--accent); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.games-card h2 { font: 700 1.25rem/1.2 var(--display); }
+.games-card p { color: var(--muted); line-height: 1.6; font-size: 0.93rem; }
+.games-play { margin-top: auto; width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+.games-play:disabled { opacity: 0.6; cursor: not-allowed; }
+.games-card .games-card-note { padding-top: 0.2rem; font-size: 0.82rem; }
+.games-quiz, .games-results { width: min(100%, 42rem); margin: 0 auto; padding: clamp(1rem, 4vw, 2rem); border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
+.games-quiz-top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; color: var(--muted); font-size: 0.9rem; }
+.games-text-button { color: var(--accent); font-weight: 700; }
+.games-progress { height: 0.42rem; overflow: hidden; margin: 1rem 0 1.6rem; border-radius: 99px; background: var(--soft); }
+.games-progress span { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width 180ms ease; }
+.games-question-kicker { margin-bottom: 0.7rem; color: var(--accent); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.games-quiz h2 { font: 700 clamp(1.25rem, 4vw, 1.75rem)/1.35 var(--display); }
+.games-options { display: grid; gap: 0.7rem; margin-top: 1.4rem; }
+.games-option { display: flex; align-items: center; gap: 0.8rem; width: 100%; min-height: 3.35rem; padding: 0.75rem 0.9rem; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--fg); text-align: left; line-height: 1.45; }
+.games-option > span { display: grid; place-items: center; width: 1.8rem; height: 1.8rem; flex: 0 0 1.8rem; border-radius: 7px; background: var(--soft); color: var(--accent); font-size: 0.82rem; font-weight: 700; }
+.games-option:not(:disabled):hover { border-color: var(--accent); background: var(--soft); }
+.games-option.is-correct { border-color: #23875a; background: #edf9f1; color: #145a39; }
+.games-option.is-wrong { border-color: #c74b4b; background: #fff0f0; color: #8a2828; }
+.games-feedback { display: grid; gap: 0.65rem; margin-top: 1.1rem; padding: 1rem; border-radius: 10px; background: var(--soft); }
+.games-feedback p { color: var(--muted); line-height: 1.6; }
+.games-feedback .btn { justify-self: start; margin-top: 0.25rem; }
+.games-feedback.feedback-correct > b { color: #23875a; }
+.games-feedback.feedback-wrong > b { color: #b33b3b; }
+.games-score { margin-top: 1.2rem; color: var(--muted); text-align: right; font-size: 0.9rem; }
+.games-score strong { color: var(--fg); }
+.games-results { display: grid; justify-items: center; gap: 0.9rem; text-align: center; }
+.games-result-icon { font-size: 2.8rem; }
+.games-results .home-eyebrow { color: var(--accent); }
+.games-results h2 { font: italic 900 clamp(1.8rem, 5vw, 2.5rem)/1.15 var(--display); }
+.games-results > p { color: var(--muted); line-height: 1.6; }
+.games-results .games-result-detail { color: var(--accent); font-weight: 700; }
+.games-result-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.65rem; margin-top: 0.4rem; }
+.games-footer-note { margin: 2rem auto 0; color: var(--muted); font-size: 0.85rem; text-align: center; }
+@media (max-width: 760px) { .games-grid { grid-template-columns: 1fr; } .games-card { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 0.55rem 0.85rem; } .games-card-icon { grid-row: span 2; } .games-card-detail { align-self: end; } .games-card h2, .games-card p { grid-column: 1 / -1; } .games-card .games-play, .games-card .games-card-note { grid-column: 1 / -1; } }
+@media (max-width: 420px) { .games-heading { margin-top: 0.6rem; } .games-result-actions { width: 100%; flex-direction: column; } .games-result-actions .btn { width: 100%; } }
