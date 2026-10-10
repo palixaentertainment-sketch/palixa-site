@@ -10,6 +10,7 @@ import NotificationsBell from '@/components/NotificationsBell';
 const LINKS = [
   ['/', 'Home'],
   ['/discover', 'Discover'],
+  ['/discover?type=poem', 'Poetry']
   ['/community', 'Community'],
   ['/categories', 'Categories'],
   ['/authors', 'Authors'],
