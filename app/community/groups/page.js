@@ -184,7 +184,7 @@ export default function ReaderGroupsPage() {
                   <span className="fine">{memberCount(group.id)} {memberCount(group.id) === 1 ? 'member' : 'members'} · Started {timeLabel(group.created_at)}</span>
                 </button>
                 <div className="community-group-card-actions">
-                  <button className="btn small" type="button" disabled={busy} onClick={() => toggleMembership(group)}>{joined ? 'Leave group' : 'Join group'}</button>
+                  <button className="btn small" type="button" disabled={busy || group.owner_id === user?.id} onClick={() => toggleMembership(group)}>{group.owner_id === user?.id ? 'Group owner' : joined ? 'Leave group' : 'Join group'}</button>
                   {group.profiles?.username && <span className="fine">by @{group.profiles.username}</span>}
                 </div>
               </article>
