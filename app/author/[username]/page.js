@@ -56,6 +56,15 @@ export default function AuthorPage() {
     }
   }
 
+  async function reportAuthor() {
+    if (!user) { setMsg('Log in to report this author.'); return; }
+    const reason = window.prompt('Why are you reporting this author?');
+    if (reason === null) return;
+    if (reason.trim().length < 3) { setMsg('Please enter a short reason for the report.'); return; }
+    const { error } = await supabase.rpc('submit_moderation_report', { p_target_type: 'user', p_target_id: p.id, p_reason: reason.trim().slice(0, 500) });
+    setMsg(error ? 'The report could not be saved. Please try again.' : 'Your report has been sent to Palixia moderation.');
+  }
+
   if (p === undefined) return <p className="muted">Loading...</p>;
   if (p === null) return <Empty title="We could not find that author." href="/authors" cta="Browse Authors" />;
 
@@ -76,7 +85,7 @@ export default function AuthorPage() {
           </dl>
           <div className="row">
             {self ? <Link className="btn ghost" href="/profile">Edit profile</Link> : (
-              <button type="button" className={'btn' + (following ? ' ghost on' : '')} aria-pressed={following} onClick={toggle}>{following ? 'Following' : 'Follow'}</button>
+              <><button type="button" className={'btn' + (following ? ' ghost on' : '')} aria-pressed={following} onClick={toggle}>{following ? 'Following' : 'Follow'}</button>{user && <button type="button" className="btn ghost" onClick={reportAuthor}>Report author</button>}</>
             )}
           </div>
           {msg && <p className="msg-err" role="alert">{msg} {!user && <Link className="linkbtn" href={'/login?next=/author/' + p.username}>Log in</Link>}</p>}
