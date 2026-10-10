@@ -540,3 +540,11 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 /* Keep the app install feature out of the interface for now. */
 .get-app-trigger, .get-app-mobile { display: none !important; }
 .bottomnav .wrap { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+
+/* Community image attachments */
+.community-image-picker { display: grid; justify-items: start; gap: 0.55rem; }
+.community-image-preview { display: grid; justify-items: start; gap: 0.5rem; width: 100%; }
+.community-image-preview img { display: block; max-width: 100%; max-height: 20rem; object-fit: contain; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.community-post-image-link { display: block; width: fit-content; max-width: 100%; margin-top: 0.7rem; }
+.community-post-image { display: block; max-width: 100%; max-height: 34rem; width: auto; height: auto; object-fit: contain; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); }
