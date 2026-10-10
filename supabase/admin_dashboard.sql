@@ -23,7 +23,12 @@ create policy "admins manage profile badges"
 grant select on public.profile_badges to anon, authenticated;
 grant insert, update, delete on public.profile_badges to authenticated;
 
--- Existing book rows keep their current story status; new books default to ongoing.
+-- Add the story status column for databases created before this feature was added.
+-- Existing books become 'ongoing'; new books also default to 'ongoing'.
+alter table public.books
+  add column if not exists story_status text not null default 'ongoing'
+  check (story_status in ('ongoing', 'completed', 'hiatus'));
+
 -- Allow authors to select/change the story status column without granting access to protected columns.
 grant insert (story_status) on public.books to authenticated;
 grant update (story_status) on public.books to authenticated;
