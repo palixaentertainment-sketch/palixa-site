@@ -7,6 +7,7 @@ import Header from '@/components/Header';
 import AuthHeader from '@/components/AuthHeader';
 import Logo from '@/components/Logo';
 import SocialLinks from '@/components/SocialLinks';
+import InstallAppPrompt from '@/components/InstallAppPrompt';
 import MobileNav from '@/components/MobileNav';
 
 export default function Providers({ children }) {
