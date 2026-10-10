@@ -146,10 +146,12 @@ function Discover() {
         {failed && <p className="notice">We could not load stories. Check your connection and try again.</p>}
         {rows === null && <p className="muted">Loading...</p>}
         {rows && rows.length === 0 && !failed && (
-          q || genre || type !== 'all' ? (
+          type === 'poem' && !q && !genre ? (
+            <Empty title="No poems have been published yet." text="Be the first to share a poem on Palixia." href={publishHref} cta="Publish a Poem" />
+          ) : q || genre || type !== 'all' ? (
             <Empty title="Nothing matches that." text="Try a different word, or clear the filters." href="/discover" cta="Clear filters" />
           ) : (
-            <Empty title={type === 'poem' ? "No poems have been published yet." : "No stories are published yet."} text={type === 'poem' ? "Be the first to share a poem on Palixia." : "Be the first to publish on Palixia."} href={publishHref} cta={type === 'poem' ? "Publish a Poem" : "Publish Your Story"} />
+            <Empty title="No stories are published yet." text="Be the first to publish on Palixia." href={publishHref} cta="Publish Your Story" />
           )
         )}
         {rows && rows.length > 0 && (
