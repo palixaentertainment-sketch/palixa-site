@@ -532,3 +532,6 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .install-help { padding: 0.75rem; border-radius: 8px; background: var(--soft); color: var(--fg); font-size: 0.9rem; text-align: left; }
 @media (min-width: 52rem) { .get-app-mobile { display: none; } }
 @media (max-width: 360px) { .get-app-trigger { padding-inline: 0.45rem; font-size: 0.78rem; } .bn { font-size: 0.62rem; } }
+
+@media (max-width: 831px) { .get-app-desktop { display: none; } }
+html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobile { display: none !important; }
