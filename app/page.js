@@ -19,6 +19,7 @@ export default function Home() {
   const [recommended, setRecommended] = useState([]);
   const [recommendationNote, setRecommendationNote] = useState('');
   const [failed, setFailed] = useState(false);
+  const [creatorBook, setCreatorBook] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -31,12 +32,13 @@ export default function Home() {
 
     (async () => {
       try {
-        const [f, t, n, g, a] = await Promise.all([
+        const [f, t, n, g, a, own] = await Promise.all([
           supabase.from('book_cards').select('*').eq('featured', true).order('reads', { ascending: false }).limit(6),
           supabase.from('book_cards').select('*').order('reads', { ascending: false }).limit(12),
           supabase.from('book_cards').select('*').order('created_at', { ascending: false }).limit(12),
           supabase.from('genres').select('*').order('sort'),
           supabase.rpc('popular_authors', { lim: 8 }),
+          supabase.from('book_cards').select('*').ilike('author_name', 'Paul Osula').order('created_at', { ascending: false }).limit(1),
         ]);
         if (f.error || t.error || n.error) throw new Error('Could not load books');
         if (cancelled) return;
@@ -47,6 +49,7 @@ export default function Home() {
         setData({ featured, trending, fresh });
         setGenres(g.data || []);
         setAuthors(a.data || []);
+        setCreatorBook((own.data || [])[0] || null);
         setFailed(false);
 
         if (!user) {
@@ -129,12 +132,12 @@ export default function Home() {
         <div className="homehero-copy">
           <span className="home-eyebrow">YOUR NEXT FAVOURITE STORY STARTS HERE</span>
           <h1>Stories worth staying up for.</h1>
-          <p>Discover books and comics from independent creators. Find your next read, follow the writers you love, or share a story of your own.</p>
+          <p>Books and comics from African and diaspora creators. Read free, or publish your own.</p>
           <div className="row homehero-actions">
             <Link className="btn" href="/discover">Explore stories</Link>
             <PublishLink className="btn ghost">Publish your story</PublishLink>
           </div>
-          <div className="homehero-note"><span>Books</span><i /> <span>Comics</span><i /> <span>Independent voices</span></div>
+          <p className="homehero-free-note">Free to read. Free to publish.</p>
         </div>
         <div className="homehero-art" aria-hidden="true">
           <div className="hero-book hero-book-back"><span>NEW WORLDS</span><b>Find a story<br />that stays.</b></div>
@@ -142,6 +145,36 @@ export default function Home() {
           <div className="hero-spark">✦</div>
         </div>
       </section>
+
+      <section className="publish-benefits">
+        <div className="publish-benefits-intro">
+          <span className="home-eyebrow">FOR THE STORYTELLERS</span>
+          <h2 className="h2">Why publish on Palixia?</h2>
+          <p className="fine">A place to share your work, build your presence, and help new readers discover your stories.</p>
+        </div>
+        <div className="publish-benefits-grid">
+          <article><span aria-hidden="true">✦</span><h3>Free to publish</h3><p>Share your stories without a publishing fee.</p></article>
+          <article><span aria-hidden="true">♡</span><h3>You keep your rights</h3><p>Your original work remains yours.</p></article>
+          <article><span aria-hidden="true">⌕</span><h3>Get discovered</h3><p>Help new readers find your books and comics.</p></article>
+          <article><span aria-hidden="true">▤</span><h3>Your own author page</h3><p>Showcase your work in one place.</p></article>
+        </div>
+      </section>
+
+      {creatorBook && (
+        <section className="creator-week">
+          <div className="creator-week-copy">
+            <span className="home-eyebrow">CREATOR OF THE WEEK</span>
+            <h2 className="h2">Meet Paul Osula</h2>
+            <p className="fine">Discover a story from Palixia's creator.</p>
+            <h3>{creatorBook.title}</h3>
+            <p>{creatorBook.description || 'Discover this story on Palixia.'}</p>
+            <Link className="btn" href={'/book/' + creatorBook.id}>Read the book</Link>
+          </div>
+          <Link className="creator-week-cover" href={'/book/' + creatorBook.id} aria-label={'Read ' + creatorBook.title}>
+            <Cover b={creatorBook} />
+          </Link>
+        </section>
+      )}
 
       {!configured && <p className="notice">Palixia is not connected to its database yet. Follow the setup steps in README.md, then reload this page.</p>}
       {failed && <p className="notice">Some stories could not load right now. Please refresh the page and try again.</p>}
