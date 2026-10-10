@@ -45,7 +45,7 @@ export default function Home() {
           supabase.from('book_cards').select('*').order('created_at', { ascending: false }).limit(12),
           supabase.from('genres').select('*').order('sort'),
           supabase.rpc('popular_authors', { lim: 8 }),
-          supabase.from('book_cards').select('*').ilike('author_name', 'Paul Osula').order('created_at', { ascending: false }).limit(1),
+          supabase.from('creator_of_week').select('book_id').eq('id', true).maybeSingle(),
         ]);
         if (f.error || t.error || n.error) throw new Error('Could not load books');
         if (cancelled) return;
@@ -56,7 +56,14 @@ export default function Home() {
         setData({ featured, trending, fresh });
         setGenres(g.data || []);
         setAuthors(a.data || []);
-        setCreatorBook((own.data || [])[0] || (n.data || [])[0] || null);
+        const selectedCreatorId = own.data?.book_id;
+        let selectedCreator = null;
+        if (selectedCreatorId) {
+          const selectedResult = await supabase.from('book_cards').select('*').eq('id', selectedCreatorId).maybeSingle();
+          if (!selectedResult.error) selectedCreator = selectedResult.data;
+        }
+        if (cancelled) return;
+        setCreatorBook(selectedCreator);
         setFailed(false);
 
         if (!user) {
