@@ -7,7 +7,7 @@ import Guard from '@/components/Guard';
 import Cover from '@/components/Cover';
 import Empty from '@/components/Empty';
 
-const TABS = [['reading', 'Currently Reading'], ['saved', 'Saved'], ['history', 'Reading History']];
+const TABS = [['reading', 'Currently Reading'], ['saved', 'Saved'], ['history', 'Reading History'], ['journey', 'Reading Journey']];
 
 function cardFields(b) {
   return {
@@ -26,6 +26,7 @@ function Shelf() {
   const [reading, setReading] = useState(null);
   const [saved, setSaved] = useState(null);
   const [failed, setFailed] = useState(false);
+  const [journey, setJourney] = useState(null);
 
   useEffect(() => {
     if (!user) return;
@@ -96,7 +97,59 @@ function Shelf() {
     return () => { cancelled = true; };
   }, [user]);
 
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    setJourney(null);
+    (async () => {
+      try {
+        const [activityResult, followsResult] = await Promise.all([
+          supabase.from('reading_activity')
+            .select('book_id,chapter_id,activity_date')
+            .eq('user_id', user.id)
+            .order('activity_date', { ascending: false }),
+          supabase.from('follows')
+            .select('author_id')
+            .eq('user_id', user.id),
+        ]);
+        if (activityResult.error) throw activityResult.error;
+        if (followsResult.error) throw followsResult.error;
+
+        const followedIds = [...new Set((followsResult.data || []).map((row) => row.author_id).filter(Boolean))];
+        let authors = [];
+        if (followedIds.length) {
+          const profileResult = await supabase.from('profiles')
+            .select('id,name,username')
+            .in('id', followedIds);
+          if (profileResult.error) throw profileResult.error;
+          authors = profileResult.data || [];
+        }
+
+        if (!cancelled) {
+          setJourney({
+            activity: activityResult.data || [],
+            authors,
+            monthStart: new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)).toISOString().slice(0, 10),
+            failed: false,
+          });
+        }
+      } catch (error) {
+        console.error('[Palixia Reading Journey] Could not load stats:', error);
+        if (!cancelled) setJourney({ activity: [], authors: [], failed: true });
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user]);
+
   const current = reading ? reading.filter((r) => r.progress < 100) : null;
+  const completed = reading ? reading.filter((r) => r.progress >= 100) : [];
+  const activity = journey ? journey.activity : [];
+  const monthActivity = journey && journey.monthStart
+    ? activity.filter((row) => row.activity_date >= journey.monthStart)
+    : [];
+  const uniqueChapters = new Set(activity.map((row) => row.chapter_id)).size;
+  const monthBooks = new Set(monthActivity.map((row) => row.book_id)).size;
+
 
   return (
     <>
@@ -144,6 +197,75 @@ function Shelf() {
             ))}
           </div>
         )
+      )}
+
+      {tab === 'journey' && (
+        <section className="stack" style={{ gap: '1rem' }}>
+          <p className="muted">Your reading stats are private. Only you can see this page.</p>
+          {journey && journey.failed ? (
+            <div className="notice">
+              Reading Journey needs its database setup before your activity can appear. Your other Library tabs will keep working normally.
+            </div>
+          ) : journey === null || reading === null ? (
+            <p className="muted">Loading your Reading Journey...</p>
+          ) : (
+            <>
+              <h2 className="h2">Your reading at a glance</h2>
+              <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(135px, 1fr))', gap: '0.75rem' }}>
+                {[
+                  ['Books completed', completed.length],
+                  ['Chapters opened', uniqueChapters],
+                  ['Authors followed', journey.authors.length],
+                  ['Books this month', monthBooks],
+                ].map(([label, value]) => (
+                  <div key={label} className="bcard" style={{ padding: '1rem', minWidth: 0 }}>
+                    <p className="fine" style={{ margin: 0 }}>{label}</p>
+                    <p style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.35rem 0 0' }}>{value}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="stack" style={{ gap: '0.5rem' }}>
+                <h2 className="h2">This month</h2>
+                <div className="notice">
+                  {monthActivity.length === 0
+                    ? 'Your next reading session will start your monthly recap.'
+                    : `You opened ${new Set(monthActivity.map((row) => row.chapter_id)).size} chapters across ${monthBooks} ${monthBooks === 1 ? 'book' : 'books'} this month.`}
+                  {' '}{new Date().toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}.
+                </div>
+              </div>
+
+              <div className="stack" style={{ gap: '0.5rem' }}>
+                <h2 className="h2">Reading milestones</h2>
+                <div className="stack" style={{ gap: '0.5rem' }}>
+                  {[
+                    [completed.length >= 1, 'First book completed', 'Finish your first book to unlock this milestone.'],
+                    [completed.length >= 5, 'Five books completed', 'Keep reading to reach five completed books.'],
+                    [uniqueChapters >= 10, 'Ten chapters explored', 'Open ten different chapters to unlock this milestone.'],
+                  ].map(([unlocked, title, hint]) => (
+                    <div key={title} className="notice" style={{ opacity: unlocked ? 1 : 0.75 }}>
+                      <strong>{unlocked ? '✓ ' : '○ '}{title}</strong>
+                      {!unlocked && <p className="fine" style={{ margin: '0.25rem 0 0' }}>{hint}</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="stack" style={{ gap: '0.5rem' }}>
+                <h2 className="h2">Authors you follow</h2>
+                {journey.authors.length === 0 ? (
+                  <p className="muted">Follow authors whose stories you want to keep up with. They’ll appear here.</p>
+                ) : (
+                  <div className="chips">
+                    {journey.authors.map((author) => (
+                      <Link key={author.id} className="chip" href={'/author/' + author.username}>{author.name}</Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </section>
       )}
 
       {tab === 'history' && reading && (
