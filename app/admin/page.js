@@ -13,6 +13,7 @@ function AdminPanel() {
   const [profiles, setProfiles] = useState([]);
   const [badges, setBadges] = useState({});
   const [books, setBooks] = useState([]);
+  const [creatorBookId, setCreatorBookId] = useState('');
   const [reports, setReports] = useState([]);
   const [chapterComments, setChapterComments] = useState([]);
   const [communityComments, setCommunityComments] = useState([]);
@@ -50,22 +51,24 @@ function AdminPanel() {
   const load = useCallback(async () => {
     setLoading(true);
     setError('');
-    const [usersCount, booksCount, publishedCount, chaptersCount, userRows, badgeRows, bookRows] = await Promise.all([
+    const [usersCount, booksCount, publishedCount, chaptersCount, userRows, badgeRows, bookRows, creatorPick] = await Promise.all([
       supabase.from('profiles').select('id', { count: 'exact', head: true }),
       supabase.from('books').select('id', { count: 'exact', head: true }),
       supabase.from('books').select('id', { count: 'exact', head: true }).eq('status', 'published'),
       supabase.from('chapters').select('id', { count: 'exact', head: true }),
       supabase.from('profiles').select('id,name,username,role,status,created_at').order('created_at', { ascending: false }).limit(200),
       supabase.from('profile_badges').select('profile_id,badge_type'),
-      supabase.from('books').select('id,title,status,story_status,created_at,author_id').order('created_at', { ascending: false }).limit(100),
+      supabase.from('books').select('id,title,status,story_status,created_at,author_id,profiles(name,username)').order('created_at', { ascending: false }).limit(100),
+      supabase.from('creator_of_week').select('book_id').eq('id', true).maybeSingle(),
     ]);
-    const failed = [usersCount, booksCount, publishedCount, chaptersCount, userRows, badgeRows, bookRows].find((r) => r.error);
+    const failed = [usersCount, booksCount, publishedCount, chaptersCount, userRows, badgeRows, bookRows, creatorPick].find((r) => r.error);
     if (failed) setError(friendly(failed.error, 'We could not load the admin data. Make sure the admin SQL setup has been run.'));
     else {
       setStats({ users: usersCount.count || 0, books: booksCount.count || 0, published: publishedCount.count || 0, chapters: chaptersCount.count || 0 });
       setProfiles(userRows.data || []);
       setBadges(Object.fromEntries((badgeRows.data || []).map((b) => [b.profile_id, b.badge_type])));
       setBooks(bookRows.data || []);
+      setCreatorBookId(creatorPick.data?.book_id || '');
     }
     setLoading(false);
     await loadModeration();
@@ -84,6 +87,14 @@ function AdminPanel() {
     const { error: actionError } = await action();
     if (actionError) setError(friendly(actionError, 'The action could not be completed.'));
     else { setMessage(label); await load(); }
+    setBusyId('');
+  }
+
+  async function saveCreatorOfWeek() {
+    setBusyId('creator-week'); setError(''); setMessage('');
+    const { error: actionError } = await supabase.rpc('admin_set_creator_of_week', { p_book_id: creatorBookId || null });
+    if (actionError) setError(friendly(actionError, 'We could not update Creator of the Week. Run supabase/creator_of_week.sql in Supabase first.'));
+    else { setMessage(creatorBookId ? 'Creator of the Week updated.' : 'Creator of the Week cleared.'); await load(); }
     setBusyId('');
   }
 
@@ -178,6 +189,15 @@ function AdminPanel() {
         <h2 className="h2">Community post moderation</h2>
         {moderationLoading ? <p className="muted">Loading posts…</p> : posts.map(p=><article key={p.id} className="panel stack" style={{padding:'1rem',border:'1px solid var(--border, #ddd)',borderRadius:'.75rem'}}><div className="sechead"><b>{p.profiles?.name||'User'} (@{p.profiles?.username||'unknown'})</b><span className="fine">{p.status}</span></div><p>{p.body}</p><p className="fine">{new Date(p.created_at).toLocaleString()}</p><button className="btn ghost small" disabled={busyId===p.id} onClick={()=>runAction(p.id,'Post status updated.',()=>supabase.rpc('admin_set_community_post_status',{p_post_id:p.id,p_status:p.status==='hidden'?'visible':'hidden'}))}>{p.status==='hidden'?'Restore post':'Hide post'}</button></article>)}
         {!moderationLoading&&posts.length===0&&<p className="fine">No community posts found.</p>}
+      </section>
+
+      <section className="stack">
+        <h2 className="h2">Creator of the Week</h2>
+        <p className="fine">Choose the published book or poem featured on the Palixia homepage. Uploading a new work will not change this selection.</p>
+        {loading ? <p className="muted">Loading published works…</p> : <div className="stack">
+          <div className="field"><label htmlFor="creator-week-book">Featured work</label><select id="creator-week-book" className="in" value={creatorBookId} onChange={e => setCreatorBookId(e.target.value)}><option value="">No creator selected</option>{books.filter(b => b.status === 'published').map(b => <option key={b.id} value={b.id}>{b.title} — {b.profiles?.name || 'Unknown author'}</option>)}</select></div>
+          <div className="row" style={{flexWrap:'wrap',gap:'.5rem'}}><button className="btn small" type="button" disabled={busyId==='creator-week'} onClick={saveCreatorOfWeek}>{busyId==='creator-week'?'Saving…':'Save selection'}</button><button className="btn ghost small" type="button" disabled={busyId==='creator-week'} onClick={() => setCreatorBookId('')}>Clear selection</button></div>
+        </div>}
       </section>
 
       <section className="stack">
