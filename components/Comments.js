@@ -36,6 +36,7 @@ export default function Comments({ chapterId, authorId }) {
   const [replyTo, setReplyTo] = useState(null);
   const [editing, setEditing] = useState(null);
   const [note, setNote] = useState('');
+  const [reportingId, setReportingId] = useState('');
   const load = useCallback(async () => {
     const { data, error } = await supabase.from('comments')
       .select('id,user_id,parent_id,body,status,created_at,updated_at,profiles(name,username)')
@@ -56,6 +57,16 @@ export default function Comments({ chapterId, authorId }) {
     if (error) return 'Could not edit this comment. Please try again.';
     setEditing(null); await load(); return '';
   }
+  async function report(item) {
+    const reason = typeof window !== 'undefined' ? window.prompt('Why are you reporting this comment?') : '';
+    if (reason === null) return;
+    if (!reason || reason.trim().length < 3) { setNote('Please enter a short reason for the report.'); return; }
+    setReportingId(item.id); setNote('');
+    const { error } = await supabase.rpc('submit_moderation_report', { p_target_type: 'chapter_comment', p_target_id: item.id, p_reason: reason.trim() });
+    setReportingId('');
+    if (error) setNote(error.message === 'duplicate key value violates unique constraint' ? 'You have already reported this item.' : 'Could not submit report. Please try again.');
+    else setNote('Report sent to the Palixia moderation team.');
+  }
   async function remove(id) {
     if (typeof window !== 'undefined' && !window.confirm('Delete this comment?')) return;
     const { error } = await supabase.from('comments').delete().eq('id', id);
@@ -75,6 +86,7 @@ export default function Comments({ chapterId, authorId }) {
         {user && !reply && <button className="linkbtn fine" type="button" onClick={() => setReplyTo(replyTo === item.id ? null : item.id)}>Reply</button>}
         {mine && <button className="linkbtn fine" type="button" onClick={() => setEditing(item.id)}>Edit</button>}
         {canDelete && <button className="linkbtn fine" type="button" onClick={() => remove(item.id)}>Delete</button>}
+        {user && !mine && <button className="linkbtn fine" type="button" disabled={reportingId === item.id} onClick={() => report(item)}>{reportingId === item.id ? 'Reporting…' : 'Report'}</button>}
       </p>}
       {replyTo === item.id && <Composer placeholder="Write a reply" cta="Reply" onSend={(t) => post(t, item.id)} onCancel={() => setReplyTo(null)} />}
       {!reply && children(item.id).length > 0 && <ul className="clist">{children(item.id).map((child) => <Item key={child.id} item={child} reply />)}</ul>}
