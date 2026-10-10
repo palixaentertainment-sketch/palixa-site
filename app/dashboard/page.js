@@ -19,7 +19,7 @@ function Dashboard() {
     if (!user) return;
     (async () => {
       const [b, s, sv] = await Promise.all([
-        supabase.from('books').select('id,title,cover_url,book_type,status,reads,is_sample,chapters(id,status)').eq('author_id', user.id).order('updated_at', { ascending: false }),
+        supabase.from('books').select('id,title,cover_url,book_type,status,story_status,reads,is_sample,chapters(id,status)').eq('author_id', user.id).order('updated_at', { ascending: false }),
         supabase.rpc('author_stats', { p_author: user.id }),
         supabase.rpc('book_saves'),
       ]);
@@ -68,7 +68,7 @@ function Dashboard() {
           <div className="tablewrap">
             <table>
               <thead>
-                <tr><th>Book</th><th>Format</th><th>Status</th><th className="num">Chapters</th><th className="num">Reads</th><th className="num">Saves</th><th /></tr>
+                <tr><th>Book</th><th>Format</th><th>Publishing</th><th>Story</th><th className="num">Chapters</th><th className="num">Reads</th><th className="num">Saves</th><th /></tr>
               </thead>
               <tbody>
                 {books.map((b) => {
@@ -78,6 +78,7 @@ function Dashboard() {
                       <td><div className="tcell"><div style={{ width: '2.4rem' }}><Cover b={{ ...b, author_name: '' }} /></div><b style={{ overflowWrap: 'anywhere' }}>{b.title}</b></div></td>
                       <td>{typeLabel(b.book_type)}</td>
                       <td><span className={'badge ' + (b.status === 'published' ? 'live' : 'draft')}>{b.status === 'published' ? 'Published' : b.status === 'draft' ? 'Draft' : 'Unpublished'}</span></td>
+                      <td><span className="badge">{b.story_status === 'completed' ? 'Completed' : b.story_status === 'hiatus' ? 'On hiatus' : 'Ongoing'}</span></td>
                       <td className="num">{live} / {(b.chapters || []).length}</td>
                       <td className="num">{fmtNum(b.reads)}</td>
                       <td className="num">{saves[b.id] || 0}</td>
