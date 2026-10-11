@@ -39,13 +39,14 @@ export default function Home() {
 
     (async () => {
       try {
-        const [f, t, n, g, a, own] = await Promise.all([
+        const [f, t, n, g, a, own, comicCount] = await Promise.all([
           supabase.from('book_cards').select('*').eq('featured', true).order('reads', { ascending: false }).limit(6),
           supabase.from('book_cards').select('*').order('reads', { ascending: false }).limit(12),
           supabase.from('book_cards').select('*').order('created_at', { ascending: false }).limit(12),
           supabase.from('genres').select('*').order('sort'),
           supabase.rpc('popular_authors', { lim: 8 }),
           supabase.from('book_cards').select('*').ilike('author_name', 'Paul Osula').order('created_at', { ascending: false }).limit(1),
+          supabase.from('book_cards').select('id', { count: 'exact', head: true }).eq('book_type', 'comic'),
         ]);
         if (f.error || t.error || n.error) throw new Error('Could not load books');
         if (cancelled) return;
@@ -54,7 +55,8 @@ export default function Home() {
         const trending = t.data || [];
         const fresh = n.data || [];
         setData({ featured, trending, fresh });
-        setGenres(g.data || []);
+        // Keep the Comics genre off the homepage until there are at least two published comics.
+        setGenres((g.data || []).filter((genre) => genre.slug !== 'comics' || (comicCount.count || 0) >= 2));
         setAuthors(a.data || []);
         setCreatorBook((own.data || [])[0] || (n.data || [])[0] || null);
         setFailed(false);
