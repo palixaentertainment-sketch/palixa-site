@@ -259,7 +259,7 @@ export default function Home() {
       )}
 
       {authors.length > 0 && (
-        <section><div className="sechead"><div><h2 className="h2">Meet the authors</h2><p className="fine">Follow writers and keep up with their work.</p></div><Link href="/authors">All authors</Link></div><div className="authors">{authors.map((a) => <Link key={a.id} href={'/author/' + a.username} className="acard"><Avatar src={a.avatar_url} name={a.name} size="4.2rem" /><b>{a.name}</b><span className="fine">{fmtNum(a.total_reads)} reads</span></Link>)}</div></section>
+        <section><div className="sechead"><div><h2 className="h2">Meet the authors</h2><p className="fine">Follow writers and keep up with their work.</p></div><Link href="/authors">All authors</Link></div><div className="authors">{authors.map((a) => <Link key={a.id} href={'/author/' + a.username} className="acard"><Avatar src={a.avatar_url} name={a.name} size="4.2rem" /><b>{a.name}</b></Link>)}</div></section>
       )}
 
       <section className="home-cta"><div><span className="home-eyebrow">MADE FOR STORYTELLERS</span><h2>Your story deserves readers.</h2><p>Publish your work, grow your audience, and give readers something new to love.</p></div><PublishLink className="btn">Start publishing</PublishLink></section>
