@@ -201,7 +201,7 @@ function AdminPanel() {
             <div className="stat"><span className="mono">Unique visitors</span><b>{Number(analytics.unique_visitors || 0).toLocaleString()}</b></div>
             <div className="stat"><span className="mono">Views today</span><b>{Number(analytics.views_today || 0).toLocaleString()}</b></div>
             <div className="stat"><span className="mono">Last 7 days</span><b>{Number(analytics.views_7_days || 0).toLocaleString()}</b></div>
-            <div className="stat"><span className="mono">Active readers</span><b>{Number(analytics.registered_readers || 0).toLocaleString()}</b></div>
+            <div className="stat"><span className="mono">People who have read</span><b>{Number(analytics.readers || 0).toLocaleString()}</b></div>
             <div className="stat"><span className="mono">Authors</span><b>{Number(analytics.authors || 0).toLocaleString()}</b></div>
             <div className="stat"><span className="mono">Book reads</span><b>{Number(analytics.total_reads || 0).toLocaleString()}</b></div>
           </div>
