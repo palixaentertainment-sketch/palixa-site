@@ -19,7 +19,6 @@ export default function CookiePolicy() {
 
       <h2 className="h2">Changes and contact</h2>
       <p>We may update this page as the website changes. For questions about cookies or privacy, email <a href="mailto:palixia.official@gmail.com">palixia.official@gmail.com</a> and see our <a href="/privacy">Privacy Policy</a>.</p>
-      <p className="fine">This is a working policy draft. The site owner should verify the cookies and browser storage actually used by the current website and its providers, and check the legal requirements that apply before relying on this page as a final legal document.</p>
     </article>
   );
 }
