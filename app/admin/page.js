@@ -26,6 +26,43 @@ function AdminPanel() {
   const [message, setMessage] = useState('');
   const [reportFilter, setReportFilter] = useState('open');
   const [noteDrafts, setNoteDrafts] = useState({});
+  const [creatorBooks, setCreatorBooks] = useState([]);
+  const [creatorSelection, setCreatorSelection] = useState('');
+  const [creatorLoading, setCreatorLoading] = useState(true);
+  const [creatorError, setCreatorError] = useState('');
+  const [creatorBusy, setCreatorBusy] = useState(false);
+
+  const loadCreatorWeek = useCallback(async () => {
+    setCreatorLoading(true);
+    setCreatorError('');
+    const [bookResult, selectionResult] = await Promise.all([
+      supabase.from('book_cards').select('id,title,author_name').order('created_at', { ascending: false }).limit(100),
+      supabase.from('creator_of_week').select('book_id').eq('id', true).maybeSingle(),
+    ]);
+    if (bookResult.error || selectionResult.error) {
+      setCreatorError('Creator of the Week needs the database setup. Run supabase/creator_of_week.sql in Supabase SQL Editor, then refresh this page.');
+    } else {
+      setCreatorBooks(bookResult.data || []);
+      setCreatorSelection(selectionResult.data?.book_id || '');
+    }
+    setCreatorLoading(false);
+  }, []);
+
+  useEffect(() => { loadCreatorWeek(); }, [loadCreatorWeek]);
+
+  async function saveCreatorWeek() {
+    setCreatorBusy(true);
+    setCreatorError('');
+    setMessage('');
+    const { error: saveError } = await supabase.rpc('admin_set_creator_of_week', { p_book_id: creatorSelection || null });
+    if (saveError) {
+      setCreatorError('Could not save the selection. Make sure supabase/creator_of_week.sql has been run and your account is an active admin.');
+    } else {
+      setMessage(creatorSelection ? 'Creator of the Week updated.' : 'Creator of the Week cleared.');
+      await loadCreatorWeek();
+    }
+    setCreatorBusy(false);
+  }
 
   const loadModeration = useCallback(async () => {
     setModerationLoading(true);
@@ -178,6 +215,25 @@ function AdminPanel() {
         <h2 className="h2">Community post moderation</h2>
         {moderationLoading ? <p className="muted">Loading posts…</p> : posts.map(p=><article key={p.id} className="panel stack" style={{padding:'1rem',border:'1px solid var(--border, #ddd)',borderRadius:'.75rem'}}><div className="sechead"><b>{p.profiles?.name||'User'} (@{p.profiles?.username||'unknown'})</b><span className="fine">{p.status}</span></div><p style={{whiteSpace:'pre-wrap'}}>{p.body}</p>{p.image_url&&<a href={p.image_url} target="_blank" rel="noreferrer" aria-label="Open community image"><img src={p.image_url} alt="Community post attachment" loading="lazy" style={{display:'block',width:'100%',maxWidth:'520px',maxHeight:'520px',objectFit:'contain',borderRadius:'.75rem',border:'1px solid var(--border, #ddd)'}} /></a>}<p className="fine">{new Date(p.created_at).toLocaleString()}</p><button className="btn ghost small" disabled={busyId===p.id} onClick={()=>runAction(p.id,'Post status updated.',()=>supabase.rpc('admin_set_community_post_status',{p_post_id:p.id,p_status:p.status==='hidden'?'visible':'hidden'}))}>{p.status==='hidden'?'Restore post':'Hide post'}</button></article>)}
         {!moderationLoading&&posts.length===0&&<p className="fine">No community posts found.</p>}
+      </section>
+
+      <section className="stack">
+        <h2 className="h2">Creator of the Week</h2>
+        <p className="fine">Choose one published book to feature on the homepage. It stays featured until you change or clear your selection. New uploads will not replace it automatically.</p>
+        {creatorError && <p className="msg-err" role="alert">{creatorError}</p>}
+        {creatorLoading ? <p className="muted">Loading Creator of the Week…</p> : !creatorError && <>
+          <div className="field">
+            <label htmlFor="creator-week-book">Featured book</label>
+            <select id="creator-week-book" className="in" value={creatorSelection} onChange={e => setCreatorSelection(e.target.value)}>
+              <option value="">No creator selected</option>
+              {creatorBooks.map(b => <option key={b.id} value={b.id}>{b.title} — {b.author_name}</option>)}
+            </select>
+          </div>
+          <div className="row" style={{gap:'.5rem',flexWrap:'wrap'}}>
+            <button className="btn" type="button" onClick={saveCreatorWeek} disabled={creatorBusy}>{creatorBusy ? 'Saving…' : 'Save selection'}</button>
+            <button className="btn ghost" type="button" onClick={() => { setCreatorSelection(''); }} disabled={creatorBusy}>Clear selection</button>
+          </div>
+        </>}
       </section>
 
       <section className="stack">
