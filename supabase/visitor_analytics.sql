@@ -55,7 +55,7 @@ begin
     'unique_visitors', (select count(distinct session_id) from public.visitor_events),
     'views_today', (select count(*) from public.visitor_events where created_at >= date_trunc('day', now())),
     'views_7_days', (select count(*) from public.visitor_events where created_at >= now() - interval '7 days'),
-    'registered_readers', (select count(*) from public.profiles where role = 'reader' and status = 'active'),
+    'readers', (select count(distinct user_id) from public.chapter_reads),
     'authors', (select count(*) from public.profiles where role = 'author' and status = 'active'),
     'total_reads', (select coalesce(sum(reads), 0) from public.books where status = 'published'),
     'top_pages', coalesce((
