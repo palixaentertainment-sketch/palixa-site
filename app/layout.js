@@ -1,6 +1,7 @@
 import './globals.css';
 import Providers from '@/components/Providers';
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
+import VisitorTracker from '@/components/VisitorTracker';
 
 export const metadata = {
   title: { default: 'Palixia', template: '%s | Palixia' },
@@ -26,7 +27,7 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <ServiceWorkerRegistration />
-        <Providers>{children}</Providers>
+        <Providers><VisitorTracker />{children}</Providers>
       </body>
     </html>
   );
