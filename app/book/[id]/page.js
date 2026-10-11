@@ -191,7 +191,7 @@ export default function BookPage() {
           <h1 className="h1">{book.title}</h1>
           <p className="muted">by <Link className="linkbtn" href={'/author/' + (author ? author.username : '')}>{author ? author.name : 'Unknown'}</Link>{' '}<ProfileBadge type={authorBadge} /></p>
           <dl className="facts">
-            <div><dt>Reads</dt><dd>{fmtNum(book.reads)}</dd></div>
+            {isOwner && <div><dt>Reads</dt><dd>{fmtNum(book.reads)}</dd></div>}
             <div><dt>Chapters</dt><dd>{live.length}</dd></div>
             <div><dt>Format</dt><dd>{typeLabel(book.book_type)}</dd></div>
           </dl>
@@ -250,7 +250,7 @@ export default function BookPage() {
             <div className="stack" style={{ gap: '0.5rem' }}>
               <div className="row" style={{ gap: '0.5rem' }}><b>{author.name}</b><ProfileBadge type={authorBadge} /></div>
               <p className="muted">{author.bio || 'This author has not added a bio yet.'}</p>
-              <p className="fine">{stats ? stats.books + ' published ' + (stats.books === 1 ? 'book' : 'books') + ' · ' + fmtNum(stats.followers) + ' followers' : ''}</p>
+              <p className="fine">{stats ? stats.books + ' published ' + (stats.books === 1 ? 'book' : 'books') : ''}{isOwner && stats ? ' · ' + fmtNum(stats.followers) + ' followers' : ''}</p>
               <div><Link className="btn ghost small" href={'/author/' + author.username}>View Author</Link></div>
             </div>
           </div>
