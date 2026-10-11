@@ -9,6 +9,10 @@ create table if not exists public.creator_of_week (
   updated_by uuid references public.profiles(id) on delete set null
 );
 
+-- Upgrade an existing table created before updated_by was added.
+alter table public.creator_of_week
+  add column if not exists updated_by uuid references public.profiles(id) on delete set null;
+
 alter table public.creator_of_week enable row level security;
 
 drop policy if exists "creator of the week is public" on public.creator_of_week;
