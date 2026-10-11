@@ -23,24 +23,42 @@ export default function Providers({ children }) {
         <>
           {signingIn ? <AuthHeader /> : <Header />}
           <main className="wrap page">{children}</main>
-          <footer className="wrap foot">
-            <Logo size="footer" />
-            <nav aria-label="Footer">
-              <Link href="/discover">Discover</Link>
-              <Link href="/community">Community</Link>
-              <Link href="/categories">Categories</Link>
-              <Link href="/authors">Authors</Link>
-              <Link href="/about">About</Link>
-              <Link href="/contact">Contact Us</Link>
-              <Link href="/terms">Terms of Service</Link>
-              <Link href="/privacy">Privacy Policy</Link>
-              <PublishLink className="">Publish with Palixia</PublishLink>
-            </nav>
-            <div className="foot-social">
-              <span className="fine">Follow Palixia</span>
-              <SocialLinks compact />
+          <footer className="foot">
+            <div className="foot-inner">
+              <div className="foot-brand">
+                <Logo size="footer" />
+                <p>Books, comics, and a community for readers and writers.</p>
+                <div className="foot-social">
+                  <span className="foot-heading">Connect with us</span>
+                  <SocialLinks compact />
+                  <a href="mailto:palixia.official@gmail.com">palixia.official@gmail.com</a>
+                </div>
+              </div>
+              <div className="foot-column">
+                <h2 className="foot-heading">Quick Links</h2>
+                <Link href="/">Home</Link>
+                <Link href="/discover">Discover</Link>
+                <Link href="/community">Community</Link>
+                <Link href="/library">My Library</Link>
+                <PublishLink className="">Publish on Palixia</PublishLink>
+              </div>
+              <div className="foot-column">
+                <h2 className="foot-heading">Resources</h2>
+                <Link href="/about">About Palixia</Link>
+                <Link href="/authors">Explore Authors</Link>
+                <Link href="/contact">Contact Us</Link>
+                <Link href="/community-guidelines">Community Guidelines</Link>
+              </div>
+              <div className="foot-column">
+                <h2 className="foot-heading">Legal</h2>
+                <Link href="/terms">Terms of Service</Link>
+                <Link href="/privacy">Privacy Policy</Link>
+                <Link href="/copyright">Copyright Policy</Link>
+              </div>
             </div>
-            <p className="fine">&copy; Palixia.</p>
+            <div className="foot-bottom">
+              <p className="fine">&copy; {new Date().getFullYear()} Palixia. All rights reserved.</p>
+            </div>
           </footer>
           <MobileNav />
         </>
