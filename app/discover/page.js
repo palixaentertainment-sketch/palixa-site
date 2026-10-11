@@ -26,6 +26,7 @@ function Discover() {
 
   const [input, setInput] = useState(q);
   const [genres, setGenres] = useState([]);
+  const [hasComics, setHasComics] = useState(false);
   const [rows, setRows] = useState(null);
   const [authors, setAuthors] = useState([]);
   const [more, setMore] = useState(false);
@@ -44,7 +45,14 @@ function Discover() {
 
   useEffect(() => {
     if (!configured) return;
-    supabase.from('genres').select('*').order('sort').then(({ data }) => setGenres(data || []));
+    Promise.all([
+      supabase.from('genres').select('*').order('sort'),
+      supabase.from('book_cards').select('id', { count: 'exact', head: true }).eq('book_type', 'comic'),
+    ]).then(([{ data }, comicResult]) => {
+      const ready = (comicResult.count || 0) >= 2;
+      setHasComics(ready);
+      setGenres((data || []).filter((genre) => genre.slug !== 'comics' || ready));
+    });
   }, []);
 
   function build(from) {
@@ -105,7 +113,7 @@ function Discover() {
           <button className="btn" type="submit">Search</button>
         </form>
         <div className="chips" role="group" aria-label="Format">
-          {[['all', 'All'], ['text', 'Books'], ['comic', 'Comics']].map(([v, label]) => (
+          {[['all', 'All'], ['text', 'Books'], ...(hasComics ? [['comic', 'Comics']] : [])].map(([v, label]) => (
             <button key={v} type="button" className="chip" aria-pressed={type === v} onClick={() => go({ type: v === 'all' ? '' : v })}>{label}</button>
           ))}
         </div>
