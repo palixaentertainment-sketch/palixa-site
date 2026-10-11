@@ -54,6 +54,7 @@ export default function Providers({ children }) {
                 <Link href="/terms">Terms of Service</Link>
                 <Link href="/privacy">Privacy Policy</Link>
                 <Link href="/copyright">Copyright Policy</Link>
+                <Link href="/cookies">Cookie Policy</Link>
               </div>
             </div>
             <div className="foot-bottom">
