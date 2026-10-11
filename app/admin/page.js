@@ -10,6 +10,9 @@ import { friendly } from '@/lib/errors';
 function AdminPanel() {
   const { user } = useAuth();
   const [stats, setStats] = useState(null);
+  const [analytics, setAnalytics] = useState(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
+  const [analyticsError, setAnalyticsError] = useState('');
   const [profiles, setProfiles] = useState([]);
   const [badges, setBadges] = useState({});
   const [books, setBooks] = useState([]);
@@ -111,6 +114,21 @@ function AdminPanel() {
 
   useEffect(() => { load(); }, [load]);
 
+  const loadAnalytics = useCallback(async () => {
+    setAnalyticsLoading(true);
+    setAnalyticsError('');
+    const { data, error: analyticsQueryError } = await supabase.rpc('admin_analytics_summary');
+    if (analyticsQueryError) {
+      setAnalyticsError('Visitor analytics needs its database setup. Run supabase/visitor_analytics.sql in the Supabase SQL Editor, then refresh.');
+      setAnalytics(null);
+    } else {
+      setAnalytics(data || null);
+    }
+    setAnalyticsLoading(false);
+  }, []);
+
+  useEffect(() => { loadAnalytics(); }, [loadAnalytics]);
+
   const filteredProfiles = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return profiles;
@@ -172,6 +190,27 @@ function AdminPanel() {
         <div className="stat"><span className="mono">Published</span><b>{stats ? stats.published : '—'}</b></div>
         <div className="stat"><span className="mono">Chapters</span><b>{stats ? stats.chapters : '—'}</b></div>
       </div>
+
+      <section className="stack">
+        <div className="sechead"><h2 className="h2">Traffic & reading analytics</h2><button className="btn ghost small" type="button" onClick={loadAnalytics} disabled={analyticsLoading}>{analyticsLoading ? 'Loading…' : 'Refresh analytics'}</button></div>
+        <p className="fine">Page views are counted from the moment visitor tracking is installed. Unique visitors are estimated using a random browser session ID, not a person's identity. Historical visits are not available.</p>
+        {analyticsError && <p className="msg-err" role="alert">{analyticsError}</p>}
+        {analyticsLoading ? <p className="muted">Loading analytics…</p> : analytics && <>
+          <div className="stats">
+            <div className="stat"><span className="mono">Page views</span><b>{Number(analytics.page_views || 0).toLocaleString()}</b></div>
+            <div className="stat"><span className="mono">Unique visitors</span><b>{Number(analytics.unique_visitors || 0).toLocaleString()}</b></div>
+            <div className="stat"><span className="mono">Views today</span><b>{Number(analytics.views_today || 0).toLocaleString()}</b></div>
+            <div className="stat"><span className="mono">Last 7 days</span><b>{Number(analytics.views_7_days || 0).toLocaleString()}</b></div>
+            <div className="stat"><span className="mono">Active readers</span><b>{Number(analytics.registered_readers || 0).toLocaleString()}</b></div>
+            <div className="stat"><span className="mono">Authors</span><b>{Number(analytics.authors || 0).toLocaleString()}</b></div>
+            <div className="stat"><span className="mono">Book reads</span><b>{Number(analytics.total_reads || 0).toLocaleString()}</b></div>
+          </div>
+          <h3 className="h2">Most visited pages (last 30 days)</h3>
+          {Array.isArray(analytics.top_pages) && analytics.top_pages.length > 0
+            ? <div className="tablewrap"><table><thead><tr><th>Page</th><th>Views</th></tr></thead><tbody>{analytics.top_pages.map((p) => <tr key={p.path}><td><code>{p.path}</code></td><td>{Number(p.views || 0).toLocaleString()}</td></tr>)}</tbody></table></div>
+            : <p className="fine">No page views recorded yet. Visit a few pages on Palixia after the database setup is complete.</p>}
+        </>}
+      </section>
 
       <section className="stack">
         <div className="sechead"><h2 className="h2">User management</h2><button className="btn ghost small" type="button" onClick={load} disabled={loading}>{loading ? 'Loading…' : 'Refresh'}</button></div>
