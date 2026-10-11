@@ -92,8 +92,22 @@ img { max-width: 100%; }
 .bn svg { width: 1.4rem; height: 1.4rem; }
 .bn[aria-current="page"] { color: var(--accent); }
 
-.foot { border-top: 1px solid var(--line); padding-block: 1.5rem 2.5rem; display: grid; gap: 0.5rem; }
-.foot nav { display: flex; gap: 1rem; flex-wrap: wrap; font-weight: 500; }
+.foot { border-top: 1px solid var(--line); margin-top: 1rem; padding: 2.5rem 1rem 1rem; background: var(--surface); }
+.foot-inner { width: 100%; max-width: 76rem; margin-inline: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem 1.25rem; }
+.foot-brand { grid-column: 1 / -1; display: grid; align-content: start; gap: 0.85rem; }
+.foot-brand > p { max-width: 23rem; color: var(--muted); margin: 0; line-height: 1.6; }
+.foot-column { display: flex; flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+.foot-column a, .foot-social > a { color: var(--muted); font-size: 0.94rem; overflow-wrap: anywhere; }
+.foot-column a:hover, .foot-social > a:hover { color: var(--accent); }
+.foot-heading { margin: 0; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.foot-social { display: flex; flex-direction: column; align-items: flex-start; gap: 0.65rem; }
+.foot-bottom { max-width: 76rem; margin: 2rem auto 0; padding-top: 1rem; border-top: 1px solid var(--line); }
+.foot-bottom p { margin: 0; }
+@media (min-width: 52rem) {
+  .foot { padding: 3rem 2rem 1.25rem; }
+  .foot-inner { grid-template-columns: minmax(15rem, 1.7fr) repeat(3, minmax(8rem, 1fr)); gap: 2rem; }
+  .foot-brand { grid-column: auto; }
+}
 
 @media (min-width: 52rem) {
   body { padding-bottom: 0; }
