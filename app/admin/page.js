@@ -56,7 +56,8 @@ function AdminPanel() {
     setMessage('');
     const { error: saveError } = await supabase.rpc('admin_set_creator_of_week', { p_book_id: creatorSelection || null });
     if (saveError) {
-      setCreatorError('Could not save the selection. Make sure supabase/creator_of_week.sql has been run and your account is an active admin.');
+      const details = [saveError.message, saveError.code ? `Code: ${saveError.code}` : '', saveError.details, saveError.hint].filter(Boolean).join(' — ');
+      setCreatorError(`Could not save Creator of the Week: ${details || 'Unknown database error. Please refresh and try again.'}`);
     } else {
       setMessage(creatorSelection ? 'Creator of the Week updated.' : 'Creator of the Week cleared.');
       await loadCreatorWeek();
