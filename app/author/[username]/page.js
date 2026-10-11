@@ -79,8 +79,8 @@ export default function AuthorPage() {
           <p className="muted">@{p.username}{p.country ? ' · ' + p.country : ''}</p>
           <p style={{ maxWidth: '38rem' }}>{p.bio || 'This author has not added a bio yet.'}</p>
           <dl className="facts">
-            <div><dt>Followers</dt><dd>{stats ? fmtNum(stats.followers) : '0'}</dd></div>
-            <div><dt>Total reads</dt><dd>{stats ? fmtNum(stats.reads) : '0'}</dd></div>
+            {self && <div><dt>Followers</dt><dd>{stats ? fmtNum(stats.followers) : '0'}</dd></div>}
+            {self && <div><dt>Total reads</dt><dd>{stats ? fmtNum(stats.reads) : '0'}</dd></div>}
             <div><dt>Books</dt><dd>{stats ? stats.books : books.length}</dd></div>
           </dl>
           <div className="row">
