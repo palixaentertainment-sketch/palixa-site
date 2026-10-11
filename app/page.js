@@ -39,13 +39,13 @@ export default function Home() {
 
     (async () => {
       try {
-        const [f, t, n, g, a, own, comicCount] = await Promise.all([
+        const [f, t, n, g, a, creatorSelection, comicCount] = await Promise.all([
           supabase.from('book_cards').select('*').eq('featured', true).order('reads', { ascending: false }).limit(6),
           supabase.from('book_cards').select('*').order('reads', { ascending: false }).limit(12),
           supabase.from('book_cards').select('*').order('created_at', { ascending: false }).limit(12),
           supabase.from('genres').select('*').order('sort'),
           supabase.rpc('popular_authors', { lim: 8 }),
-          supabase.from('book_cards').select('*').ilike('author_name', 'Paul Osula').order('created_at', { ascending: false }).limit(1),
+          supabase.from('creator_of_week').select('book_id').eq('id', true).maybeSingle(),
           supabase.from('book_cards').select('id', { count: 'exact', head: true }).eq('book_type', 'comic'),
         ]);
         if (f.error || t.error || n.error) throw new Error('Could not load books');
@@ -58,7 +58,13 @@ export default function Home() {
         // Keep the Comics genre off the homepage until there are at least two published comics.
         setGenres((g.data || []).filter((genre) => genre.slug !== 'comics' || (comicCount.count || 0) >= 2));
         setAuthors(a.data || []);
-        setCreatorBook((own.data || [])[0] || (n.data || [])[0] || null);
+        // Creator of the Week is selected manually by an admin. Never fall back to the newest book.
+        setCreatorBook(null);
+        const selectedBookId = creatorSelection.data?.book_id;
+        if (selectedBookId) {
+          const selected = await supabase.from('book_cards').select('*').eq('id', selectedBookId).maybeSingle();
+          if (!cancelled && !selected.error && selected.data) setCreatorBook(selected.data);
+        }
         setFailed(false);
 
         if (!user) {
