@@ -178,16 +178,16 @@ export default function Home() {
 
       {comingSoonBooks.length > 0 && (
         <section>
-          <div className="sechead"><div><h2 className="h2">Coming Soon</h2><p className="fine">A first look at stories on the way.</p></div><Link href="/coming-soon">See all upcoming books</Link></div>
+          <div className="sechead"><div><h2 className="h2">Coming Soon</h2><p className="fine">A first look at stories on the way.</p></div></div>
           <div className="shelf">
             {comingSoonBooks.map((b) => (
-              <Link key={b.id} href="/coming-soon" className="bcard" style={{ textDecoration: 'none' }}>
+              <article key={b.id} className="bcard">
                 <div style={{ position: 'relative', aspectRatio: '3 / 4', overflow: 'hidden', borderRadius: '.5rem', background: 'var(--soft)' }}>
                   <img src={b.cover_url} alt={b.title + ' cover'} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
                   <span style={{ position: 'absolute', top: '.5rem', left: '.5rem', background: 'var(--accent)', color: 'white', borderRadius: '999px', padding: '.25rem .5rem', fontSize: '.68rem', fontWeight: 700 }}>COMING SOON</span>
                 </div>
                 <div><h3>{b.title}</h3><span className="sub">{b.author_name}</span>{b.release_date && <p className="sub">Expected {new Date(b.release_date + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}</p>}</div>
-              </Link>
+              </article>
             ))}
           </div>
         </section>
