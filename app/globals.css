@@ -12,7 +12,7 @@
   --lav: #c4b0f5;
   --danger: #b91c45;
   --ok: #15803d;
-  --display: 'Bodoni Moda', Didot, 'Bodoni 72', Georgia, serif;
+  --display: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --body: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --mono: 'DM Mono', ui-monospace, Menlo, monospace;
   --read: 'Literata', Georgia, 'Times New Roman', serif;
@@ -21,6 +21,8 @@
   color-scheme: light;
 }
 * { box-sizing: border-box; }
+/* Keep Palixia typography upright and consistent across every page. */
+em, i, cite, dfn, var { font-style: normal; }
 html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.5; padding-bottom: var(--nav-h); }
 button, input, select, textarea { font: inherit; color: inherit; }
@@ -45,9 +47,9 @@ img { max-width: 100%; }
 .muted { color: var(--muted); }
 .fine { font-size: 0.82rem; color: var(--muted); }
 .mono { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
-.display { font-family: var(--display); font-style: italic; font-weight: 900; line-height: 1.02; }
-.h1 { font-family: var(--display); font-style: italic; font-weight: 900; font-size: clamp(1.8rem, 6vw, 2.6rem); line-height: 1.05; }
-.h2 { font-family: var(--display); font-style: italic; font-weight: 700; font-size: 1.45rem; line-height: 1.15; }
+.display { font-family: var(--display); font-style: normal; font-weight: 900; line-height: 1.02; }
+.h1 { font-family: var(--display); font-style: normal; font-weight: 900; font-size: clamp(1.8rem, 6vw, 2.6rem); line-height: 1.05; }
+.h2 { font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.45rem; line-height: 1.15; }
 .sechead { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-bottom: 0.8rem; }
 .sechead a { color: var(--accent); font-weight: 600; font-size: 0.9rem; }
 
@@ -148,7 +150,7 @@ img { max-width: 100%; }
 .cover.has-img::after { display: none; }
 .cover.has-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .cv-type { font-family: var(--mono); font-size: 9px; font-size: 7.5cqw; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.85; position: relative; z-index: 1; }
-.cv-title { font-family: var(--display); font-style: italic; font-weight: 900; font-size: 15px; font-size: 15cqw; line-height: 1.02; position: relative; z-index: 1; text-wrap: balance; overflow-wrap: anywhere; }
+.cv-title { font-family: var(--display); font-style: normal; font-weight: 900; font-size: 15px; font-size: 15cqw; line-height: 1.02; position: relative; z-index: 1; text-wrap: balance; overflow-wrap: anywhere; }
 .cv-by { font-size: 8px; font-size: 6.8cqw; opacity: 0.9; position: relative; z-index: 1; }
 .ctags { position: absolute; left: 0; top: 6%; z-index: 2; display: grid; gap: 3px; justify-items: start; }
 .ctag { background: #c4b0f5; color: #2a1058; font-family: var(--mono); font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 6px; border-radius: 0 3px 3px 0; }
@@ -174,7 +176,7 @@ img { max-width: 100%; }
 .hero { position: relative; overflow: hidden; border-radius: 10px; padding: 1.6rem 1.3rem 1.5rem; color: #fff; background: linear-gradient(135deg, #1e0a4a 0%, #4c1d95 55%, #6d28d9 100%); display: grid; gap: 1.5rem; }
 .hero::after { content: ""; position: absolute; width: 14rem; aspect-ratio: 1; border-radius: 50%; background: var(--lav); opacity: 0.18; right: -4rem; bottom: -5rem; }
 .hero > * { position: relative; z-index: 1; }
-.hero h1 { font-family: var(--display); font-style: italic; font-weight: 900; font-size: clamp(2.2rem, 8vw, 3.3rem); line-height: 1.05; max-width: 16ch; }
+.hero h1 { font-family: var(--display); font-style: normal; font-weight: 900; font-size: clamp(2.2rem, 8vw, 3.3rem); line-height: 1.05; max-width: 16ch; }
 .hero p { margin-top: 0.8rem; max-width: 30rem; color: rgba(255, 255, 255, 0.9); font-size: 1.05rem; }
 .hero .row { margin-top: 1.4rem; }
 .hero .btn { background: #fff; color: var(--accent-deep); }
@@ -193,12 +195,12 @@ img { max-width: 100%; }
 /* featured */
 .featured { display: grid; grid-auto-flow: column; grid-auto-columns: min(92%, 34rem); gap: 1rem; overflow-x: auto; padding-bottom: 0.6rem; scroll-snap-type: x mandatory; }
 .fcard { scroll-snap-align: start; display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: 1rem; padding: 1rem; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; align-items: start; }
-.fcard h3 { font-family: var(--display); font-style: italic; font-weight: 700; font-size: 1.3rem; line-height: 1.1; overflow-wrap: anywhere; }
+.fcard h3 { font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.3rem; line-height: 1.1; overflow-wrap: anywhere; }
 .fcard p { color: var(--muted); font-size: 0.9rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-block: 0.4rem 0.8rem; }
 
 /* genre cards */
 .genres { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.7rem; }
-.gcard { padding: 1rem; border-radius: 8px; color: #fff; min-height: 4.6rem; display: flex; align-items: flex-end; font-family: var(--display); font-style: italic; font-weight: 700; font-size: 1.15rem; background: linear-gradient(150deg, var(--g1), var(--g2)); position: relative; overflow: hidden; }
+.gcard { padding: 1rem; border-radius: 8px; color: #fff; min-height: 4.6rem; display: flex; align-items: flex-end; font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.15rem; background: linear-gradient(150deg, var(--g1), var(--g2)); position: relative; overflow: hidden; }
 .gcard::after { content: ""; position: absolute; width: 3rem; aspect-ratio: 1; border-radius: 50%; background: #c4b0f5; opacity: 0.4; right: -0.8rem; top: -0.8rem; }
 @media (min-width: 40rem) { .genres { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
 
@@ -238,7 +240,7 @@ textarea.in.tall { min-height: 55vh; font-family: var(--read); font-size: 1.05re
 /* tables and stats */
 .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.7rem; }
 .stat { padding: 1rem; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
-.stat b { display: block; font-family: var(--display); font-style: italic; font-weight: 700; font-size: 1.9rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stat b { display: block; font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.9rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
 @media (min-width: 40rem) { .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
 table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
@@ -287,7 +289,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .rpanel .wrap { max-width: 52rem; display: flex; gap: 0.6rem; flex-wrap: wrap; padding-block: 0.8rem; align-items: center; }
 .rbody { padding-block: 1.5rem 2rem; }
 .rtext { max-width: 44rem; margin-inline: auto; padding-inline: 18px; font-family: var(--read); line-height: 1.85; }
-.rtext h1 { font-family: var(--display); font-style: italic; font-weight: 700; font-size: 1.9rem; line-height: 1.1; margin-bottom: 1.6rem; }
+.rtext h1 { font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.9rem; line-height: 1.1; margin-bottom: 1.6rem; }
 .rtext p + p { margin-top: 1.15em; }
 .rstrip { max-width: 44rem; margin-inline: auto; display: grid; gap: 0; }
 .rstrip img { width: 100%; height: auto; display: block; background: var(--soft); }
@@ -412,7 +414,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 }
 .homehero-copy { position: relative; z-index: 1; display: grid; justify-items: start; gap: 1.1rem; }
 .home-eyebrow { color: var(--accent); font: 600 0.7rem/1.4 var(--mono); letter-spacing: 0.09em; }
-.homehero h1 { max-width: 12ch; font: italic 900 clamp(2.5rem, 6vw, 4.6rem)/0.98 var(--display); letter-spacing: -0.035em; }
+.homehero h1 { max-width: 12ch; font: 900 clamp(2.5rem, 6vw, 4.6rem)/0.98 var(--display); letter-spacing: -0.035em; }
 .homehero-copy > p { max-width: 36rem; color: var(--muted); font-size: clamp(1rem, 1.8vw, 1.12rem); line-height: 1.7; }
 .homehero-actions { gap: 0.7rem; }
 .homehero-note { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; color: var(--muted); font-size: 0.78rem; }
@@ -420,7 +422,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .homehero-art { min-height: 17rem; position: relative; display: grid; place-items: center; isolation: isolate; }
 .hero-book { position: absolute; display: flex; flex-direction: column; justify-content: space-between; width: min(52%, 11rem); aspect-ratio: 0.68; padding: 1rem; border-radius: 3px 8px 8px 3px; box-shadow: 0 18px 35px rgba(46, 16, 101, 0.2); color: white; }
 .hero-book span, .hero-book small { font: 0.55rem/1.4 var(--mono); letter-spacing: 0.08em; }
-.hero-book b { font: italic 700 clamp(1.15rem, 2.7vw, 1.8rem)/1.05 var(--display); }
+.hero-book b { font: 700 clamp(1.15rem, 2.7vw, 1.8rem)/1.05 var(--display); }
 .hero-book-back { transform: translate(-32%, -1%) rotate(-10deg); background: linear-gradient(145deg, #26104e, #7854b8); }
 .hero-book-front { z-index: 1; transform: translate(23%, 5%) rotate(8deg); background: linear-gradient(145deg, #9a4b71, #40205f 75%); }
 .hero-spark { position: absolute; z-index: 2; top: 7%; right: 7%; color: #8c62d6; font-size: 2.5rem; }
@@ -428,7 +430,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .home-cta { display: flex; justify-content: space-between; align-items: center; gap: 1.25rem; padding: clamp(1.25rem, 4vw, 2.25rem); border-radius: 12px; background: var(--accent-deep); color: white; }
 .home-cta > div { display: grid; gap: 0.6rem; }
 .home-cta .home-eyebrow { color: #d6c5ff; }
-.home-cta h2 { font: italic 700 clamp(1.7rem, 4vw, 2.5rem)/1.1 var(--display); }
+.home-cta h2 { font: 700 clamp(1.7rem, 4vw, 2.5rem)/1.1 var(--display); }
 .home-cta p { max-width: 37rem; color: #e3d9f7; }
 .home-cta .btn { background: white; color: var(--accent-deep); flex: none; }
 .home-cta .btn:hover { background: #f1ebfc; }
@@ -521,7 +523,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .bn-app { color: var(--accent); }
 .install-overlay { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 1rem; background: rgba(20, 10, 38, 0.55); }
 .install-dialog { position: relative; width: min(100%, 25rem); display: grid; justify-items: center; gap: 0.9rem; padding: 2rem 1.4rem 1.35rem; border: 1px solid var(--line); border-radius: 16px; background: var(--bg); box-shadow: 0 24px 70px rgba(20, 10, 38, 0.25); text-align: center; }
-.install-dialog h2 { font: italic 900 2rem/1.05 var(--display); }
+.install-dialog h2 { font: 900 2rem/1.05 var(--display); }
 .install-dialog > p:not(.mono) { line-height: 1.65; }
 .install-icon { width: 4rem; height: 4rem; border-radius: 12px; }
 .install-close { position: absolute; top: 0.65rem; right: 0.8rem; font-size: 1.7rem; color: var(--muted); line-height: 1; }
@@ -537,7 +539,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .bn-app { color: var(--accent); }
 .install-overlay { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 1rem; background: rgba(20, 10, 38, 0.55); }
 .install-dialog { position: relative; width: min(100%, 25rem); display: grid; justify-items: center; gap: 0.9rem; padding: 2rem 1.4rem 1.35rem; border: 1px solid var(--line); border-radius: 16px; background: var(--bg); box-shadow: 0 24px 70px rgba(20, 10, 38, 0.25); text-align: center; }
-.install-dialog h2 { font: italic 900 2rem/1.05 var(--display); }
+.install-dialog h2 { font: 900 2rem/1.05 var(--display); }
 .install-dialog > p:not(.mono) { line-height: 1.65; }
 .install-icon { width: 4rem; height: 4rem; border-radius: 12px; }
 .install-close { position: absolute; top: 0.65rem; right: 0.8rem; font-size: 1.7rem; color: var(--muted); line-height: 1; }
