@@ -21,12 +21,27 @@ export default function Home() {
   const [failed, setFailed] = useState(false);
   const [creatorBook, setCreatorBook] = useState(null);
   const [benefitIndex, setBenefitIndex] = useState(0);
+  const [comingSoonBooks, setComingSoonBooks] = useState([]);
   const publishBenefits = [
     { icon: '✦', title: 'Free to publish', text: 'Share your stories without a publishing fee.' },
     { icon: '♡', title: 'You keep your rights', text: 'Your original work remains yours.' },
     { icon: '⌕', title: 'Get discovered', text: 'Help new readers find your books and comics.' },
     { icon: '▤', title: 'Your own author page', text: 'Showcase your work in one place.' },
   ];
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!configured) return () => { cancelled = true; };
+    supabase.from('coming_soon_books')
+      .select('id,title,author_name,description,cover_url,release_date')
+      .eq('status', 'upcoming')
+      .order('release_date', { ascending: true, nullsFirst: false })
+      .limit(4)
+      .then(({ data, error }) => {
+        if (!cancelled && !error) setComingSoonBooks(data || []);
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -160,6 +175,23 @@ export default function Home() {
           <div className="hero-spark">✦</div>
         </div>
       </section>
+
+      {comingSoonBooks.length > 0 && (
+        <section>
+          <div className="sechead"><div><h2 className="h2">Coming Soon</h2><p className="fine">A first look at stories on the way.</p></div><Link href="/coming-soon">See all upcoming books</Link></div>
+          <div className="shelf">
+            {comingSoonBooks.map((b) => (
+              <Link key={b.id} href="/coming-soon" className="bcard" style={{ textDecoration: 'none' }}>
+                <div style={{ position: 'relative', aspectRatio: '3 / 4', overflow: 'hidden', borderRadius: '.5rem', background: 'var(--soft)' }}>
+                  <img src={b.cover_url} alt={b.title + ' cover'} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
+                  <span style={{ position: 'absolute', top: '.5rem', left: '.5rem', background: 'var(--accent)', color: 'white', borderRadius: '999px', padding: '.25rem .5rem', fontSize: '.68rem', fontWeight: 700 }}>COMING SOON</span>
+                </div>
+                <div><h3>{b.title}</h3><span className="sub">{b.author_name}</span>{b.release_date && <p className="sub">Expected {new Date(b.release_date + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}</p>}</div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="publish-benefits">
         <div className="publish-benefits-intro">
