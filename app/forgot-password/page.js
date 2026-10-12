@@ -20,8 +20,8 @@ export default function ForgotPassword() {
       redirectTo: window.location.origin + '/reset-password',
     });
     setBusy(false);
-    // Only real problems are shown. Whether the address has an account is never revealed.
-    if (error && /rate limit|too many|failed to fetch|network/i.test(String(error.message))) { setErr(friendlyAuth(error)); return; }
+    // Never reveal whether an email has an account. Show a generic error only when the request itself failed.
+    if (error) { setErr(friendlyAuth(error)); return; }
     setSent(true);
   }
 
