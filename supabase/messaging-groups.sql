@@ -206,15 +206,16 @@ create policy "participants read conversations" on public.private_conversations 
 drop policy if exists "start private conversations" on public.private_conversations;
 create policy "start private conversations" on public.private_conversations for insert to authenticated
   with check (
-    participant_one = least(auth.uid(), participant_two)
-    and participant_two = greatest(auth.uid(), participant_two)
+    auth.uid() in (participant_one, participant_two)
+    and participant_one < participant_two
     and exists (
       select 1 from public.profiles p
-      where p.id = participant_two and p.status = 'active'
+      where p.id = case when participant_one = auth.uid() then participant_two else participant_one end
+        and p.status = 'active'
     )
     and coalesce((
       select mp.allow_private_messages from public.messaging_preferences mp
-      where mp.user_id = participant_two
+      where mp.user_id = case when participant_one = auth.uid() then participant_two else participant_one end
     ), true)
     and not exists (
       select 1 from public.user_blocks b
