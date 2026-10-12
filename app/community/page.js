@@ -193,6 +193,25 @@ export default function CommunityPage() {
     await loadPosts();
   }
 
+  async function sharePost(postId) {
+    const postUrl = window.location.origin + '/community#post-' + encodeURIComponent(postId);
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'Palixia Community post', url: postUrl });
+        return;
+      }
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(postUrl);
+        setNotice('Post link copied!');
+        return;
+      }
+    } catch (shareError) {
+      if (shareError && shareError.name === 'AbortError') return;
+      console.error('Could not share community post:', shareError);
+    }
+    window.prompt('Copy this link to share the post:', postUrl);
+  }
+
   async function reportPost(postId) {
     await reportCommunityItem('community_post', postId, 'Briefly tell us why you are reporting this post:');
   }
@@ -297,7 +316,7 @@ export default function CommunityPage() {
           const mine = user && post.user_id === user.id;
           const topComments = (comments[post.id] || []).filter((c) => !c.parent_id);
           return (
-            <article className="community-post" key={post.id}>
+            <article className="community-post" id={"post-" + post.id} key={post.id}>
               <div className="community-post-head">
                 <Avatar src={post.profiles && post.profiles.avatar_url} name={post.profiles ? post.profiles.name : 'Reader'} size="2.7rem" />
                 <div className="community-post-by">
@@ -312,6 +331,12 @@ export default function CommunityPage() {
               <div className="community-post-actions">
                 <button className={'linkbtn' + (post.liked ? ' community-liked' : '')} type="button" onClick={() => toggleLike(post)} aria-pressed={post.liked}>♥ {post.likeCount} {post.likeCount === 1 ? 'like' : 'likes'}</button>
                 <button className="linkbtn" type="button" onClick={() => openComments[post.id] ? setOpenComments((old) => ({ ...old, [post.id]: false })) : loadComments(post.id)}>💬 {post.commentCount} replies</button>
+                <button className="linkbtn" type="button" onClick={() => sharePost(post.id)} aria-label="Share post link" title="Share post link">
+                  <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: 'middle' }}>
+                    <path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                    <path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                  </svg>
+                </button>
                 {mine && <button className="linkbtn" type="button" onClick={() => deletePost(post.id)}>Delete</button>}
                 {!mine && <button className="linkbtn fine" type="button" onClick={() => reportPost(post.id)}>Report</button>}
               </div>
