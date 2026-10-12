@@ -12,7 +12,7 @@
   --lav: #c4b0f5;
   --danger: #b91c45;
   --ok: #15803d;
-  --display: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --display: 'Bodoni Moda', Didot, 'Bodoni 72', Georgia, serif;
   --body: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --mono: 'DM Mono', ui-monospace, Menlo, monospace;
   --read: 'Literata', Georgia, 'Times New Roman', serif;
@@ -45,9 +45,9 @@ img { max-width: 100%; }
 .muted { color: var(--muted); }
 .fine { font-size: 0.82rem; color: var(--muted); }
 .mono { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
-.display { font-family: var(--display); font-style: normal; font-weight: 900; line-height: 1.02; }
-.h1 { font-family: var(--display); font-style: normal; font-weight: 900; font-size: clamp(1.8rem, 6vw, 2.6rem); line-height: 1.05; }
-.h2 { font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.45rem; line-height: 1.15; }
+.display { font-family: var(--display); font-style: italic; font-weight: 900; line-height: 1.02; }
+.h1 { font-family: var(--display); font-style: italic; font-weight: 900; font-size: clamp(1.8rem, 6vw, 2.6rem); line-height: 1.05; }
+.h2 { font-family: var(--display); font-style: italic; font-weight: 700; font-size: 1.45rem; line-height: 1.15; }
 .sechead { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-bottom: 0.8rem; }
 .sechead a { color: var(--accent); font-weight: 600; font-size: 0.9rem; }
 
@@ -148,7 +148,7 @@ img { max-width: 100%; }
 .cover.has-img::after { display: none; }
 .cover.has-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .cv-type { font-family: var(--mono); font-size: 9px; font-size: 7.5cqw; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.85; position: relative; z-index: 1; }
-.cv-title { font-family: var(--display); font-style: normal; font-weight: 900; font-size: 15px; font-size: 15cqw; line-height: 1.02; position: relative; z-index: 1; text-wrap: balance; overflow-wrap: anywhere; }
+.cv-title { font-family: var(--display); font-style: italic; font-weight: 900; font-size: 15px; font-size: 15cqw; line-height: 1.02; position: relative; z-index: 1; text-wrap: balance; overflow-wrap: anywhere; }
 .cv-by { font-size: 8px; font-size: 6.8cqw; opacity: 0.9; position: relative; z-index: 1; }
 .ctags { position: absolute; left: 0; top: 6%; z-index: 2; display: grid; gap: 3px; justify-items: start; }
 .ctag { background: #c4b0f5; color: #2a1058; font-family: var(--mono); font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 6px; border-radius: 0 3px 3px 0; }
@@ -174,7 +174,7 @@ img { max-width: 100%; }
 .hero { position: relative; overflow: hidden; border-radius: 10px; padding: 1.6rem 1.3rem 1.5rem; color: #fff; background: linear-gradient(135deg, #1e0a4a 0%, #4c1d95 55%, #6d28d9 100%); display: grid; gap: 1.5rem; }
 .hero::after { content: ""; position: absolute; width: 14rem; aspect-ratio: 1; border-radius: 50%; background: var(--lav); opacity: 0.18; right: -4rem; bottom: -5rem; }
 .hero > * { position: relative; z-index: 1; }
-.hero h1 { font-family: var(--display); font-style: normal; font-weight: 900; font-size: clamp(2.2rem, 8vw, 3.3rem); line-height: 1.05; max-width: 16ch; }
+.hero h1 { font-family: var(--display); font-style: italic; font-weight: 900; font-size: clamp(2.2rem, 8vw, 3.3rem); line-height: 1.05; max-width: 16ch; }
 .hero p { margin-top: 0.8rem; max-width: 30rem; color: rgba(255, 255, 255, 0.9); font-size: 1.05rem; }
 .hero .row { margin-top: 1.4rem; }
 .hero .btn { background: #fff; color: var(--accent-deep); }
@@ -193,12 +193,12 @@ img { max-width: 100%; }
 /* featured */
 .featured { display: grid; grid-auto-flow: column; grid-auto-columns: min(92%, 34rem); gap: 1rem; overflow-x: auto; padding-bottom: 0.6rem; scroll-snap-type: x mandatory; }
 .fcard { scroll-snap-align: start; display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: 1rem; padding: 1rem; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; align-items: start; }
-.fcard h3 { font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.3rem; line-height: 1.1; overflow-wrap: anywhere; }
+.fcard h3 { font-family: var(--display); font-style: italic; font-weight: 700; font-size: 1.3rem; line-height: 1.1; overflow-wrap: anywhere; }
 .fcard p { color: var(--muted); font-size: 0.9rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-block: 0.4rem 0.8rem; }
 
 /* genre cards */
 .genres { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.7rem; }
-.gcard { padding: 1rem; border-radius: 8px; color: #fff; min-height: 4.6rem; display: flex; align-items: flex-end; font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.15rem; background: linear-gradient(150deg, var(--g1), var(--g2)); position: relative; overflow: hidden; }
+.gcard { padding: 1rem; border-radius: 8px; color: #fff; min-height: 4.6rem; display: flex; align-items: flex-end; font-family: var(--display); font-style: italic; font-weight: 700; font-size: 1.15rem; background: linear-gradient(150deg, var(--g1), var(--g2)); position: relative; overflow: hidden; }
 .gcard::after { content: ""; position: absolute; width: 3rem; aspect-ratio: 1; border-radius: 50%; background: #c4b0f5; opacity: 0.4; right: -0.8rem; top: -0.8rem; }
 @media (min-width: 40rem) { .genres { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
 
@@ -238,7 +238,7 @@ textarea.in.tall { min-height: 55vh; font-family: var(--read); font-size: 1.05re
 /* tables and stats */
 .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.7rem; }
 .stat { padding: 1rem; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
-.stat b { display: block; font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.9rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stat b { display: block; font-family: var(--display); font-style: italic; font-weight: 700; font-size: 1.9rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
 @media (min-width: 40rem) { .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
 table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
@@ -287,7 +287,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .rpanel .wrap { max-width: 52rem; display: flex; gap: 0.6rem; flex-wrap: wrap; padding-block: 0.8rem; align-items: center; }
 .rbody { padding-block: 1.5rem 2rem; }
 .rtext { max-width: 44rem; margin-inline: auto; padding-inline: 18px; font-family: var(--read); line-height: 1.85; }
-.rtext h1 { font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.9rem; line-height: 1.1; margin-bottom: 1.6rem; }
+.rtext h1 { font-family: var(--display); font-style: italic; font-weight: 700; font-size: 1.9rem; line-height: 1.1; margin-bottom: 1.6rem; }
 .rtext p + p { margin-top: 1.15em; }
 .rstrip { max-width: 44rem; margin-inline: auto; display: grid; gap: 0; }
 .rstrip img { width: 100%; height: auto; display: block; background: var(--soft); }
