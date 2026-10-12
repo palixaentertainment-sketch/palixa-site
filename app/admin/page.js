@@ -181,6 +181,7 @@ function AdminPanel() {
         <p className="mono">Palixia administration</p>
         <h1 className="h1">Admin dashboard</h1>
         <p className="muted">Platform overview, author verification and community moderation. Moderation actions are restricted to active administrator accounts.</p>
+        <div className="row" style={{ gap: '.5rem', flexWrap: 'wrap' }}><Link className="btn" href="/admin/coming-soon">Manage Coming Soon covers</Link><Link className="btn ghost" href="/coming-soon">View public Coming Soon page</Link></div>
       </div>
       {error && <p className="msg-err" role="alert">{error}</p>}
       {message && <p className="msg-ok" role="status">{message}</p>}
