@@ -11,6 +11,7 @@ import { openInstallApp } from '@/components/InstallAppPrompt';
 const LINKS = [
   ['/', 'Home'],
   ['/discover', 'Discover'],
+  ['/coming-soon', 'Coming Soon'],
   ['/community', 'Community'],
   ['/categories', 'Categories'],
   ['/authors', 'Authors'],
