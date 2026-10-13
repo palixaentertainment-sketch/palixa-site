@@ -53,8 +53,10 @@ export default function BookPage() {
       return;
     }
 
-    // Load optional author/genre details separately so their failure cannot
-    // prevent the actual book page from opening.
+    // Render the core book details immediately; optional metadata should not
+    // make readers wait before they can see the title, cover, and description.
+    setBook({ ...data, profiles: null, genres: null });
+
     const [authorResult, genreResult, chaptersResult, statsResult, badgeResult] = await Promise.all([
       supabase.from('profiles').select('id,name,username,avatar_url,bio').eq('id', data.author_id).maybeSingle(),
       data.genre_id
@@ -70,7 +72,9 @@ export default function BookPage() {
     if (chaptersResult.error) console.warn('Palixia chapters unavailable:', chaptersResult.error);
     if (statsResult.error) console.warn('Palixia author stats unavailable:', statsResult.error);
 
-    setBook({ ...data, profiles: authorResult.data || null, genres: genreResult.data || null });
+    setBook((current) => current && current.id === data.id
+      ? { ...current, profiles: authorResult.data || null, genres: genreResult.data || null }
+      : current);
     setChapters(chaptersResult.data || []);
     setStats(statsResult.data || null);
     setAuthorBadge(badgeResult.data ? badgeResult.data.badge_type : null);
