@@ -4,7 +4,7 @@ import PublishLink from '@/components/PublishLink';
 
 export const metadata = {
   title: 'About Palixia',
-  description: 'Meet Palixia and learn why we are building a place for independent writers, books, comics, and readers.',
+  description: 'Meet Palixia and learn why we are building a place for independent writers and readers.',
 };
 
 export default function About() {
@@ -23,13 +23,13 @@ export default function About() {
         <h2>Why I started Palixia</h2>
         <p>Palixia began with a simple idea: make it easier for independent writers to publish their stories and connect with readers.</p>
         <p>I believe great stories deserve a chance to be discovered, regardless of whether their authors have a traditional publisher behind them.</p>
-        <p>That’s why Palixia brings books, comics, authors, and readers together in one place. It’s a platform where creators can share their work and readers can discover stories they might never have found otherwise.</p>
+        <p>That’s why Palixia brings books, authors, and readers together in one place. It’s a platform where creators can share their work and readers can discover stories they might never have found otherwise.</p>
       </section>
 
       <section className="stack">
         <h2>Our vision</h2>
         <p>Palixia is being built for people who love stories, whether they’re writing them or reading them.</p>
-        <p>Our goal is to build a growing community where independent authors can publish their books and comics, readers can discover new favourites, and more stories can find the audiences they deserve.</p>
+        <p>Our goal is to build a growing community where independent authors can publish their books, readers can discover new favourites, and more stories can find the audiences they deserve.</p>
         <p>We’re just getting started, and there’s still a lot to build.</p>
       </section>
 

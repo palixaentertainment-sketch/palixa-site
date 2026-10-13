@@ -8,7 +8,7 @@ export default function Categories() {
   const [genres, setGenres] = useState(null);
   useEffect(() => {
     if (!configured) { setGenres([]); return; }
-    supabase.from('genres').select('*').order('sort').then(({ data }) => setGenres(data || []));
+    supabase.from('genres').select('*').order('sort').then(({ data }) => setGenres((data || []).filter((genre) => genre.slug !== 'comics')));
   }, []);
   return (
     <>

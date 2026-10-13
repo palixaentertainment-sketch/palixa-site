@@ -20,13 +20,11 @@ function Discover() {
   const publishHref = usePublishHref();
   const params = useSearchParams();
   const q = params.get('q') || '';
-  const type = params.get('type') || 'all';
   const genre = params.get('genre') || '';
   const sort = params.get('sort') || 'popular';
 
   const [input, setInput] = useState(q);
   const [genres, setGenres] = useState([]);
-  const [hasComics, setHasComics] = useState(false);
   const [rows, setRows] = useState(null);
   const [authors, setAuthors] = useState([]);
   const [more, setMore] = useState(false);
@@ -45,20 +43,13 @@ function Discover() {
 
   useEffect(() => {
     if (!configured) return;
-    Promise.all([
-      supabase.from('genres').select('*').order('sort'),
-      supabase.from('book_cards').select('id', { count: 'exact', head: true }).eq('book_type', 'comic'),
-    ]).then(([{ data }, comicResult]) => {
-      const ready = (comicResult.count || 0) >= 2;
-      setHasComics(ready);
-      setGenres((data || []).filter((genre) => genre.slug !== 'comics' || ready));
-    });
+    supabase.from('genres').select('*').order('sort')
+      .then(({ data }) => setGenres((data || []).filter((genre) => genre.slug !== 'comics')));
   }, []);
 
   function build(from) {
     let query = supabase.from('book_cards').select('*');
-    if (type === 'text') query = query.eq('book_type', 'text');
-    if (type === 'comic') query = query.eq('book_type', 'comic');
+    query = query.eq('book_type', 'text');
     if (genre) query = query.eq('genre_slug', genre);
     const term = q.trim().toLowerCase().replace(/[%,()]/g, ' ');
     if (term) query = query.ilike('search', '%' + term + '%');
@@ -87,7 +78,7 @@ function Discover() {
     }
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, type, genre, sort]);
+  }, [q, genre, sort]);
 
   async function loadMore() {
     setBusy(true);
@@ -113,9 +104,7 @@ function Discover() {
           <button className="btn" type="submit">Search</button>
         </form>
         <div className="chips" role="group" aria-label="Format">
-          {[['all', 'All'], ['text', 'Books'], ...(hasComics ? [['comic', 'Comics']] : [])].map(([v, label]) => (
-            <button key={v} type="button" className="chip" aria-pressed={type === v} onClick={() => go({ type: v === 'all' ? '' : v })}>{label}</button>
-          ))}
+          <span className="chip" aria-current="true">Books</span>
         </div>
         <div className="row">
           <div className="field" style={{ minWidth: '10rem', flex: 1 }}>
@@ -149,11 +138,11 @@ function Discover() {
       )}
 
       <section>
-        {q && <div className="sechead"><h2 className="h2">Books matching &ldquo;{q}&rdquo;</h2></div>}
+        {q && <div className="sechead"><h2 className="h2">Stories matching &ldquo;{q}&rdquo;</h2></div>}
         {failed && <p className="notice">We could not load stories. Check your connection and try again.</p>}
         {rows === null && <p className="muted">Loading...</p>}
         {rows && rows.length === 0 && !failed && (
-          q || genre || type !== 'all' ? (
+          q || genre ? (
             <Empty title="Nothing matches that." text="Try a different word, or clear the filters." href="/discover" cta="Clear filters" />
           ) : (
             <Empty title="No stories are published yet." text="Be the first to publish on Palixia." href={publishHref} cta="Publish Your Story" />

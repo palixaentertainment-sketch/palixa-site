@@ -134,7 +134,7 @@ function ProfileForm() {
         {isAuthor ? (
           <>
             <h2 className="h2">Author tools</h2>
-            <p className="muted">Create books and comics, manage chapters and see how your stories are doing.</p>
+            <p className="muted">Publish books, manage chapters and see how your stories are doing.</p>
             <div className="row">
               <Link className="btn" href="/dashboard">Author dashboard</Link>
               <Link className="btn ghost" href={'/author/' + profile.username}>View public page</Link>
@@ -143,7 +143,7 @@ function ProfileForm() {
         ) : (
           <>
             <h2 className="h2">Become an author</h2>
-            <p className="muted">Publish your own books and comics on Palixia. It is free to start and your reader account stays the same.</p>
+            <p className="muted">Publish your own books on Palixia. It is free to start and your reader account stays the same.</p>
             <p className="msg-err" role="alert">{aErr}</p>
             <div><button type="button" className="btn" onClick={becomeAuthor}>Become an author</button></div>
           </>

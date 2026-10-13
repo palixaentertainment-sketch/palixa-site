@@ -25,7 +25,7 @@ export default function Home() {
   const publishBenefits = [
     { icon: '✦', title: 'Free to publish', text: 'Share your stories without a publishing fee.' },
     { icon: '♡', title: 'You keep your rights', text: 'Your original work remains yours.' },
-    { icon: '⌕', title: 'Get discovered', text: 'Help new readers find your books and comics.' },
+    { icon: '⌕', title: 'Get discovered', text: 'Help new readers find your books and stories.' },
     { icon: '▤', title: 'Your own author page', text: 'Showcase your work in one place.' },
   ];
 
@@ -54,14 +54,13 @@ export default function Home() {
 
     (async () => {
       try {
-        const [f, t, n, g, a, creatorSelection, comicCount] = await Promise.all([
+        const [f, t, n, g, a, creatorSelection] = await Promise.all([
           supabase.from('book_cards').select('*').eq('featured', true).order('reads', { ascending: false }).limit(6),
           supabase.from('book_cards').select('*').order('reads', { ascending: false }).limit(12),
           supabase.from('book_cards').select('*').order('created_at', { ascending: false }).limit(12),
           supabase.from('genres').select('*').order('sort'),
           supabase.rpc('popular_authors', { lim: 8 }),
           supabase.from('creator_of_week').select('book_id').eq('id', true).maybeSingle(),
-          supabase.from('book_cards').select('id', { count: 'exact', head: true }).eq('book_type', 'comic'),
         ]);
         if (f.error || t.error || n.error) throw new Error('Could not load books');
         if (cancelled) return;
@@ -70,8 +69,8 @@ export default function Home() {
         const trending = t.data || [];
         const fresh = n.data || [];
         setData({ featured, trending, fresh });
-        // Keep the Comics genre off the homepage until there are at least two published comics.
-        setGenres((g.data || []).filter((genre) => genre.slug !== 'comics' || (comicCount.count || 0) >= 2));
+        // Keep the Comics genre hidden until Palixia has comics ready to feature.
+        setGenres((g.data || []).filter((genre) => genre.slug !== 'comics'));
         setAuthors(a.data || []);
         // Creator of the Week is selected manually by an admin. Never fall back to the newest book.
         setCreatorBook(null);
@@ -162,7 +161,7 @@ export default function Home() {
         <div className="homehero-copy">
           <span className="home-eyebrow">YOUR NEXT FAVOURITE STORY STARTS HERE</span>
           <h1>Stories worth staying up for.</h1>
-          <p>Books and comics from African and diaspora creators. Read free, or publish your own.</p>
+          <p>Discover stories from independent authors around the world, including African and diaspora voices. Read free, or publish your own.</p>
           <div className="row homehero-actions">
             <Link className="btn" href="/discover">Explore stories</Link>
             <PublishLink className="btn ghost">Publish your story</PublishLink>
@@ -228,7 +227,7 @@ export default function Home() {
           ) : (
             <>
               <h2 className="h2">Your story could be next.</h2>
-              <p className="fine">We're making room for creators and their stories. Publish your book or comic on Palixia and be part of the community.</p>
+              <p className="fine">We're making room for creators and their stories. Publish your book on Palixia and be part of the community.</p>
               <PublishLink className="btn">Publish your story</PublishLink>
             </>
           )}
@@ -246,7 +245,7 @@ export default function Home() {
 
       {data && data.trending.length === 0 && configured && !failed && (
         <div className="empty">
-          <div><b>No stories are published yet.</b><p>Be the first. Create an author account and publish a book or comic.</p></div>
+          <div><b>No stories are published yet.</b><p>Be the first. Create an author account and publish a book.</p></div>
           <PublishLink className="btn">Publish your story</PublishLink>
         </div>
       )}
@@ -279,7 +278,7 @@ export default function Home() {
             {featured.map((b) => (
               <article className="fcard" key={b.id}>
                 <Link href={'/book/' + b.id} aria-label={'Open ' + b.title}><Cover b={b} /></Link>
-                <div><p className="mono">{b.genre_name || 'Story'}{b.book_type === 'comic' ? ' · Comic' : ''}</p><h3>{b.title}</h3><p className="fine">by {b.author_name}</p><p>{b.description}</p><Link className="btn small" href={'/book/' + b.id}>Read story</Link></div>
+                <div><p className="mono">{b.genre_name || 'Story'}</p><h3>{b.title}</h3><p className="fine">by {b.author_name}</p><p>{b.description}</p><Link className="btn small" href={'/book/' + b.id}>Read story</Link></div>
               </article>
             ))}
           </div>

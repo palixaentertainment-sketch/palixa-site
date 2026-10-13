@@ -27,7 +27,7 @@ export default function Guard({ roles, children }) {
       <div className="empty">
         <div>
           <b>This area is for authors.</b>
-          <p>Switch your account to an author account to publish books and comics.</p>
+          <p>Switch your account to an author account to publish books.</p>
         </div>
         <Link className="btn" href="/profile#author">Become an author</Link>
       </div>
