@@ -47,8 +47,13 @@ export default function Reader() {
       .eq('id', id)
       .maybeSingle();
     if (error || !data) { setCh(null); return; }
-    const { data: b } = await supabase.from('books').select('id,title,book_type,author_id,status').eq('id', data.book_id).maybeSingle();
-    const { data: all } = await supabase.from('chapters').select('id,chapter_number,title,status').eq('book_id', data.book_id).order('chapter_number');
+    // Fetch independent data together so opening a chapter needs fewer network round trips.
+    const [bookResult, chaptersResult] = await Promise.all([
+      supabase.from('books').select('id,title,book_type,author_id,status').eq('id', data.book_id).maybeSingle(),
+      supabase.from('chapters').select('id,chapter_number,title,status').eq('book_id', data.book_id).order('chapter_number'),
+    ]);
+    const b = bookResult.data;
+    const all = chaptersResult.data;
     const owner = user && b && user.id === b.author_id;
     const list = (all || []).filter((c) => owner || c.status === 'published');
     setBook(b || null);
