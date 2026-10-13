@@ -49,7 +49,16 @@ export default function Comments({ chapterId, authorId }) {
   async function post(body, parentId = null) {
     if (!user) return 'Log in to comment.';
     const { error } = await supabase.from('comments').insert({ chapter_id: chapterId, user_id: user.id, parent_id: parentId, body });
-    if (error) return /too_many_comments/i.test(error.message || '') ? 'You are posting too quickly. Please wait a minute.' : 'Could not post this comment. Please try again.';
+    if (error) {
+      console.error('Palixia chapter comment insert failed:', { code: error.code, message: error.message, details: error.details, hint: error.hint });
+      const message = [error.message, error.details, error.hint].filter(Boolean).join(' ');
+      if (/too_many_comments/i.test(message)) return 'You are posting too quickly. Please wait a minute.';
+      if (/account_suspended/i.test(message)) return 'Your account is currently suspended and cannot post comments.';
+      if (/row-level security|permission denied|42501/i.test(message) || error.code === '42501') return 'Palixia could not save this comment because of a permissions issue. Please try again later.';
+      if (/foreign key|chapter_id_fkey|not found/i.test(message)) return 'This chapter may no longer be available for comments. Refresh the page and try again.';
+      if (/check constraint|char_length|body/i.test(message)) return 'Your comment could not be accepted. Please shorten it and try again.';
+      return 'Comment failed to save. Please refresh and try again.';
+    }
     setReplyTo(null); await load(); return '';
   }
   async function saveEdit(id, body) {
