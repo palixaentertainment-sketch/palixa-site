@@ -57,7 +57,7 @@ export default function Comments({ chapterId, authorId }) {
       if (/row-level security|permission denied|42501/i.test(message) || error.code === '42501') return 'Palixia could not save this comment because of a permissions issue. Please try again later.';
       if (/foreign key|chapter_id_fkey|not found/i.test(message)) return 'This chapter may no longer be available for comments. Refresh the page and try again.';
       if (/check constraint|char_length|body/i.test(message)) return 'Your comment could not be accepted. Please shorten it and try again.';
-      return 'Comment failed to save. Please refresh and try again.';
+      return 'Comment failed to save (diagnostic ' + (error.code || 'no-code') + '): ' + (error.message || 'No database message returned') + '. Please send this message to Palixia support.';
     }
     setReplyTo(null); await load(); return '';
   }
