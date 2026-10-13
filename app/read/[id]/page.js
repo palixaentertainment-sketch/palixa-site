@@ -191,11 +191,6 @@ export default function Reader() {
   return (
     <div className="reader" data-rtheme={theme}>
       <div className="rprog" aria-hidden="true"><b ref={barRef} /></div>
-      <div className="reader-watermark" aria-hidden="true">
-        {Array.from({ length: 18 }, (_, n) => (
-          <span key={n}>PALIXIA · PROTECTED READING</span>
-        ))}
-      </div>
       <header className="rbar">
         <div className="wrap">
           <Link className="rbtn" href={'/book/' + book.id} aria-label="Exit reader">&larr; Exit</Link>
