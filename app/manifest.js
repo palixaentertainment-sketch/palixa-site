@@ -3,7 +3,7 @@ export default function manifest() {
   return {
     name: 'Palixia',
     short_name: 'Palixia',
-    description: 'Read and publish books and comics on Palixia.',
+    description: 'Read and publish stories on Palixia.',
     start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',
