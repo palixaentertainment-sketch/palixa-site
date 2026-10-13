@@ -47,24 +47,32 @@ export default function Reader() {
       .eq('id', id)
       .maybeSingle();
     if (error || !data) { setCh(null); return; }
-    // Fetch independent data together so opening a chapter needs fewer network round trips.
-    const [bookResult, chaptersResult] = await Promise.all([
-      supabase.from('books').select('id,title,book_type,author_id,status').eq('id', data.book_id).maybeSingle(),
-      supabase.from('chapters').select('id,chapter_number,title,status').eq('book_id', data.book_id).order('chapter_number'),
-    ]);
-    const b = bookResult.data;
-    const all = chaptersResult.data;
-    const owner = user && b && user.id === b.author_id;
-    const list = (all || []).filter((c) => owner || c.status === 'published');
-    setBook(b || null);
-    setSibs(list);
-    if (b && b.book_type === 'comic') {
-      const { data: pg } = await supabase.from('chapter_pages').select('id,page_number,image_url,alt').eq('chapter_id', id).order('page_number');
-      setPages(pg || []);
-    } else {
-      setPages([]);
-    }
+    const { data: b, error: bookError } = await supabase
+      .from('books').select('id,title,book_type,author_id,status').eq('id', data.book_id).maybeSingle();
+    if (bookError || !b) { setCh(null); return; }
+
+    // Show the chapter as soon as its book is known. Navigation and comic pages
+    // load alongside it instead of delaying the first readable content.
+    setBook(b);
     setCh(data);
+    setPages([]);
+
+    const requests = [
+      supabase.from('chapters').select('id,chapter_number,title,status')
+        .eq('book_id', data.book_id).order('chapter_number')
+        .then(({ data: all }) => {
+          const owner = user && user.id === b.author_id;
+          setSibs((all || []).filter((c) => owner || c.status === 'published'));
+        }),
+    ];
+    if (b.book_type === 'comic') {
+      requests.push(
+        supabase.from('chapter_pages').select('id,page_number,image_url,alt')
+          .eq('chapter_id', id).order('page_number')
+          .then(({ data: pg }) => setPages(pg || []))
+      );
+    }
+    await Promise.all(requests);
   }, [id, user]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
