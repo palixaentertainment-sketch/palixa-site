@@ -191,6 +191,11 @@ export default function Reader() {
   return (
     <div className="reader" data-rtheme={theme}>
       <div className="rprog" aria-hidden="true"><b ref={barRef} /></div>
+      <div className="reader-watermark" aria-hidden="true">
+        {Array.from({ length: 18 }, (_, n) => (
+          <span key={n}>PALIXIA · PROTECTED READING</span>
+        ))}
+      </div>
       <header className="rbar">
         <div className="wrap">
           <Link className="rbtn" href={'/book/' + book.id} aria-label="Exit reader">&larr; Exit</Link>
@@ -227,7 +232,11 @@ export default function Reader() {
 
       <main className="rbody">
         {isComic ? (
-          <div className="rstrip" aria-label={ch.title}>
+          <div className="rstrip" aria-label={ch.title}
+            onCopy={(e) => e.preventDefault()}
+            onCut={(e) => e.preventDefault()}
+            onContextMenu={(e) => e.preventDefault()}
+            onSelectStart={(e) => e.preventDefault()}>
             {pages.length === 0 && <p className="rtext">This chapter has no pages yet.</p>}
             {pages.map((p) => (
               // eslint-disable-next-line @next/next/no-img-element
@@ -235,7 +244,11 @@ export default function Reader() {
             ))}
           </div>
         ) : (
-          <article className="rtext" style={{ fontSize: size + 'rem' }}>
+          <article className="rtext" style={{ fontSize: size + 'rem' }}
+            onCopy={(e) => e.preventDefault()}
+            onCut={(e) => e.preventDefault()}
+            onContextMenu={(e) => e.preventDefault()}
+            onSelectStart={(e) => e.preventDefault()}>
             <h1>{ch.title}</h1>
             {paragraphs.length === 0 && <p>This chapter has no text yet.</p>}
             {paragraphs.map((p, n) => <p key={n}>{p}</p>)}
