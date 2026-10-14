@@ -20,6 +20,49 @@ function cardFields(b) {
   };
 }
 
+
+function getStreakStats(activity) {
+  const dates = [...new Set((activity || []).map((row) => row.activity_date).filter(Boolean))].sort();
+  const active = new Set(dates);
+  const today = new Date().toISOString().slice(0, 10);
+  const shiftDate = (value, days) => {
+    const date = new Date(value + 'T00:00:00Z');
+    date.setUTCDate(date.getUTCDate() + days);
+    return date.toISOString().slice(0, 10);
+  };
+
+  // A streak remains alive through today or yesterday; after that it resets to zero.
+  let current = 0;
+  let cursor = active.has(today) ? today : shiftDate(today, -1);
+  if (active.has(cursor)) {
+    while (active.has(cursor)) {
+      current += 1;
+      cursor = shiftDate(cursor, -1);
+    }
+  }
+
+  let longest = 0;
+  let run = 0;
+  let previous = null;
+  dates.forEach((date) => {
+    run = previous && shiftDate(previous, 1) === date ? run + 1 : 1;
+    longest = Math.max(longest, run);
+    previous = date;
+  });
+
+  const week = Array.from({ length: 7 }, (_, index) => {
+    const date = shiftDate(today, index - 6);
+    return {
+      date,
+      active: active.has(date),
+      label: new Date(date + 'T00:00:00Z').toLocaleDateString(undefined, { weekday: 'short', timeZone: 'UTC' }),
+      day: date.slice(8, 10),
+    };
+  });
+
+  return { current, longest, week };
+}
+
 function Shelf() {
   const { user } = useAuth();
   const [tab, setTab] = useState('reading');
@@ -149,6 +192,7 @@ function Shelf() {
     : [];
   const uniqueChapters = new Set(activity.map((row) => row.chapter_id)).size;
   const monthBooks = new Set(monthActivity.map((row) => row.book_id)).size;
+  const streak = getStreakStats(activity);
 
 
   return (
@@ -210,6 +254,30 @@ function Shelf() {
             <p className="muted">Loading your Reading Journey...</p>
           ) : (
             <>
+              <div className="stack" style={{ gap: '0.75rem' }}>
+                <h2 className="h2">Your reading streak 🔥</h2>
+                <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(135px, 1fr))', gap: '0.75rem' }}>
+                  <div className="bcard" style={{ padding: '1rem', minWidth: 0 }}>
+                    <p className="fine" style={{ margin: 0 }}>Current streak</p>
+                    <p style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.35rem 0 0' }}>{streak.current} {streak.current === 1 ? 'day' : 'days'} 🔥</p>
+                  </div>
+                  <div className="bcard" style={{ padding: '1rem', minWidth: 0 }}>
+                    <p className="fine" style={{ margin: 0 }}>Longest streak</p>
+                    <p style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.35rem 0 0' }}>{streak.longest} {streak.longest === 1 ? 'day' : 'days'}</p>
+                  </div>
+                </div>
+                <p className="fine">Read at least one chapter a day to keep your streak going.</p>
+                <div className="grid" style={{ gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '0.45rem' }} aria-label="Reading activity for the last seven days">
+                  {streak.week.map((day) => (
+                    <div key={day.date} className="bcard" style={{ padding: '0.55rem 0.2rem', minWidth: 0, textAlign: 'center', background: day.active ? 'var(--soft)' : 'var(--bg)', borderColor: day.active ? 'var(--lav)' : 'var(--line)' }}>
+                      <span className="fine" style={{ display: 'block', fontSize: '0.7rem' }}>{day.label}</span>
+                      <strong style={{ display: 'block', marginTop: '0.15rem' }}>{day.day}</strong>
+                      <span aria-label={day.active ? 'Read on this day' : 'No reading recorded'}>{day.active ? '🔥' : '·'}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <h2 className="h2">Your reading at a glance</h2>
               <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(135px, 1fr))', gap: '0.75rem' }}>
                 {[
