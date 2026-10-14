@@ -13,28 +13,38 @@ function Dashboard() {
   const [books, setBooks] = useState(null);
   const [stats, setStats] = useState(null);
   const [saves, setSaves] = useState({});
+  const [commentCount, setCommentCount] = useState(0);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     (async () => {
       const [b, s, sv] = await Promise.all([
-        supabase.from('books').select('id,title,cover_url,book_type,status,story_status,reads,is_sample,chapters(id,status)').eq('author_id', user.id).order('updated_at', { ascending: false }),
+        supabase.from('books').select('id,title,cover_url,book_type,status,story_status,reads,is_sample,like_count,chapters(id,status,like_count)').eq('author_id', user.id).order('updated_at', { ascending: false }),
         supabase.rpc('author_stats', { p_author: user.id }),
         supabase.rpc('book_saves'),
       ]);
       if (b.error) { setFailed(true); setBooks([]); return; }
-      setBooks(b.data || []);
+      const loadedBooks = b.data || [];
+      setBooks(loadedBooks);
       setStats(s.data || null);
       const m = {};
       (sv.data || []).forEach((r) => { m[r.book_id] = Number(r.saves); });
       setSaves(m);
+      const chapterIds = loadedBooks.flatMap((book) => (book.chapters || []).map((chapter) => chapter.id));
+      if (chapterIds.length) {
+        const c = await supabase.from('comments').select('chapter_id').in('chapter_id', chapterIds);
+        if (!c.error) setCommentCount((c.data || []).length);
+      }
     })();
   }, [user]);
 
   const all = books || [];
   const totalReads = all.reduce((a, b) => a + (b.reads || 0), 0);
   const published = all.filter((b) => b.status === 'published').length;
+  const totalBookLikes = all.reduce((sum, book) => sum + (Number(book.like_count) || 0), 0);
+  const totalChapterLikes = all.reduce((sum, book) => sum + (book.chapters || []).reduce((chapterSum, chapter) => chapterSum + (Number(chapter.like_count) || 0), 0), 0);
+  const totalSaves = Object.values(saves).reduce((sum, count) => sum + (Number(count) || 0), 0);
   const first = (profile.name || '').split(' ')[0] || profile.name;
 
   return (
@@ -55,6 +65,17 @@ function Dashboard() {
       </div>
       <p className="fine">A read counts the first time a signed-in reader opens any chapter of your book.</p>
 
+      <section>
+        <div className="sechead"><h2 className="h2">Reader engagement</h2></div>
+        <div className="stats">
+          <div className="stat"><span className="mono">Book likes</span><b>{fmtNum(totalBookLikes)}</b></div>
+          <div className="stat"><span className="mono">Chapter likes</span><b>{fmtNum(totalChapterLikes)}</b></div>
+          <div className="stat"><span className="mono">Bookmarks</span><b>{fmtNum(totalSaves)}</b></div>
+          <div className="stat"><span className="mono">Comments</span><b>{fmtNum(commentCount)}</b></div>
+        </div>
+        <p className="fine" style={{ marginTop: '0.5rem' }}>These totals help you see how readers are responding to your published work.</p>
+      </section>
+
       {failed && <p className="notice">We could not load your books. Check your connection and refresh.</p>}
       {books === null && <p className="muted">Loading...</p>}
 
@@ -68,7 +89,7 @@ function Dashboard() {
           <div className="tablewrap">
             <table>
               <thead>
-                <tr><th>Book</th><th>Format</th><th>Publishing</th><th>Story</th><th className="num">Chapters</th><th className="num">Reads</th><th className="num">Saves</th><th /></tr>
+                <tr><th>Book</th><th>Format</th><th>Publishing</th><th>Story</th><th className="num">Chapters</th><th className="num">Reads</th><th className="num">Likes</th><th className="num">Saves</th><th /></tr>
               </thead>
               <tbody>
                 {books.map((b) => {
@@ -81,6 +102,7 @@ function Dashboard() {
                       <td><span className="badge">{b.story_status === 'completed' ? 'Completed' : b.story_status === 'hiatus' ? 'On hiatus' : 'Ongoing'}</span></td>
                       <td className="num">{live} / {(b.chapters || []).length}</td>
                       <td className="num">{fmtNum(b.reads)}</td>
+                      <td className="num">{fmtNum(b.like_count || 0)}</td>
                       <td className="num">{saves[b.id] || 0}</td>
                       <td><Link className="btn ghost small" href={'/dashboard/books/' + b.id}>Manage</Link></td>
                     </tr>
