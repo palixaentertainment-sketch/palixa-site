@@ -572,3 +572,38 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
   user-select: none;
   -webkit-touch-callout: none;
 }
+
+
+/* Release Journey — lightweight CSS-only motion, no external animation assets. */
+.release-journey { --release-accent: var(--accent); display: grid; gap: 1.15rem; padding: clamp(1rem, 3vw, 1.4rem); border: 1px solid var(--line); border-radius: 14px; background: linear-gradient(135deg, var(--surface), var(--bg) 72%); overflow: hidden; }
+.release-heading { display: flex; align-items: center; gap: 0.85rem; }
+.release-heading .h2 { font-size: 1.3rem; }
+.release-book-mark { display: grid; place-items: center; flex: 0 0 3.25rem; width: 3.25rem; height: 3.25rem; border: 1px solid var(--line); border-radius: 12px; background: var(--soft); color: var(--accent); }
+.release-book-mark svg { width: 2rem; height: 2rem; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.release-book-mark .release-spark { stroke-width: 2; }
+.release-subtitle { margin-top: 0.25rem; font-size: 0.88rem; }
+.release-summary { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.8rem; padding: 1rem; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.release-summary-number { display: grid; gap: 0.1rem; }
+.release-summary-number strong { color: var(--accent); font: 800 1.8rem/1 var(--display); }
+.release-summary-number span, .release-summary-date { color: var(--muted); font-size: 0.82rem; }
+.release-summary-date { display: flex; align-items: center; gap: 0.45rem; }
+.release-pulse { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px var(--soft); }
+.release-timeline { display: grid; gap: 0.7rem; }
+.release-timeline-label { color: var(--muted); font: 0.68rem/1.4 var(--mono); letter-spacing: 0.08em; }
+.release-timeline ol { display: grid; gap: 0; }
+.release-timeline li { position: relative; display: flex; align-items: center; gap: 0.75rem; min-height: 3.2rem; padding: 0.55rem 0; animation: release-appear 360ms ease-out both; }
+.release-timeline li:nth-child(2) { animation-delay: 45ms; }
+.release-timeline li:nth-child(3) { animation-delay: 90ms; }
+.release-timeline li:nth-child(4) { animation-delay: 135ms; }
+.release-timeline li:not(:last-child)::before { position: absolute; content: ""; top: calc(50% + 0.55rem); bottom: calc(-50% + 0.55rem); left: 0.7rem; width: 1px; background: var(--line); }
+.release-dot { z-index: 1; display: grid; place-items: center; flex: 0 0 1.4rem; width: 1.4rem; height: 1.4rem; border: 1px solid var(--lav); border-radius: 50%; background: var(--bg); color: var(--accent); font-size: 0.7rem; }
+.release-latest .release-dot { border-color: var(--accent); background: var(--soft); }
+.release-chapter-copy { display: grid; gap: 0.12rem; min-width: 0; flex: 1; }
+.release-chapter-copy strong { overflow-wrap: anywhere; font-size: 0.9rem; font-weight: 650; }
+.release-chapter-copy span { color: var(--muted); font-size: 0.78rem; }
+.release-new { padding: 0.18rem 0.4rem; border-radius: 4px; background: var(--soft); color: var(--accent); font: 0.62rem/1.4 var(--mono); letter-spacing: 0.04em; }
+.release-footnote { color: var(--muted); font-size: 0.72rem; }
+.release-journey-compact { margin-bottom: 0.25rem; }
+@keyframes release-appear { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .release-timeline li { animation: none; } }
+@media (max-width: 380px) { .release-summary { align-items: flex-start; flex-direction: column; } .release-new { display: none; } }
