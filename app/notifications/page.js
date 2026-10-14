@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { supabase, configured } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
@@ -13,7 +13,10 @@ export default function NotificationsPage() {
   const { user, loading } = useAuth();
   const [items, setItems] = useState([]);
   const [busy, setBusy] = useState(true);
+  const [markingAll, setMarkingAll] = useState(false);
+  const [filter, setFilter] = useState('all');
   const [error, setError] = useState('');
+  const [actionError, setActionError] = useState('');
 
   const load = useCallback(async () => {
     if (!user || !configured) { setItems([]); setBusy(false); return; }
@@ -22,7 +25,7 @@ export default function NotificationsPage() {
       .select('id,kind,message,link_url,read_at,created_at,profiles!notifications_actor_id_fkey(name,username,avatar_url)')
       .eq('recipient_id', user.id).order('created_at', { ascending: false }).limit(60);
     if (queryError) {
-      setError('Notifications need to be enabled in the Palixia database first.');
+      setError('Notifications could not be loaded. Please try again shortly.');
       setItems([]);
     } else {
       setError('');
@@ -33,17 +36,42 @@ export default function NotificationsPage() {
 
   useEffect(() => { if (!loading) load(); }, [loading, load]);
 
+  const unreadCount = useMemo(() => items.filter((item) => !item.read_at).length, [items]);
+  const visibleItems = useMemo(
+    () => filter === 'unread' ? items.filter((item) => !item.read_at) : items,
+    [filter, items]
+  );
+
   async function openNotification(item) {
     if (!item.read_at) {
-      await supabase.from('notifications').update({ read_at: new Date().toISOString() }).eq('id', item.id).eq('recipient_id', user.id);
+      const { error: updateError } = await supabase.from('notifications')
+        .update({ read_at: new Date().toISOString() })
+        .eq('id', item.id).eq('recipient_id', user.id);
+      if (updateError) {
+        setActionError('We couldn’t mark this notification as read, but you can still open it.');
+      } else {
+        setItems((current) => current.map((entry) =>
+          entry.id === item.id ? { ...entry, read_at: new Date().toISOString() } : entry
+        ));
+        setActionError('');
+      }
     }
     window.location.href = item.link_url || '/community';
   }
 
   async function markAllRead() {
-    if (!user) return;
-    await supabase.from('notifications').update({ read_at: new Date().toISOString() }).eq('recipient_id', user.id).is('read_at', null);
-    await load();
+    if (!user || unreadCount === 0 || markingAll) return;
+    setMarkingAll(true);
+    setActionError('');
+    const { error: updateError } = await supabase.from('notifications')
+      .update({ read_at: new Date().toISOString() })
+      .eq('recipient_id', user.id).is('read_at', null);
+    if (updateError) {
+      setActionError('Couldn’t mark notifications as read. Please try again.');
+    } else {
+      setItems((current) => current.map((item) => item.read_at ? item : { ...item, read_at: new Date().toISOString() }));
+    }
+    setMarkingAll(false);
   }
 
   if (loading) return <section className="stack"><h1 className="h1">Notifications</h1><p className="muted">Loading…</p></section>;
@@ -51,16 +79,49 @@ export default function NotificationsPage() {
 
   return (
     <section className="stack">
-      <div className="sechead"><h1 className="h1">Notifications</h1><button className="btn ghost small" onClick={markAllRead}>Mark all read</button></div>
-      {error && <p className="notice">{error} Run <code>supabase/notifications.sql</code> in Supabase SQL Editor, then refresh.</p>}
+      <div className="sechead">
+        <div>
+          <h1 className="h1">Notifications</h1>
+          <p className="muted">{unreadCount ? `${unreadCount} unread` : 'You’re up to date'}</p>
+        </div>
+        <div className="row">
+          <button className="btn ghost small" onClick={load} disabled={busy}>Refresh</button>
+          <button className="btn ghost small" onClick={markAllRead} disabled={unreadCount === 0 || markingAll}>
+            {markingAll ? 'Marking…' : 'Mark all read'}
+          </button>
+        </div>
+      </div>
+      <div className="chips" aria-label="Filter notifications">
+        <button type="button" className="chip" aria-pressed={filter === 'all'} onClick={() => setFilter('all')}>
+          All ({items.length})
+        </button>
+        <button type="button" className="chip" aria-pressed={filter === 'unread'} onClick={() => setFilter('unread')}>
+          Unread ({unreadCount})
+        </button>
+      </div>
+      {error && <div className="empty"><b>Notifications unavailable</b><p>{error}</p><button className="btn" onClick={load} disabled={busy}>Try again</button></div>}
+      {actionError && <p className="notice" role="status">{actionError}</p>}
       {busy && <p className="muted">Loading notifications…</p>}
-      {!busy && !error && items.length === 0 && <div className="empty"><b>You’re all caught up.</b><p className="muted">Likes, comments, new followers, new books from authors you follow, and new chapters from followed or saved books will show up here.</p></div>}
-      {items.map((item) => {
+      {!busy && !error && visibleItems.length === 0 && (
+        <div className="empty">
+          <b>{filter === 'unread' ? 'No unread notifications.' : 'You’re all caught up.'}</b>
+          <p className="muted">{filter === 'unread'
+            ? 'You’ve read every notification. New activity will appear here.'
+            : 'Likes, comments, new followers, new books from authors you follow, and new chapters from followed or saved books will show up here.'}</p>
+          {filter === 'unread' && <button type="button" className="btn ghost" onClick={() => setFilter('all')}>View all notifications</button>}
+        </div>
+      )}
+      {!busy && !error && visibleItems.map((item) => {
         const actor = item.profiles;
-        return <button key={item.id} type="button" onClick={() => openNotification(item)} className="notification-item" style={{ background: item.read_at ? 'var(--bg)' : 'var(--surface)' }}>
-          <span className="notification-dot" aria-hidden="true" style={{ opacity: item.read_at ? 0 : 1 }} />
-          <span className="notification-copy"><b>{actor?.name || 'A Palixia member'}</b> {item.message}<small>{timeLabel(item.created_at)}</small></span>
-        </button>;
+        return (
+          <button key={item.id} type="button" onClick={() => openNotification(item)} className="notification-item" style={{ background: item.read_at ? 'var(--bg)' : 'var(--surface)' }}>
+            <span className="notification-dot" aria-hidden="true" style={{ opacity: item.read_at ? 0 : 1 }} />
+            <span className="notification-copy">
+              <b>{actor?.name || 'A Palixia member'}</b> {item.message}
+              <small>{timeLabel(item.created_at)}{!item.read_at ? ' · Unread' : ''}</small>
+            </span>
+          </button>
+        );
       })}
     </section>
   );
