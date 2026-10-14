@@ -10,6 +10,7 @@ import BookCard from '@/components/BookCard';
 import Empty from '@/components/Empty';
 import Link from 'next/link';
 import ProfileBadge from '@/components/ProfileBadge';
+import ReleaseJourney from '@/components/ReleaseJourney';
 
 export default function AuthorPage() {
   const { username } = useParams();
@@ -20,6 +21,7 @@ export default function AuthorPage() {
   const [following, setFollowing] = useState(false);
   const [msg, setMsg] = useState('');
   const [badge, setBadge] = useState(null);
+  const [releaseChapters, setReleaseChapters] = useState([]);
 
   useEffect(() => {
     (async () => {
@@ -30,6 +32,15 @@ export default function AuthorPage() {
       setBadge(badgeRow ? badgeRow.badge_type : null);
       const { data: bk } = await supabase.from('book_cards').select('*').eq('author_id', data.id).order('created_at', { ascending: false });
       setBooks(bk || []);
+      if (bk && bk.length) {
+        const { data: recentChapters } = await supabase.from('chapters')
+          .select('id,book_id,chapter_number,title,status,created_at,updated_at')
+          .in('book_id', bk.map((book) => book.id))
+          .eq('status', 'published')
+          .order('updated_at', { ascending: false })
+          .limit(100);
+        setReleaseChapters(recentChapters || []);
+      }
       const { data: st } = await supabase.rpc('author_stats', { p_author: data.id });
       setStats(st || null);
     })();
@@ -91,6 +102,8 @@ export default function AuthorPage() {
           {msg && <p className="msg-err" role="alert">{msg} {!user && <Link className="linkbtn" href={'/login?next=/author/' + p.username}>Log in</Link>}</p>}
         </div>
       </section>
+
+      {releaseChapters.length > 0 && <ReleaseJourney chapters={releaseChapters} compact bookTitle="your stories" />}
 
       <section>
         <div className="sechead"><h2 className="h2">Books by {p.name}</h2></div>
