@@ -11,6 +11,7 @@ import Avatar from '@/components/Avatar';
 import Empty from '@/components/Empty';
 import LikeButton from '@/components/LikeButton';
 import ProfileBadge from '@/components/ProfileBadge';
+import ReleaseJourney from '@/components/ReleaseJourney';
 
 export default function BookPage() {
   const { id } = useParams();
@@ -62,7 +63,7 @@ export default function BookPage() {
       data.genre_id
         ? supabase.from('genres').select('name,slug').eq('id', data.genre_id).maybeSingle()
         : Promise.resolve({ data: null, error: null }),
-      supabase.from('chapters').select('id,chapter_number,title,status,reads').eq('book_id', bookId).order('chapter_number'),
+      supabase.from('chapters').select('id,chapter_number,title,status,reads,created_at,updated_at').eq('book_id', bookId).order('chapter_number'),
       supabase.rpc('author_stats', { p_author: data.author_id }),
       supabase.from('profile_badges').select('badge_type').eq('profile_id', data.author_id).maybeSingle(),
     ]);
@@ -224,6 +225,8 @@ export default function BookPage() {
         <h2 className="h2">About this {book.book_type === 'comic' ? 'comic' : 'book'}</h2>
         <p style={{ maxWidth: '40rem', whiteSpace: 'pre-line' }}>{book.description || 'The author has not added a description yet.'}</p>
       </section>
+
+      <ReleaseJourney chapters={visible} />
 
       <section>
         <div className="sechead"><h2 className="h2">Chapters</h2></div>
