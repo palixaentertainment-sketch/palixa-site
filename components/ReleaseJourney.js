@@ -39,7 +39,7 @@ export default function ReleaseJourney({ chapters = [], bookTitle = 'this story'
         <div>
           <p className="mono">THE STORY SO FAR</p>
           <h2 className="h2">Release Journey</h2>
-          <p className="muted release-subtitle">A little look at how {bookTitle} is growing.</p>
+          <p className="muted release-subtitle">{compact ? 'A look at recent publishing activity.' : 'A little look at how this story is growing.'}</p>
         </div>
       </div>
 
