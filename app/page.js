@@ -9,6 +9,7 @@ import { genreStyle } from '@/lib/genres';
 import Cover from '@/components/Cover';
 import BookCard from '@/components/BookCard';
 import Avatar from '@/components/Avatar';
+import PalixiaFridaysBanner from '@/components/PalixiaFridaysBanner';
 
 export default function Home() {
   const { user } = useAuth();
@@ -174,6 +175,8 @@ export default function Home() {
           <div className="hero-spark">✦</div>
         </div>
       </section>
+
+      <PalixiaFridaysBanner />
 
       {comingSoonBooks.length > 0 && (
         <section>
