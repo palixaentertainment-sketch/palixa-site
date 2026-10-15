@@ -1,8 +1,9 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
+import { supabase, configured } from '@/lib/supabase';
 import Avatar from '@/components/Avatar';
 import Logo from '@/components/Logo';
 import NotificationsBell from '@/components/NotificationsBell';
@@ -12,6 +13,7 @@ const LINKS = [
   ['/', 'Home'],
   ['/discover', 'Discover'],
   ['/community', 'Community'],
+  ['/fridays', 'Palixia Fridays'],
   ['/categories', 'Categories'],
   ['/authors', 'Authors'],
   ['/about', 'About'],
@@ -22,14 +24,36 @@ export default function Header() {
   const pathname = usePathname() || '/';
   const router = useRouter();
   const [q, setQ] = useState('');
+  const [fridayAnnouncement, setFridayAnnouncement] = useState(null);
   const isAuthor = profile && (profile.role === 'author' || profile.role === 'admin');
   const isAdmin = profile && profile.role === 'admin';
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadFridayAnnouncement() {
+      if (!configured) return;
+      const now = new Date().toISOString();
+      const { data } = await supabase.from('palixia_friday_hunts')
+        .select('id,title,starts_at,ends_at,status')
+        .eq('status', 'published')
+        .gte('ends_at', now)
+        .order('starts_at', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (!cancelled) setFridayAnnouncement(data || null);
+    }
+    loadFridayAnnouncement();
+    return () => { cancelled = true; };
+  }, [pathname]);
 
   function search(e) {
     e.preventDefault();
     const t = q.trim();
     router.push(t ? '/discover?q=' + encodeURIComponent(t) : '/discover');
   }
+
+  const huntStarts = fridayAnnouncement ? new Date(fridayAnnouncement.starts_at).getTime() : 0;
+  const huntUpcoming = fridayAnnouncement && Date.now() < huntStarts;
 
   return (
     <header className="top">
@@ -67,6 +91,7 @@ export default function Header() {
                   <Link href="/library">Library</Link>
                   {isAuthor ? <Link href="/dashboard">Author dashboard</Link> : <Link href="/profile#author">Become an author</Link>}
                   {isAdmin && <Link href="/admin">Admin dashboard</Link>}
+                  {isAdmin && <Link href="/admin/fridays">Manage Palixia Fridays</Link>}
                   <button type="button" onClick={signOut}>Sign out</button>
                 </div>
               </details>
@@ -74,6 +99,13 @@ export default function Header() {
           )}
         </div>
       </div>
+      {fridayAnnouncement && (
+        <div className="fridays-site-announcement">
+          <span className="fridays-announcement-mark" aria-hidden="true">✦</span>
+          <span><b>{huntUpcoming ? 'Coming up on Palixia Fridays:' : 'Palixia Fridays is live:'}</b> {fridayAnnouncement.title}</span>
+          <Link href="/fridays">{huntUpcoming ? 'Get ready' : 'Join the hunt'} <span aria-hidden="true">→</span></Link>
+        </div>
+      )}
     </header>
   );
 }
