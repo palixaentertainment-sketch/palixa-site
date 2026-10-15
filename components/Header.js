@@ -13,7 +13,6 @@ const LINKS = [
   ['/', 'Home'],
   ['/discover', 'Discover'],
   ['/community', 'Community'],
-  ['/fridays', 'Palixia Fridays'],
   ['/categories', 'Categories'],
   ['/authors', 'Authors'],
   ['/about', 'About'],
