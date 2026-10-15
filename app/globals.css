@@ -706,3 +706,75 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 .fridays-stage-dots span { display:grid; place-items:center; width:2rem; height:2rem; border:1px solid var(--line); border-radius:7px; color:var(--muted); background:#fff; font:700 .7rem var(--mono); }
 .fridays-stage-dots span.done { border-color:#bbf7d0; background:#dcfce7; color:#166534; }
 .fridays-stage-dots span.current { border-color:var(--accent); background:var(--soft); color:var(--accent); }
+
+
+/* Palixia Fridays homepage banner — compact, lightweight and motion-sensitive. */
+.fridays-home-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  overflow: hidden;
+  padding: 1rem 1.15rem;
+  border: 1px solid #e2d4ff;
+  border-radius: 12px;
+  background: linear-gradient(110deg, #f8f4ff 0%, #fff 72%);
+  box-shadow: 0 5px 18px rgba(74, 29, 130, 0.055);
+  animation: fridays-banner-enter 500ms ease-out both;
+}
+.fridays-home-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: var(--accent);
+}
+.fridays-home-banner-copy { display: grid; gap: .2rem; min-width: 0; }
+.fridays-home-banner-kicker {
+  color: var(--accent);
+  font: 700 .68rem var(--mono);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.fridays-home-banner h2 { font-size: clamp(1.05rem, 3vw, 1.3rem); line-height: 1.2; font-weight: 800; }
+.fridays-home-banner p { color: var(--muted); font-size: .88rem; }
+.fridays-home-banner-action {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: .4rem;
+  padding: .65rem .85rem;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-size: .82rem;
+  font-weight: 700;
+  transition: transform 160ms ease, background-color 160ms ease;
+}
+.fridays-home-banner-action:hover { transform: translateY(-1px); background: var(--accent-deep); }
+.fridays-home-banner-mark { color: var(--accent); font-size: 1.1rem; margin-right: .25rem; }
+.fridays-coming-date {
+  display: inline-block;
+  width: fit-content;
+  padding: .45rem .7rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--accent);
+  background: #fff;
+  font: 700 .7rem var(--mono);
+  letter-spacing: .04em;
+}
+@keyframes fridays-banner-enter {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 540px) {
+  .fridays-home-banner { align-items: flex-start; gap: .65rem; padding: .9rem .8rem .9rem 1rem; }
+  .fridays-home-banner p { font-size: .8rem; }
+  .fridays-home-banner-action { padding: .6rem .65rem; font-size: .76rem; white-space: nowrap; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fridays-home-banner { animation: none; }
+  .fridays-home-banner-action { transition: none; }
+}
