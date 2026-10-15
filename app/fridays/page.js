@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase, configured } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
@@ -12,8 +12,7 @@ function formatDate(value) {
 export default function PalixiaFridaysPage() {
   const { user } = useAuth();
   const [hunt, setHunt] = useState(null);
-  const [questions, setQuestions] = useState([]);
-  const [solved, setSolved] = useState([]);
+  const [clueData, setClueData] = useState(null);
   const [answer, setAnswer] = useState('');
   const [hintOpen, setHintOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -45,47 +44,32 @@ export default function PalixiaFridaysPage() {
     }
     const selected = hunts?.[0] || null;
     setHunt(selected);
+    setClueData(null);
     if (!selected) {
-      setQuestions([]);
-      setSolved([]);
       setLoading(false);
       return;
     }
-    const { data: clueRows, error: clueError } = await supabase
-      .from('palixia_friday_questions')
-      .select('id,sort_order,prompt,hint,source_hint')
-      .eq('hunt_id', selected.id)
-      .order('sort_order', { ascending: true });
+    const { data: clueResult, error: clueError } = await supabase.rpc('get_palixia_friday_current_clue', { p_hunt_id: selected.id });
     if (clueError) {
-      setLoadError('The hunt details could not be loaded. Please refresh and try again.');
+      setLoadError('The hunt details could not be loaded. Run the Palixia Fridays SQL setup, then refresh this page.');
       setLoading(false);
       return;
     }
-    setQuestions(clueRows || []);
-    if (user) {
-      const { data: entry, error: entryError } = await supabase
-        .from('palixia_friday_entries')
-        .select('solved_question_ids,completed_at')
-        .eq('hunt_id', selected.id)
-        .eq('user_id', user.id)
-        .maybeSingle();
-      if (entryError) setNotice('Your progress could not be loaded. You can still try the current clue.');
-      setSolved(entry?.solved_question_ids || []);
-    } else {
-      setSolved([]);
-    }
+    setClueData(clueResult || null);
     setLoading(false);
-  }, [user]);
+  }, []);
 
   useEffect(() => { load(); }, [load]);
 
-  const current = useMemo(() => questions.find((q) => !solved.includes(q.id)) || null, [questions, solved]);
   const starts = hunt ? new Date(hunt.starts_at).getTime() : 0;
   const ends = hunt ? new Date(hunt.ends_at).getTime() : 0;
   const now = Date.now();
   const notStarted = hunt && now < starts;
   const closed = hunt && now > ends;
-  const completed = questions.length > 0 && solved.length >= questions.length;
+  const current = clueData?.current || null;
+  const total = Number(clueData?.total || 0);
+  const solved = Number(clueData?.solved || 0);
+  const completed = Boolean(clueData?.completed);
 
   async function submitAnswer(e) {
     e.preventDefault();
@@ -109,9 +93,10 @@ export default function PalixiaFridaysPage() {
       setNotice(data?.message || 'Answer checked.');
       setNoticeType(data?.correct ? 'success' : 'error');
       if (data?.correct) {
-        setSolved((old) => old.includes(current.id) ? old : [...old, current.id]);
         setAnswer('');
         setHintOpen(false);
+        const { data: nextClue, error: nextError } = await supabase.rpc('get_palixia_friday_current_clue', { p_hunt_id: hunt.id });
+        if (!nextError) setClueData(nextClue || null);
       }
     }
     setSending(false);
@@ -148,7 +133,7 @@ export default function PalixiaFridaysPage() {
               <h2 className="h2">{hunt.title}</h2>
               <p>{hunt.description}</p>
             </div>
-            <div className="fridays-prize"><span>PRIZE</span><strong>{hunt.prize_type === 'cash' ? '₦' : '₦'}{Number(hunt.prize_value).toLocaleString()}</strong><small>{hunt.prize_type === 'airtime' ? 'Airtime' : 'Cash'}</small></div>
+            <div className="fridays-prize"><span>PRIZE</span><strong>₦{Number(hunt.prize_value).toLocaleString()}</strong><small>{hunt.prize_type === 'airtime' ? 'Airtime' : 'Cash'}</small></div>
           </div>
           <div className="fridays-dates"><span>Starts: {formatDate(hunt.starts_at)}</span><span>Ends: {formatDate(hunt.ends_at)}</span></div>
 
@@ -157,38 +142,28 @@ export default function PalixiaFridaysPage() {
           {completed && <div className="fridays-complete"><span aria-hidden="true">✦</span><div><b>Hunt completed!</b><p>You solved every clue. Your entry is recorded; check back for the winner announcement.</p></div></div>}
           {closed && !completed && <div className="fridays-callout">This hunt has ended. Thanks for taking part. Check back for the next challenge.</div>}
 
-          <div className="fridays-progress-head"><b>Your progress</b><span>{Math.min(solved.length, questions.length)} of {questions.length} clues solved</span></div>
-          <div className="fridays-progress" role="progressbar" aria-label="Hunt progress" aria-valuemin="0" aria-valuemax={questions.length || 1} aria-valuenow={solved.length}><span style={{ width: (questions.length ? Math.min(100, solved.length / questions.length * 100) : 0) + '%' }} /></div>
+          <div className="fridays-progress-head"><b>Your progress</b><span>{Math.min(solved, total)} of {total} clues solved</span></div>
+          <div className="fridays-progress" role="progressbar" aria-label="Hunt progress" aria-valuemin="0" aria-valuemax={total || 1} aria-valuenow={solved}><span style={{ width: (total ? Math.min(100, solved / total * 100) : 0) + '%' }} /></div>
+          {total > 0 && <div className="fridays-stage-dots" aria-label={'Clue ' + Math.min(solved + 1, total) + ' of ' + total}>{Array.from({ length: total }, (_, index) => <span key={index} className={index < solved ? 'done' : index === solved && !completed ? 'current' : ''}>{index < solved ? '✓' : String(index + 1).padStart(2, '0')}</span>)}</div>}
 
-          {questions.length === 0 && <p className="muted">The hunt clues will appear here soon.</p>}
-          {questions.map((question, index) => {
-            const isSolved = solved.includes(question.id);
-            const isCurrent = current?.id === question.id;
-            const locked = !isSolved && !isCurrent;
-            return (
-              <article key={question.id} className={'fridays-clue' + (isSolved ? ' solved' : '') + (locked ? ' locked' : '')}>
-                <div className="fridays-clue-number">{isSolved ? '✓' : locked ? '🔒' : String(index + 1).padStart(2, '0')}</div>
-                <div className="fridays-clue-content">
-                  <div className="fridays-clue-meta"><span>CLUE {String(index + 1).padStart(2, '0')}</span><span>{isSolved ? 'SOLVED' : locked ? 'LOCKED' : 'CURRENT CLUE'}</span></div>
-                  <h3>{isSolved ? 'Clue solved' : locked ? 'Solve the previous clue first' : question.prompt}</h3>
-                  {isSolved && <p className="muted">Nice work. Keep going.</p>}
-                  {isCurrent && !notStarted && !closed && !completed && user && (
-                    <>
-                      {question.source_hint && <p className="fridays-source-hint">Where to search: {question.source_hint}</p>}
-                      {question.hint && <div className="fridays-hint-wrap"><button type="button" className="fridays-hint-btn" onClick={() => setHintOpen((v) => !v)} aria-expanded={hintOpen}>{hintOpen ? 'Hide hint' : 'Need a hint?'}</button>{hintOpen && <p className="fridays-hint">{question.hint}</p>}</div>}
-                      <form className="fridays-answer-form" onSubmit={submitAnswer}>
-                        <label className="sr-only" htmlFor={'answer-' + question.id}>Your answer</label>
-                        <input id={'answer-' + question.id} className="in" maxLength={500} autoComplete="off" placeholder="Enter your answer…" value={answer} onChange={(e) => setAnswer(e.target.value)} />
-                        <button className="btn" disabled={sending || !answer.trim()}>{sending ? 'Checking…' : 'Unlock next clue'}</button>
-                      </form>
-                    </>
-                  )}
-                  {isCurrent && !user && <p className="muted">Log in to reveal your answer box.</p>}
-                </div>
-              </article>
-            );
-          })}
-          <p className="fridays-rules">Free to enter. One entry per account. Answers are checked automatically. The winner-selection method and prize details will be stated in the hunt rules before entries open.</p>
+          {!notStarted && !closed && !completed && current && (
+            <article className="fridays-clue">
+              <div className="fridays-clue-number">{String(current.sort_order).padStart(2, '0')}</div>
+              <div className="fridays-clue-content">
+                <div className="fridays-clue-meta"><span>CLUE {String(current.sort_order).padStart(2, '0')}</span><span>CURRENT STAGE</span></div>
+                <h3>{current.prompt}</h3>
+                {current.source_hint && <p className="fridays-source-hint">Where to search: {current.source_hint}</p>}
+                {current.hint && <div className="fridays-hint-wrap"><button type="button" className="fridays-hint-btn" onClick={() => setHintOpen((v) => !v)} aria-expanded={hintOpen}>{hintOpen ? 'Hide hint' : 'Need a hint?'}</button>{hintOpen && <p className="fridays-hint">{current.hint}</p>}</div>}
+                {user && <form className="fridays-answer-form" onSubmit={submitAnswer}>
+                  <label className="sr-only" htmlFor={'answer-' + current.id}>Your answer</label>
+                  <input id={'answer-' + current.id} className="in" maxLength={500} autoComplete="off" placeholder="Enter your answer…" value={answer} onChange={(e) => setAnswer(e.target.value)} />
+                  <button className="btn" disabled={sending || !answer.trim()}>{sending ? 'Checking…' : 'Unlock next clue'}</button>
+                </form>}
+              </div>
+            </article>
+          )}
+          {total === 0 && <p className="muted">The hunt clues will appear here soon.</p>}
+          <p className="fridays-rules">Free to enter. One entry per account. The winner-selection method and prize details will be stated in the hunt rules before entries open.</p>
         </section>
       )}
 
