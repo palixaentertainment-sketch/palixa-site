@@ -701,3 +701,8 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
   .fridays-spark,.fridays-announcement-mark,.fridays-loader,.fridays-clue { animation:none; }
   .fridays-progress > span { transition:none; }
 }
+
+.fridays-stage-dots { display:flex; flex-wrap:wrap; gap:.45rem; }
+.fridays-stage-dots span { display:grid; place-items:center; width:2rem; height:2rem; border:1px solid var(--line); border-radius:7px; color:var(--muted); background:#fff; font:700 .7rem var(--mono); }
+.fridays-stage-dots span.done { border-color:#bbf7d0; background:#dcfce7; color:#166534; }
+.fridays-stage-dots span.current { border-color:var(--accent); background:var(--soft); color:var(--accent); }
