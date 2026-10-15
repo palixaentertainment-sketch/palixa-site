@@ -8,12 +8,11 @@ const LAUNCH_DATE = new Date('2026-10-23T00:00:00');
 
 export default function PalixiaFridaysBanner() {
   const [hunt, setHunt] = useState(null);
-  const [checked, setChecked] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     async function loadHunt() {
-      if (!configured) { setChecked(true); return; }
+      if (!configured) return;
       const now = new Date().toISOString();
       const { data } = await supabase.from('palixia_friday_hunts')
         .select('id,title,starts_at,ends_at,status')
@@ -23,7 +22,6 @@ export default function PalixiaFridaysBanner() {
         .limit(1);
       if (!cancelled) {
         setHunt(data?.[0] || null);
-        setChecked(true);
       }
     }
     loadHunt();
@@ -31,7 +29,6 @@ export default function PalixiaFridaysBanner() {
   }, []);
 
   const upcoming = hunt && Date.now() < new Date(hunt.starts_at).getTime();
-  const live = hunt && !upcoming;
   const prelaunch = !hunt && Date.now() < LAUNCH_DATE.getTime();
   const title = hunt
     ? (upcoming ? 'A new story hunt is coming.' : 'Your next clue is waiting.')
