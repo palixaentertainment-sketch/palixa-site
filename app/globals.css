@@ -607,3 +607,97 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 @keyframes release-appear { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 @media (prefers-reduced-motion: reduce) { .release-timeline li { animation: none; } }
 @media (max-width: 380px) { .release-summary { align-items: flex-start; flex-direction: column; } .release-new { display: none; } }
+
+
+/* Palixia Fridays: lightweight story-hunt surfaces. Animations use opacity/transform only. */
+.fridays-site-announcement { display:flex; align-items:center; justify-content:center; gap:.55rem; flex-wrap:wrap; padding:.55rem 1rem; background:var(--accent-deep); color:#fff; font-size:.88rem; line-height:1.35; }
+.fridays-site-announcement b { font-weight:800; }
+.fridays-site-announcement a { display:inline-flex; align-items:center; gap:.3rem; padding:.22rem .65rem; border:1px solid rgba(255,255,255,.45); border-radius:99px; color:#fff; font-weight:700; white-space:nowrap; }
+.fridays-site-announcement a:hover { background:rgba(255,255,255,.12); }
+.fridays-announcement-mark { color:#e9d5ff; animation:fridays-twinkle 2.8s ease-in-out infinite; }
+.fridays-page { gap:1.4rem; }
+.fridays-hero { position:relative; overflow:hidden; padding:clamp(1.4rem,5vw,3.2rem); border:1px solid var(--line); border-radius:14px; background:linear-gradient(135deg,#fbf8ff 0%,#f1e9ff 55%,#fff 100%); }
+.fridays-hero .mono { color:var(--accent); }
+.fridays-hero .h1 { margin:.4rem 0 .8rem; letter-spacing:-.035em; }
+.fridays-intro { max-width:42rem; color:var(--muted); font-size:1.05rem; }
+.fridays-spark { position:absolute; right:clamp(1.2rem,7vw,5rem); top:1.1rem; color:#8b5cf6; font-size:clamp(3rem,10vw,6rem); opacity:.22; animation:fridays-float 5s ease-in-out infinite; pointer-events:none; }
+.fridays-hero-tags { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:1.2rem; }
+.fridays-hero-tags span { padding:.35rem .7rem; border:1px solid #e4d7ff; border-radius:99px; background:rgba(255,255,255,.75); font-size:.82rem; font-weight:600; }
+.fridays-empty,.fridays-hunt,.fridays-past { display:grid; gap:1rem; }
+.fridays-empty { justify-items:start; padding:clamp(1.2rem,4vw,2rem); border:1px solid var(--line); border-radius:12px; background:var(--surface); }
+.fridays-empty-icon { display:grid; place-items:center; width:3rem; height:3rem; border-radius:12px; background:var(--soft); color:var(--accent); font-size:1.8rem; }
+.fridays-empty .h2 { max-width:35rem; }
+.fridays-empty > p:not(.mono) { color:var(--muted); max-width:38rem; }
+.fridays-loading { display:flex; align-items:center; gap:.7rem; color:var(--muted); padding:1rem 0; }
+.fridays-loader { width:1.1rem; height:1.1rem; border:2px solid var(--line); border-top-color:var(--accent); border-radius:50%; animation:fridays-spin .8s linear infinite; }
+.fridays-hunt { gap:1rem; }
+.fridays-hunt-top { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:1rem; align-items:start; padding:1.2rem; border:1px solid var(--line); border-radius:12px; background:var(--surface); }
+.fridays-hunt-top h2 { margin:.5rem 0; }
+.fridays-hunt-top p { color:var(--muted); max-width:42rem; }
+.fridays-prize { display:grid; justify-items:end; gap:.1rem; min-width:5.5rem; padding:.65rem .8rem; border-radius:10px; background:#ede9fe; color:#4c1d95; }
+.fridays-prize > span,.fridays-prize small { font-size:.72rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
+.fridays-prize strong { font-size:1.3rem; line-height:1.2; }
+.fridays-prize small { letter-spacing:0; text-transform:none; }
+.fridays-live { display:inline-flex; align-items:center; gap:.4rem; font:700 .7rem var(--mono); letter-spacing:.06em; color:var(--accent); }
+.fridays-live > span { width:.48rem; height:.48rem; border-radius:50%; background:#16a34a; box-shadow:0 0 0 3px #dcfce7; }
+.fridays-dates { display:flex; flex-wrap:wrap; justify-content:space-between; gap:.5rem; color:var(--muted); font-size:.8rem; }
+.fridays-callout { padding:.85rem 1rem; border-left:3px solid var(--accent); border-radius:0 8px 8px 0; background:var(--soft); }
+.fridays-progress-head { display:flex; justify-content:space-between; flex-wrap:wrap; gap:.5rem; font-size:.88rem; }
+.fridays-progress-head span { color:var(--muted); }
+.fridays-progress { height:.45rem; overflow:hidden; border-radius:99px; background:var(--soft); }
+.fridays-progress > span { display:block; height:100%; border-radius:inherit; background:var(--accent); transition:width .25s ease; }
+.fridays-clue { display:grid; grid-template-columns:2.5rem minmax(0,1fr); gap:.8rem; padding:1rem; border:1px solid var(--line); border-radius:12px; background:#fff; animation:fridays-enter .28s ease both; }
+.fridays-clue-number { display:grid; place-items:center; width:2.35rem; height:2.35rem; border-radius:9px; background:var(--soft); color:var(--accent); font-weight:800; }
+.fridays-clue.solved { border-color:#bbf7d0; background:#fbfffc; }
+.fridays-clue.solved .fridays-clue-number { background:#dcfce7; color:#166534; }
+.fridays-clue.locked { background:#fafafa; }
+.fridays-clue.locked .fridays-clue-number { background:#f3f4f6; color:#6b7280; }
+.fridays-clue-content { min-width:0; }
+.fridays-clue-meta { display:flex; justify-content:space-between; flex-wrap:wrap; gap:.4rem; margin:.15rem 0 .5rem; color:var(--muted); font:700 .68rem var(--mono); letter-spacing:.05em; }
+.fridays-clue h3 { font-size:1.05rem; line-height:1.35; overflow-wrap:anywhere; }
+.fridays-clue-content > p { margin-top:.5rem; }
+.fridays-source-hint { color:var(--muted); font-size:.88rem; }
+.fridays-hint-wrap { margin-top:.65rem; }
+.fridays-hint-btn { color:var(--accent); font-weight:700; font-size:.88rem; }
+.fridays-hint { margin-top:.4rem; padding:.6rem .75rem; background:var(--surface); border-radius:7px; color:var(--muted); font-size:.9rem; }
+.fridays-answer-form { display:flex; flex-wrap:wrap; gap:.6rem; margin-top:.85rem; }
+.fridays-answer-form .in { flex:1 1 12rem; min-width:0; }
+.fridays-answer-form .btn { flex:none; }
+.fridays-rules { color:var(--muted); font-size:.8rem; }
+.fridays-complete { display:flex; gap:.8rem; align-items:flex-start; padding:1rem; border:1px solid #bbf7d0; border-radius:10px; background:#f0fdf4; color:#166534; }
+.fridays-complete > span { font-size:1.5rem; }
+.fridays-complete p { margin-top:.25rem; color:#166534; }
+.fridays-how-grid { display:grid; gap:.7rem; }
+.fridays-how-grid article { display:grid; gap:.4rem; padding:1rem; border:1px solid var(--line); border-radius:10px; }
+.fridays-how-grid article > span { color:var(--accent); font:700 .75rem var(--mono); }
+.fridays-how-grid article p { color:var(--muted); font-size:.9rem; }
+.fridays-notice.success { border-color:#bbf7d0; }
+.fridays-admin { gap:1.2rem; }
+.fridays-admin-panel { display:grid; gap:1rem; padding:1rem; border:1px solid var(--line); border-radius:12px; background:#fff; }
+.fridays-admin-panel > .h2 { margin-bottom:.2rem; }
+.fridays-admin-grid { display:grid; grid-template-columns:minmax(0,1fr); gap:.8rem; }
+.fridays-admin-selected { display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:1rem; padding:1rem; background:var(--surface); border-radius:9px; }
+.fridays-admin-selected h3 { margin:.4rem 0; font-size:1.1rem; }
+.fridays-admin-selected p { margin-top:.25rem; }
+.fridays-admin-clues,.fridays-admin-entries,.fridays-add-clue,.fridays-winner-form { display:grid; gap:.75rem; padding-top:.9rem; border-top:1px solid var(--line); }
+.fridays-admin-clues h3,.fridays-admin-entries h3,.fridays-add-clue h3,.fridays-winner-form h3 { font-size:1rem; }
+.fridays-admin-clues article { padding:.8rem; border:1px solid var(--line); border-radius:8px; }
+.fridays-admin-clues article p { margin:.25rem 0; }
+.fridays-admin-clues article small { color:var(--muted); }
+.fridays-entry-row { display:flex; justify-content:space-between; gap:.7rem; align-items:center; padding:.65rem 0; border-bottom:1px solid var(--line); font-size:.88rem; }
+.fridays-entry-row > span:first-child { display:grid; min-width:0; }
+.fridays-entry-row small { color:var(--muted); }
+@keyframes fridays-spin { to { transform:rotate(360deg); } }
+@keyframes fridays-float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-5px); } }
+@keyframes fridays-twinkle { 0%,100% { opacity:.7; transform:scale(1); } 50% { opacity:1; transform:scale(1.08); } }
+@keyframes fridays-enter { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+@media (min-width:42rem) {
+  .fridays-admin-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .fridays-how-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .fridays-hunt-top { padding:1.5rem; }
+  .fridays-clue { padding:1.2rem; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .fridays-spark,.fridays-announcement-mark,.fridays-loader,.fridays-clue { animation:none; }
+  .fridays-progress > span { transition:none; }
+}
