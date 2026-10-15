@@ -128,7 +128,7 @@ begin
     ) end
   );
 end;
-$;
+$$;
 
 revoke all on function public.get_palixia_friday_current_clue(uuid) from public;
 grant execute on function public.get_palixia_friday_current_clue(uuid) to anon, authenticated;
