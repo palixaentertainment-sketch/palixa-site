@@ -119,10 +119,11 @@ export default function PalixiaFridaysPage() {
       {!loading && !loadError && !hunt && (
         <section className="fridays-empty">
           <div className="fridays-empty-icon" aria-hidden="true">✧</div>
-          <p className="mono">NEXT MISSION IN PREPARATION</p>
-          <h2 className="h2">The next mystery is being prepared.</h2>
-          <p>Check back on Friday. In the meantime, explore Palixia and discover a story you haven't read yet.</p>
-          <Link className="btn" href="/discover">Explore stories</Link>
+          <p className="mono">COMING SOON</p>
+          <h2 className="h2">Your next story hunt is almost here.</h2>
+          <p>Palixia Fridays launches on Friday, October 23. Get ready to explore stories, solve clues, and compete for a prize.</p>
+          <p className="fridays-coming-date">FRIDAY · OCTOBER 23, 2026</p>
+          <Link className="btn" href="/discover">Explore stories while you wait</Link>
         </section>
       )}
 
