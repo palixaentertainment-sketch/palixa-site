@@ -84,7 +84,7 @@ returns jsonb
 language plpgsql
 security definer
 set search_path = public
-as $
+as $$
 declare
   v_user uuid := auth.uid();
   v_hunt public.palixia_friday_hunts%rowtype;
