@@ -58,13 +58,10 @@ create policy "Admins manage Palixia Friday hunts"
   on public.palixia_friday_hunts for all using (public.is_admin()) with check (public.is_admin());
 
 drop policy if exists "Public can view clues for published hunts" on public.palixia_friday_questions;
-create policy "Public can view clues for published hunts"
-  on public.palixia_friday_questions for select using (
-    public.is_admin() or exists (
-      select 1 from public.palixia_friday_hunts h
-      where h.id = hunt_id and h.status = 'published'
-    )
-  );
+drop policy if exists "Admins manage Palixia Friday clues" on public.palixia_friday_questions;
+-- Participants get clue text only through get_palixia_friday_current_clue(), which reveals one stage at a time.
+create policy "Admins manage Palixia Friday clues"
+  on public.palixia_friday_questions for all using (public.is_admin()) with check (public.is_admin());
 drop policy if exists "Admins manage Palixia Friday clues" on public.palixia_friday_questions;
 create policy "Admins manage Palixia Friday clues"
   on public.palixia_friday_questions for all using (public.is_admin()) with check (public.is_admin());
@@ -79,6 +76,62 @@ create policy "Participants and admins can view Palixia Friday entries"
 drop policy if exists "Admins manage Palixia Friday entries" on public.palixia_friday_entries;
 create policy "Admins manage Palixia Friday entries"
   on public.palixia_friday_entries for all using (public.is_admin()) with check (public.is_admin());
+
+
+
+create or replace function public.get_palixia_friday_current_clue(p_hunt_id uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $
+declare
+  v_user uuid := auth.uid();
+  v_hunt public.palixia_friday_hunts%rowtype;
+  v_entry public.palixia_friday_entries%rowtype;
+  v_question public.palixia_friday_questions%rowtype;
+  v_total integer;
+  v_solved integer := 0;
+begin
+  select * into v_hunt from public.palixia_friday_hunts
+   where id = p_hunt_id and status = 'published';
+  if not found then raise exception 'hunt_not_available'; end if;
+
+  select count(*) into v_total from public.palixia_friday_questions where hunt_id = p_hunt_id;
+  if v_user is not null then
+    select * into v_entry from public.palixia_friday_entries
+     where hunt_id = p_hunt_id and user_id = v_user;
+    if found then v_solved := cardinality(v_entry.solved_question_ids); end if;
+  end if;
+
+  if now() < v_hunt.starts_at then
+    return jsonb_build_object('total', v_total, 'solved', v_solved, 'current', null, 'completed', false, 'not_started', true);
+  end if;
+
+  if v_user is not null then
+    select q.* into v_question from public.palixia_friday_questions q
+     where q.hunt_id = p_hunt_id and not (q.id = any(coalesce(v_entry.solved_question_ids, '{}'::uuid[])))
+     order by q.sort_order limit 1;
+  else
+    select q.* into v_question from public.palixia_friday_questions q
+     where q.hunt_id = p_hunt_id order by q.sort_order limit 1;
+  end if;
+
+  return jsonb_build_object(
+    'total', v_total,
+    'solved', v_solved,
+    'completed', v_total > 0 and v_solved >= v_total,
+    'not_started', false,
+    'current', case when v_question.id is null then null else jsonb_build_object(
+      'id', v_question.id, 'sort_order', v_question.sort_order,
+      'prompt', v_question.prompt, 'hint', v_question.hint, 'source_hint', v_question.source_hint
+    ) end
+  );
+end;
+$;
+
+revoke all on function public.get_palixia_friday_current_clue(uuid) from public;
+grant execute on function public.get_palixia_friday_current_clue(uuid) to anon, authenticated;
 
 create or replace function public.submit_palixia_friday_answer(p_hunt_id uuid, p_question_id uuid, p_answer text)
 returns jsonb
