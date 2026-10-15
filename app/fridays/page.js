@@ -25,7 +25,6 @@ export default function PalixiaFridaysPage() {
     setLoading(true);
     setLoadError('');
     if (!configured) {
-      setLoadError('Palixia Fridays is waiting for its database setup.');
       setLoading(false);
       return;
     }
@@ -38,7 +37,9 @@ export default function PalixiaFridaysPage() {
       .order('starts_at', { ascending: true })
       .limit(1);
     if (huntError) {
-      setLoadError('Palixia Fridays needs its database setup. Run supabase/palixia_fridays.sql in Supabase SQL Editor, then refresh this page.');
+      // Keep the public page friendly while the first hunt is being configured.
+      setHunt(null);
+      setClueData(null);
       setLoading(false);
       return;
     }
@@ -51,7 +52,7 @@ export default function PalixiaFridaysPage() {
     }
     const { data: clueResult, error: clueError } = await supabase.rpc('get_palixia_friday_current_clue', { p_hunt_id: selected.id });
     if (clueError) {
-      setLoadError('The hunt details could not be loaded. Run the Palixia Fridays SQL setup, then refresh this page.');
+      setLoadError('We couldn’t load this hunt just now. Please check back shortly.');
       setLoading(false);
       return;
     }
