@@ -7,6 +7,7 @@ import { supabase, configured } from '@/lib/supabase';
 import Avatar from '@/components/Avatar';
 import Logo from '@/components/Logo';
 import NotificationsBell from '@/components/NotificationsBell';
+import ThemeToggle from '@/components/ThemeToggle';
 import { openInstallApp } from '@/components/InstallAppPrompt';
 
 const LINKS = [
@@ -70,6 +71,7 @@ export default function Header() {
             <input id="hq" type="search" placeholder="Search" value={q} onChange={(e) => setQ(e.target.value)} />
             <button type="submit" aria-label="Search">Go</button>
           </form>
+          <ThemeToggle />
           {!loading && !user && (
             <div className="guestlinks">
               <Link className="btn ghost small" href="/login">Log in</Link>
