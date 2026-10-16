@@ -778,3 +778,99 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
   .fridays-home-banner { animation: none; }
   .fridays-home-banner-action { transition: none; }
 }
+
+
+/* Palixia site-wide light/dark theme. The book reader keeps its own existing reader control. */
+:root[data-theme="dark"] {
+  --bg: #100c18;
+  --surface: #191326;
+  --fg: #eee8fb;
+  --muted: #b0a4c7;
+  --line: #342847;
+  --soft: #241b34;
+  --accent: #b99aff;
+  --accent-deep: #3b2068;
+  --accent-fg: #160d25;
+  --lav: #6f559d;
+  color-scheme: dark;
+}
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2.35rem;
+  height: 2.35rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--accent);
+  background: var(--surface);
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+.theme-toggle:hover { background: var(--soft); }
+.theme-toggle svg { width: 1.15rem; height: 1.15rem; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* Components with fixed light surfaces also follow the selected site theme. */
+:root[data-theme="dark"] .authbar,
+:root[data-theme="dark"] .menu .pop,
+:root[data-theme="dark"] .install-dialog,
+:root[data-theme="dark"] .release-summary,
+:root[data-theme="dark"] .fridays-admin-panel,
+:root[data-theme="dark"] .fridays-clue,
+:root[data-theme="dark"] .fridays-stage-dots span,
+:root[data-theme="dark"] .fridays-coming-date {
+  background: var(--surface);
+  color: var(--fg);
+}
+:root[data-theme="dark"] .fridays-hero {
+  background: linear-gradient(135deg, #1b1428 0%, #241735 55%, #171121 100%);
+}
+:root[data-theme="dark"] .fridays-home-banner {
+  border-color: var(--line);
+  background: linear-gradient(110deg, #21172f 0%, #171121 72%);
+}
+:root[data-theme="dark"] .fridays-hero-tags span {
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--fg);
+}
+:root[data-theme="dark"] .fridays-prize {
+  background: #32234a;
+  color: #eadcff;
+}
+:root[data-theme="dark"] .fridays-clue.solved {
+  border-color: #28533b;
+  background: #14251c;
+}
+:root[data-theme="dark"] .fridays-clue.locked {
+  background: #1a1721;
+}
+:root[data-theme="dark"] .fridays-clue.locked .fridays-clue-number {
+  background: #302b38;
+  color: #d0c6df;
+}
+:root[data-theme="dark"] .fridays-complete {
+  border-color: #28533b;
+  background: #14251c;
+  color: #b8f3cb;
+}
+:root[data-theme="dark"] .fridays-complete p { color: #b8f3cb; }
+:root[data-theme="dark"] .fridays-stage-dots span.done {
+  border-color: #28533b;
+  background: #14251c;
+  color: #b8f3cb;
+}
+:root[data-theme="dark"] .fridays-stage-dots span.current {
+  background: var(--soft);
+  color: var(--accent);
+}
+:root[data-theme="dark"] .ctag-story.ongoing,
+:root[data-theme="dark"] .story-badge.ongoing { background: #163b27; color: #b8f3cb; }
+:root[data-theme="dark"] .ctag-story.completed,
+:root[data-theme="dark"] .story-badge.completed { background: #1d3154; color: #c7ddff; }
+:root[data-theme="dark"] .ctag-story.hiatus,
+:root[data-theme="dark"] .story-badge.hiatus { background: #493719; color: #ffe3a3; }
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle { transition: none; }
+}
