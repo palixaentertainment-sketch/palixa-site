@@ -874,3 +874,51 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 @media (prefers-reduced-motion: reduce) {
   .theme-toggle { transition: none; }
 }
+
+
+/* Theme contrast fixes: keep homepage content readable in both modes. */
+:root[data-theme="dark"] .homehero {
+  border-color: var(--line);
+  background: radial-gradient(circle at 88% 15%, #35244f 0, transparent 38%), linear-gradient(135deg, #1b1428, #120d1b 68%);
+  color: var(--fg);
+}
+:root[data-theme="dark"] .homehero h1 { color: var(--fg); }
+:root[data-theme="dark"] .homehero-copy > p,
+:root[data-theme="dark"] .homehero-note { color: var(--muted); }
+:root[data-theme="dark"] .homehero-actions .btn.ghost {
+  border-color: var(--line);
+  background: transparent;
+  color: var(--fg);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+:root[data-theme="dark"] .publish-benefit-card {
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--fg);
+}
+:root[data-theme="dark"] .publish-benefit-card h3 { color: var(--fg); }
+:root[data-theme="dark"] .publish-benefit-card p { color: var(--muted); }
+:root[data-theme="dark"] .benefit-arrow {
+  border-color: var(--line);
+  background: var(--soft);
+  color: var(--accent);
+}
+:root[data-theme="dark"] .benefit-arrow:hover { background: var(--surface); }
+:root[data-theme="dark"] .home-cta {
+  background: linear-gradient(135deg, #25163b, #171020);
+  border: 1px solid var(--line);
+  color: var(--fg);
+}
+:root[data-theme="dark"] .home-cta .home-eyebrow { color: var(--accent); }
+:root[data-theme="dark"] .home-cta p { color: var(--muted); }
+:root[data-theme="dark"] .home-cta .btn {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+:root[data-theme="dark"] .home-cta .btn:hover { background: #c9b2ff; }
+:root[data-theme="dark"] .notice {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--fg);
+}
+:root[data-theme="dark"] .notice a { color: var(--accent); }
