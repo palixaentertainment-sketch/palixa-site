@@ -967,11 +967,12 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 :root[data-theme="dark"] .sub,
 :root[data-theme="dark"] .mono { color: var(--muted); }
 :root[data-theme="dark"] .logo-img {
-  /* The source logo has a white canvas; multiply blends that canvas into the dark header. */
-  mix-blend-mode: multiply;
+  /* Preserve the original logo colours; the source file has a white background. */
+  mix-blend-mode: normal;
+  background: #fff;
 }
 :root[data-theme="dark"] .logo-link {
-  background: var(--bg);
+  background: #fff;
 }
 :root[data-theme="dark"] .btn.ghost {
   background: transparent;
@@ -1007,3 +1008,43 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 :root[data-theme="dark"] .community-card p,
 :root[data-theme="dark"] .post-card p,
 :root[data-theme="dark"] .comment-card p { color: var(--muted); }
+
+
+/* Dark mode: common reusable UI surfaces across the whole site. */
+:root[data-theme="dark"] .page .box,
+:root[data-theme="dark"] .page .surface,
+:root[data-theme="dark"] .page .tile,
+:root[data-theme="dark"] .page .item,
+:root[data-theme="dark"] .page .list-item,
+:root[data-theme="dark"] .page .stat,
+:root[data-theme="dark"] .page .stat-card,
+:root[data-theme="dark"] .page .filter,
+:root[data-theme="dark"] .page .filters,
+:root[data-theme="dark"] .page .tabs,
+:root[data-theme="dark"] .page .tab,
+:root[data-theme="dark"] .page .searchbox,
+:root[data-theme="dark"] .page .search-result,
+:root[data-theme="dark"] .page .comment,
+:root[data-theme="dark"] .page .reply,
+:root[data-theme="dark"] .page .post,
+:root[data-theme="dark"] .page .notification,
+:root[data-theme="dark"] .page .club,
+:root[data-theme="dark"] .page .shelf,
+:root[data-theme="dark"] .page .book,
+:root[data-theme="dark"] .page .author,
+:root[data-theme="dark"] .page .community,
+:root[data-theme="dark"] .page .fridays-card,
+:root[data-theme="dark"] .page .fridays-panel {
+  background-color: var(--surface);
+  color: var(--fg);
+  border-color: var(--line);
+}
+:root[data-theme="dark"] .page button:not(.btn):not(.theme-toggle),
+:root[data-theme="dark"] .page [role="tab"] {
+  color: var(--fg);
+}
+:root[data-theme="dark"] .page .active,
+:root[data-theme="dark"] .page [aria-selected="true"] {
+  color: var(--accent);
+}
+:root[data-theme="dark"] .page hr { border-color: var(--line); }
