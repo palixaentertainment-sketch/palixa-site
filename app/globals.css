@@ -922,3 +922,88 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
   color: var(--fg);
 }
 :root[data-theme="dark"] .notice a { color: var(--accent); }
+
+
+/* Global theme coverage for pages and components that use hard-coded light colours. */
+:root[data-theme="dark"] body,
+:root[data-theme="dark"] main,
+:root[data-theme="dark"] .page {
+  background-color: var(--bg);
+  color: var(--fg);
+}
+:root[data-theme="dark"] .top,
+:root[data-theme="dark"] .bottomnav,
+:root[data-theme="dark"] .authbar,
+:root[data-theme="dark"] .foot,
+:root[data-theme="dark"] .menu .pop,
+:root[data-theme="dark"] .hsearch input,
+:root[data-theme="dark"] .hsearch button,
+:root[data-theme="dark"] .form-card,
+:root[data-theme="dark"] .panel,
+:root[data-theme="dark"] .card,
+:root[data-theme="dark"] .modal,
+:root[data-theme="dark"] .dialog,
+:root[data-theme="dark"] .empty,
+:root[data-theme="dark"] .bcard,
+:root[data-theme="dark"] .fcard,
+:root[data-theme="dark"] .gcard,
+:root[data-theme="dark"] .acard,
+:root[data-theme="dark"] .shelf-card {
+  background-color: var(--surface);
+  color: var(--fg);
+  border-color: var(--line);
+}
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] textarea,
+:root[data-theme="dark"] select {
+  background-color: var(--surface);
+  color: var(--fg);
+  border-color: var(--line);
+}
+:root[data-theme="dark"] input::placeholder,
+:root[data-theme="dark"] textarea::placeholder { color: var(--muted); }
+:root[data-theme="dark"] .fine,
+:root[data-theme="dark"] .muted,
+:root[data-theme="dark"] .sub,
+:root[data-theme="dark"] .mono { color: var(--muted); }
+:root[data-theme="dark"] .logo-img {
+  /* The source logo has a white canvas; multiply blends that canvas into the dark header. */
+  mix-blend-mode: multiply;
+}
+:root[data-theme="dark"] .logo-link {
+  background: var(--bg);
+}
+:root[data-theme="dark"] .btn.ghost {
+  background: transparent;
+  color: var(--fg);
+  border-color: var(--line);
+}
+:root[data-theme="dark"] .btn:not(.ghost) {
+  color: var(--accent-fg);
+}
+:root[data-theme="dark"] .top a,
+:root[data-theme="dark"] .bottomnav a,
+:root[data-theme="dark"] .foot a { color: inherit; }
+:root[data-theme="dark"] .top .navlinks a[aria-current="page"],
+:root[data-theme="dark"] .bottomnav .bn[aria-current="page"],
+:root[data-theme="dark"] .sechead a { color: var(--accent); }
+:root[data-theme="dark"] .story-card,
+:root[data-theme="dark"] .book-card,
+:root[data-theme="dark"] .author-card,
+:root[data-theme="dark"] .community-card,
+:root[data-theme="dark"] .post-card,
+:root[data-theme="dark"] .comment-card,
+:root[data-theme="dark"] .notification-item,
+:root[data-theme="dark"] .shelf-item,
+:root[data-theme="dark"] .reading-card,
+:root[data-theme="dark"] .club-card {
+  background: var(--surface);
+  color: var(--fg);
+  border-color: var(--line);
+}
+:root[data-theme="dark"] .story-card p,
+:root[data-theme="dark"] .book-card p,
+:root[data-theme="dark"] .author-card p,
+:root[data-theme="dark"] .community-card p,
+:root[data-theme="dark"] .post-card p,
+:root[data-theme="dark"] .comment-card p { color: var(--muted); }
