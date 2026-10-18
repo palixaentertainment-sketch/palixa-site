@@ -70,6 +70,11 @@ function Shelf() {
   const [saved, setSaved] = useState(null);
   const [failed, setFailed] = useState(false);
   const [journey, setJourney] = useState(null);
+  const [goals, setGoals] = useState({ dailyChapters: 3, monthlyBooks: 2 });
+  const [goalDraft, setGoalDraft] = useState({ dailyChapters: 3, monthlyBooks: 2 });
+  const [goalSettingsOpen, setGoalSettingsOpen] = useState(false);
+  const [goalsReady, setGoalsReady] = useState(false);
+  const [goalSaved, setGoalSaved] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -142,6 +147,25 @@ function Shelf() {
 
   useEffect(() => {
     if (!user) return;
+    try {
+      const stored = window.localStorage.getItem(`palixia-reading-goals:${user.id}`);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const nextGoals = {
+          dailyChapters: Math.min(50, Math.max(1, Number(parsed.dailyChapters) || 3)),
+          monthlyBooks: Math.min(50, Math.max(1, Number(parsed.monthlyBooks) || 2)),
+        };
+        setGoals(nextGoals);
+        setGoalDraft(nextGoals);
+      }
+    } catch (error) {
+      console.warn('[Palixia Reading Goals] Could not load saved goals:', error);
+    }
+    setGoalsReady(true);
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
     let cancelled = false;
     setJourney(null);
     (async () => {
@@ -193,7 +217,28 @@ function Shelf() {
   const uniqueChapters = new Set(activity.map((row) => row.chapter_id)).size;
   const monthBooks = new Set(monthActivity.map((row) => row.book_id)).size;
   const streak = getStreakStats(activity);
+  const today = new Date().toISOString().slice(0, 10);
+  const chaptersReadToday = new Set(activity.filter((row) => row.activity_date === today).map((row) => row.chapter_id)).size;
+  const booksCompletedThisMonth = completed.filter((row) => row.updated_at && journey && journey.monthStart && row.updated_at.slice(0, 10) >= journey.monthStart).length;
+  const dailyGoalProgress = Math.min(100, Math.round((chaptersReadToday / goals.dailyChapters) * 100));
+  const monthlyGoalProgress = Math.min(100, Math.round((booksCompletedThisMonth / goals.monthlyBooks) * 100));
 
+  function saveReadingGoals(event) {
+    event.preventDefault();
+    const nextGoals = {
+      dailyChapters: Math.min(50, Math.max(1, Number(goalDraft.dailyChapters) || 3)),
+      monthlyBooks: Math.min(50, Math.max(1, Number(goalDraft.monthlyBooks) || 2)),
+    };
+    setGoals(nextGoals);
+    setGoalDraft(nextGoals);
+    try {
+      window.localStorage.setItem(`palixia-reading-goals:${user.id}`, JSON.stringify(nextGoals));
+    } catch (error) {
+      console.warn('[Palixia Reading Goals] Could not save goals:', error);
+    }
+    setGoalSettingsOpen(false);
+    setGoalSaved(true);
+  }
 
   return (
     <>
@@ -292,6 +337,57 @@ function Shelf() {
                   </div>
                 ))}
               </div>
+
+              <section className="reading-goals" aria-labelledby="reading-goals-title">
+                <div className="reading-goals-heading">
+                  <div>
+                    <p className="mono">YOUR PERSONAL TARGETS</p>
+                    <h2 className="h2" id="reading-goals-title">Reading goals 🎯</h2>
+                    <p className="fine">Small steps count. Set targets that fit your reading life.</p>
+                  </div>
+                  <button type="button" className="btn ghost small" onClick={() => { setGoalDraft(goals); setGoalSettingsOpen((open) => !open); setGoalSaved(false); }} aria-expanded={goalSettingsOpen}>
+                    {goalSettingsOpen ? 'Cancel' : 'Edit goals'}
+                  </button>
+                </div>
+                {goalsReady && (
+                  <div className="reading-goal-list">
+                    <article className={`reading-goal${dailyGoalProgress >= 100 ? ' is-complete' : ''}`}>
+                      <div className="reading-goal-copy">
+                        <span className="reading-goal-icon" aria-hidden="true">📖</span>
+                        <div><strong>Daily chapters</strong><p className="fine">{chaptersReadToday} of {goals.dailyChapters} chapters today</p></div>
+                      </div>
+                      <strong className="reading-goal-percent">{dailyGoalProgress}%</strong>
+                      <div className="reading-goal-track" role="progressbar" aria-label="Daily chapter goal" aria-valuemin={0} aria-valuemax={goals.dailyChapters} aria-valuenow={Math.min(chaptersReadToday, goals.dailyChapters)}>
+                        <span style={{ width: `${dailyGoalProgress}%` }} />
+                      </div>
+                      {dailyGoalProgress >= 100 && <p className="reading-goal-congrats" aria-live="polite">Goal reached — lovely work! ✨</p>}
+                    </article>
+                    <article className={`reading-goal${monthlyGoalProgress >= 100 ? ' is-complete' : ''}`}>
+                      <div className="reading-goal-copy">
+                        <span className="reading-goal-icon" aria-hidden="true">📚</span>
+                        <div><strong>Monthly books</strong><p className="fine">{booksCompletedThisMonth} of {goals.monthlyBooks} books completed</p></div>
+                      </div>
+                      <strong className="reading-goal-percent">{monthlyGoalProgress}%</strong>
+                      <div className="reading-goal-track" role="progressbar" aria-label="Monthly books goal" aria-valuemin={0} aria-valuemax={goals.monthlyBooks} aria-valuenow={Math.min(booksCompletedThisMonth, goals.monthlyBooks)}>
+                        <span style={{ width: `${monthlyGoalProgress}%` }} />
+                      </div>
+                      {monthlyGoalProgress >= 100 && <p className="reading-goal-congrats" aria-live="polite">Monthly goal reached — keep enjoying your stories! ✨</p>}
+                    </article>
+                  </div>
+                )}
+                {goalSettingsOpen && (
+                  <form className="reading-goal-settings" onSubmit={saveReadingGoals}>
+                    <label>Chapters to read each day
+                      <input className="in" type="number" min="1" max="50" value={goalDraft.dailyChapters} onChange={(event) => setGoalDraft((draft) => ({ ...draft, dailyChapters: event.target.value }))} required />
+                    </label>
+                    <label>Books to finish each month
+                      <input className="in" type="number" min="1" max="50" value={goalDraft.monthlyBooks} onChange={(event) => setGoalDraft((draft) => ({ ...draft, monthlyBooks: event.target.value }))} required />
+                    </label>
+                    <button className="btn small" type="submit">Save goals</button>
+                  </form>
+                )}
+                {goalSaved && <p className="fine" role="status">Your reading goals have been saved on this device.</p>}
+              </section>
 
               <div className="stack" style={{ gap: '0.5rem' }}>
                 <h2 className="h2">This month</h2>
