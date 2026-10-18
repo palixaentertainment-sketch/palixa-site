@@ -778,3 +778,56 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
   .fridays-home-banner { animation: none; }
   .fridays-home-banner-action { transition: none; }
 }
+
+/* Reading Goals — gentle motion only; no libraries or extra assets. */
+.reading-goals {
+  display: grid;
+  gap: .9rem;
+  padding: clamp(1rem, 3vw, 1.35rem);
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: linear-gradient(135deg, var(--surface), var(--bg) 75%);
+  animation: reading-goals-enter 320ms ease-out both;
+}
+.reading-goals-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: .8rem; }
+.reading-goals-heading > div { display: grid; gap: .3rem; min-width: 0; }
+.reading-goals-heading .h2 { margin-top: .1rem; }
+.reading-goal-list { display: grid; gap: .7rem; }
+.reading-goal {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: .7rem .8rem;
+  padding: .9rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  animation: reading-goal-enter 360ms ease-out both;
+}
+.reading-goal:nth-child(2) { animation-delay: 55ms; }
+.reading-goal-copy { display: flex; align-items: center; gap: .65rem; min-width: 0; }
+.reading-goal-copy > div { min-width: 0; }
+.reading-goal-copy strong { display: block; font-size: .92rem; }
+.reading-goal-copy .fine { margin-top: .12rem; }
+.reading-goal-icon { display: grid; place-items: center; flex: 0 0 2.45rem; width: 2.45rem; height: 2.45rem; border-radius: 9px; background: var(--soft); font-size: 1.2rem; }
+.reading-goal-percent { align-self: center; color: var(--accent); font: 800 1.05rem/1 var(--display); }
+.reading-goal-track { grid-column: 1 / -1; height: .42rem; overflow: hidden; border-radius: 99px; background: var(--soft); }
+.reading-goal-track > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent), #a78bfa); transition: width 420ms ease-out; }
+.reading-goal.is-complete { border-color: var(--lav); }
+.reading-goal.is-complete .reading-goal-icon { animation: reading-goal-celebrate 700ms ease-out both; }
+.reading-goal-congrats { grid-column: 1 / -1; color: var(--accent); font-size: .82rem; font-weight: 650; animation: reading-goal-enter 280ms ease-out both; }
+.reading-goal-settings { display: grid; gap: .8rem; padding-top: .9rem; border-top: 1px solid var(--line); animation: reading-goal-enter 220ms ease-out both; }
+.reading-goal-settings label { display: grid; gap: .35rem; font-size: .86rem; font-weight: 650; }
+.reading-goal-settings .in { width: 100%; max-width: 10rem; }
+.reading-goal-settings .btn { justify-self: start; }
+@keyframes reading-goals-enter { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes reading-goal-enter { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes reading-goal-celebrate { 0%,100% { transform: scale(1); } 45% { transform: scale(1.06); } }
+@media (prefers-reduced-motion: reduce) {
+  .reading-goals, .reading-goal, .reading-goal-settings, .reading-goal-congrats, .reading-goal.is-complete .reading-goal-icon { animation: none; }
+  .reading-goal-track > span { transition: none; }
+}
+@media (max-width: 380px) {
+  .reading-goals-heading { align-items: flex-start; flex-direction: column; }
+  .reading-goal { padding: .75rem; }
+}
+
