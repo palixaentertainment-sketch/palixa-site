@@ -59,7 +59,6 @@ img { max-width: 100%; }
 /* Palixia logo. The SVG wrapper removes the white matte from the source PNG. */
 .logo-link { display: inline-flex; align-items: center; flex: none; line-height: 0; border-radius: 4px; }
 .logo-img { display: block; width: auto; max-width: none; }
-:root[data-theme="dark"] .logo-img { filter: brightness(0) invert(1); }
 .logo-header { height: 2.3rem; }
 .logo-auth { height: 4.5rem; }
 .logo-footer { height: 1.9rem; }
@@ -1083,12 +1082,7 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 :root[data-theme="dark"] .mono { color: var(--muted); }
 /* The source logo is purple artwork on a white canvas. Keep the image untouched
    and give it a clean white tile in dark mode rather than applying colour filters. */
-:root[data-theme="dark"] .logo-link {
-  background: #fff;
-  border-radius: 4px;
-  overflow: hidden;
-}
-:root[data-theme="dark"] .logo-img { filter: none; }
+/* Logo transparency is handled by the SVG filter; do not apply a CSS filter. */
 :root[data-theme="dark"] .btn.ghost {
   background: transparent;
   color: var(--fg);
