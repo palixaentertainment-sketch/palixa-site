@@ -924,7 +924,130 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 :root[data-theme="dark"] .notice a { color: var(--accent); }
 
 
-/* Global theme coverage for pages and components that use hard-coded light colours. */
+/* Dark-mode polish for real Palixia site components. Keep the book reader's own theme isolated. */
+:root[data-theme="dark"] .community-hero {
+  border-color: var(--line);
+  background: radial-gradient(circle at 90% 0%, #302044 0, transparent 42%), linear-gradient(135deg, #191326, #120e1b);
+}
+:root[data-theme="dark"] .community-compose,
+:root[data-theme="dark"] .community-post,
+:root[data-theme="dark"] .authorbox,
+:root[data-theme="dark"] .arow,
+:root[data-theme="dark"] .libitem,
+:root[data-theme="dark"] .card,
+:root[data-theme="dark"] .stat,
+:root[data-theme="dark"] .fcard,
+:root[data-theme="dark"] .publish-benefit-card,
+:root[data-theme="dark"] .creator-week,
+:root[data-theme="dark"] .notice,
+:root[data-theme="dark"] .menu .pop,
+:root[data-theme="dark"] .install-dialog,
+:root[data-theme="dark"] .fridays-admin-panel,
+:root[data-theme="dark"] .fridays-clue,
+:root[data-theme="dark"] .fridays-coming-date {
+  background-color: var(--surface);
+  color: var(--fg);
+  border-color: var(--line);
+}
+:root[data-theme="dark"] .community-category {
+  background: var(--soft);
+  color: var(--accent);
+}
+:root[data-theme="dark"] .community-categories .chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-fg);
+}
+:root[data-theme="dark"] .community-book-link {
+  background: var(--soft);
+  border-color: var(--line);
+  color: var(--fg);
+}
+:root[data-theme="dark"] .community-post-actions { border-color: var(--line); }
+:root[data-theme="dark"] .community-hero > p:last-child,
+:root[data-theme="dark"] .community-post-by .fine,
+:root[data-theme="dark"] .creator-week-copy p,
+:root[data-theme="dark"] .publish-benefit-card p { color: var(--muted); }
+:root[data-theme="dark"] .profile-badge-official { background: #1d3154; color: #c7ddff; }
+:root[data-theme="dark"] .profile-badge-author { background: #35234f; color: #ddc9ff; }
+:root[data-theme="dark"] .badge.draft { background: #2a2435; color: #d0c6df; }
+:root[data-theme="dark"] .badge.live { background: #163b27; color: #b8f3cb; }
+:root[data-theme="dark"] .ctag-story.ongoing,
+:root[data-theme="dark"] .story-badge.ongoing { background: #163b27; color: #b8f3cb; }
+:root[data-theme="dark"] .ctag-story.completed,
+:root[data-theme="dark"] .story-badge.completed { background: #1d3154; color: #c7ddff; }
+:root[data-theme="dark"] .ctag-story.hiatus,
+:root[data-theme="dark"] .story-badge.hiatus { background: #493719; color: #ffe3a3; }
+:root[data-theme="dark"] .homehero {
+  border-color: var(--line);
+  background: radial-gradient(circle at 88% 15%, #35244f 0, transparent 38%), linear-gradient(135deg, #1b1428, #120d1b 68%);
+  color: var(--fg);
+}
+:root[data-theme="dark"] .homehero h1,
+:root[data-theme="dark"] .publish-benefit-card h3 { color: var(--fg); }
+:root[data-theme="dark"] .homehero-copy > p,
+:root[data-theme="dark"] .homehero-note { color: var(--muted); }
+:root[data-theme="dark"] .homehero-actions .btn.ghost {
+  border-color: var(--line);
+  background: transparent;
+  color: var(--fg);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+:root[data-theme="dark"] .benefit-arrow {
+  border-color: var(--line);
+  background: var(--soft);
+  color: var(--accent);
+}
+:root[data-theme="dark"] .benefit-arrow:hover { background: var(--surface); }
+:root[data-theme="dark"] .home-cta {
+  background: linear-gradient(135deg, #25163b, #171020);
+  border: 1px solid var(--line);
+  color: var(--fg);
+}
+:root[data-theme="dark"] .home-cta .home-eyebrow { color: var(--accent); }
+:root[data-theme="dark"] .home-cta p { color: var(--muted); }
+:root[data-theme="dark"] .home-cta .btn {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+:root[data-theme="dark"] .home-cta .btn:hover { background: #c9b2ff; }
+:root[data-theme="dark"] .fridays-hero {
+  background: linear-gradient(135deg, #1b1428 0%, #241735 55%, #171121 100%);
+}
+:root[data-theme="dark"] .fridays-home-banner {
+  border-color: var(--line);
+  background: linear-gradient(110deg, #21172f 0%, #171121 72%);
+}
+:root[data-theme="dark"] .fridays-hero-tags span {
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--fg);
+}
+:root[data-theme="dark"] .fridays-prize { background: #32234a; color: #eadcff; }
+:root[data-theme="dark"] .fridays-clue.solved {
+  border-color: #28533b;
+  background: #14251c;
+}
+:root[data-theme="dark"] .fridays-clue.locked { background: #1a1721; }
+:root[data-theme="dark"] .fridays-clue.locked .fridays-clue-number {
+  background: #302b38;
+  color: #d0c6df;
+}
+:root[data-theme="dark"] .fridays-complete {
+  border-color: #28533b;
+  background: #14251c;
+  color: #b8f3cb;
+}
+:root[data-theme="dark"] .fridays-complete p { color: #b8f3cb; }
+:root[data-theme="dark"] .fridays-stage-dots span.done {
+  border-color: #28533b;
+  background: #14251c;
+  color: #b8f3cb;
+}
+:root[data-theme="dark"] .fridays-stage-dots span.current {
+  background: var(--soft);
+  color: var(--accent);
+}
 :root[data-theme="dark"] body,
 :root[data-theme="dark"] main,
 :root[data-theme="dark"] .page {
@@ -934,26 +1057,17 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 :root[data-theme="dark"] .top,
 :root[data-theme="dark"] .bottomnav,
 :root[data-theme="dark"] .authbar,
-:root[data-theme="dark"] .foot,
-:root[data-theme="dark"] .menu .pop,
-:root[data-theme="dark"] .hsearch input,
-:root[data-theme="dark"] .hsearch button,
-:root[data-theme="dark"] .form-card,
-:root[data-theme="dark"] .panel,
-:root[data-theme="dark"] .card,
-:root[data-theme="dark"] .modal,
-:root[data-theme="dark"] .dialog,
-:root[data-theme="dark"] .empty,
-:root[data-theme="dark"] .bcard,
-:root[data-theme="dark"] .fcard,
-:root[data-theme="dark"] .gcard,
-:root[data-theme="dark"] .acard,
-:root[data-theme="dark"] .shelf-card {
-  background-color: var(--surface);
+:root[data-theme="dark"] .foot {
+  background-color: var(--bg);
   color: var(--fg);
   border-color: var(--line);
 }
-:root[data-theme="dark"] input,
+:root[data-theme="dark"] .top,
+:root[data-theme="dark"] .bottomnav,
+:root[data-theme="dark"] .foot,
+:root[data-theme="dark"] .menu .pop { border-color: var(--line); }
+:root[data-theme="dark"] .hsearch input,
+:root[data-theme="dark"] .in,
 :root[data-theme="dark"] textarea,
 :root[data-theme="dark"] select {
   background-color: var(--surface);
@@ -966,12 +1080,9 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 :root[data-theme="dark"] .muted,
 :root[data-theme="dark"] .sub,
 :root[data-theme="dark"] .mono { color: var(--muted); }
-:root[data-theme="dark"] .logo-img {
-  /* Preserve the original logo colours; the source file has a white background. */
-  mix-blend-mode: normal;
-  background: #fff;
-}
+:root[data-theme="dark"] .logo-img,
 :root[data-theme="dark"] .logo-link {
+  /* The existing logo asset has a white background; preserve its original colours. */
   background: #fff;
 }
 :root[data-theme="dark"] .btn.ghost {
@@ -979,72 +1090,20 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
   color: var(--fg);
   border-color: var(--line);
 }
-:root[data-theme="dark"] .btn:not(.ghost) {
-  color: var(--accent-fg);
-}
+:root[data-theme="dark"] .btn:not(.ghost) { color: var(--accent-fg); }
+:root[data-theme="dark"] .btn:hover { filter: brightness(1.08); }
 :root[data-theme="dark"] .top a,
 :root[data-theme="dark"] .bottomnav a,
 :root[data-theme="dark"] .foot a { color: inherit; }
 :root[data-theme="dark"] .top .navlinks a[aria-current="page"],
 :root[data-theme="dark"] .bottomnav .bn[aria-current="page"],
 :root[data-theme="dark"] .sechead a { color: var(--accent); }
-:root[data-theme="dark"] .story-card,
-:root[data-theme="dark"] .book-card,
-:root[data-theme="dark"] .author-card,
-:root[data-theme="dark"] .community-card,
-:root[data-theme="dark"] .post-card,
-:root[data-theme="dark"] .comment-card,
-:root[data-theme="dark"] .notification-item,
-:root[data-theme="dark"] .shelf-item,
-:root[data-theme="dark"] .reading-card,
-:root[data-theme="dark"] .club-card {
-  background: var(--surface);
+:root[data-theme="dark"] .page hr,
+:root[data-theme="dark"] td { border-color: var(--line); }
+:root[data-theme="dark"] th { background: var(--surface); border-color: var(--line); }
+:root[data-theme="dark"] .reader .in {
+  background: var(--bg);
   color: var(--fg);
   border-color: var(--line);
 }
-:root[data-theme="dark"] .story-card p,
-:root[data-theme="dark"] .book-card p,
-:root[data-theme="dark"] .author-card p,
-:root[data-theme="dark"] .community-card p,
-:root[data-theme="dark"] .post-card p,
-:root[data-theme="dark"] .comment-card p { color: var(--muted); }
-
-
-/* Dark mode: common reusable UI surfaces across the whole site. */
-:root[data-theme="dark"] .page .box,
-:root[data-theme="dark"] .page .surface,
-:root[data-theme="dark"] .page .tile,
-:root[data-theme="dark"] .page .item,
-:root[data-theme="dark"] .page .list-item,
-:root[data-theme="dark"] .page .stat,
-:root[data-theme="dark"] .page .stat-card,
-:root[data-theme="dark"] .page .filter,
-:root[data-theme="dark"] .page .filters,
-:root[data-theme="dark"] .page .tabs,
-:root[data-theme="dark"] .page .tab,
-:root[data-theme="dark"] .page .searchbox,
-:root[data-theme="dark"] .page .search-result,
-:root[data-theme="dark"] .page .comment,
-:root[data-theme="dark"] .page .reply,
-:root[data-theme="dark"] .page .post,
-:root[data-theme="dark"] .page .notification,
-:root[data-theme="dark"] .page .club,
-:root[data-theme="dark"] .page .shelf,
-:root[data-theme="dark"] .page .book,
-:root[data-theme="dark"] .page .author,
-:root[data-theme="dark"] .page .community,
-:root[data-theme="dark"] .page .fridays-card,
-:root[data-theme="dark"] .page .fridays-panel {
-  background-color: var(--surface);
-  color: var(--fg);
-  border-color: var(--line);
-}
-:root[data-theme="dark"] .page button:not(.btn):not(.theme-toggle),
-:root[data-theme="dark"] .page [role="tab"] {
-  color: var(--fg);
-}
-:root[data-theme="dark"] .page .active,
-:root[data-theme="dark"] .page [aria-selected="true"] {
-  color: var(--accent);
-}
-:root[data-theme="dark"] .page hr { border-color: var(--line); }
+:root[data-theme="dark"] .reader .btn.ghost { color: var(--fg); }
