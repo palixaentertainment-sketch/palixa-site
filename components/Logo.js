@@ -34,7 +34,7 @@ export default function Logo({ size = 'header', href = '/' }) {
         height={FILE_HEIGHT}
         alt={href ? '' : BRAND_NAME}
         decoding="async"
-        style={{ filter: 'url(#' + filterId + ')' }}
+        style={{ filter: 'url(#' + filterId + ') var(--logo-theme-filter, none)' }}
       />
     </>
   );
