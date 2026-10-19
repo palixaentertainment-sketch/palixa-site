@@ -1082,11 +1082,7 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 :root[data-theme="dark"] .muted,
 :root[data-theme="dark"] .sub,
 :root[data-theme="dark"] .mono { color: var(--muted); }
-:root[data-theme="dark"] .logo-img,
-:root[data-theme="dark"] .logo-link {
-  /* The existing logo asset has a white background; preserve its original colours. */
-  background: #fff;
-}
+/* The logo's white matte is removed by the shared Logo component filter. */
 :root[data-theme="dark"] .btn.ghost {
   background: transparent;
   color: var(--fg);
