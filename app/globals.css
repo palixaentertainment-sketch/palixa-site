@@ -817,6 +817,8 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 :root[data-theme="dark"] .install-dialog,
 :root[data-theme="dark"] .release-summary,
 :root[data-theme="dark"] .fridays-admin-panel,
+:root[data-theme="dark"] .release-summary,
+:root[data-theme="dark"] .fridays-stage-dots span,
 :root[data-theme="dark"] .fridays-clue,
 :root[data-theme="dark"] .fridays-stage-dots span,
 :root[data-theme="dark"] .fridays-coming-date {
