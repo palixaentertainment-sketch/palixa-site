@@ -25,7 +25,7 @@ export default function Logo({ size = 'header', href = '/' }) {
             values="1 0 0 0 0
                     0 1 0 0 0
                     0 0 1 0 0
-                    -1 -1 -1 0 2.95"
+                    -1 -1 -1 0 3"
           />
         </filter>
       </defs>
