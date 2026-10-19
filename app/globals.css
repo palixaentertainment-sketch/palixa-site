@@ -1083,6 +1083,10 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 :root[data-theme="dark"] .sub,
 :root[data-theme="dark"] .mono { color: var(--muted); }
 /* The logo's white matte is removed by the shared Logo component filter. */
+
+/* The source logo has a white matte. Remove it, then make the mark light in dark mode. */
+.logo-img { --logo-theme-filter: none; }
+:root[data-theme="dark"] .logo-img { --logo-theme-filter: brightness(0) invert(1); }
 :root[data-theme="dark"] .btn.ghost {
   background: transparent;
   color: var(--fg);
