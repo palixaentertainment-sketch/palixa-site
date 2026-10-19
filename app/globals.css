@@ -56,11 +56,10 @@ img { max-width: 100%; }
 /* header and navigation */
 .top { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bottom: 1px solid var(--line); }
 .top .wrap { display: flex; align-items: center; gap: 1.2rem; padding-block: 0.65rem; }
-/* Palixia logo. One image file, three sizes. Height sets the size and the width follows the file's
-   own proportions (width: auto), so the logo is never stretched or squashed. The file has a white
-   background, so it is only placed on white surfaces. Keep the same spacing rules everywhere. */
+/* Palixia logo. The SVG wrapper removes the white matte from the source PNG. */
 .logo-link { display: inline-flex; align-items: center; flex: none; line-height: 0; border-radius: 4px; }
 .logo-img { display: block; width: auto; max-width: none; }
+:root[data-theme="dark"] .logo-img { filter: brightness(0) invert(1); }
 .logo-header { height: 2.3rem; }
 .logo-auth { height: 4.5rem; }
 .logo-footer { height: 1.9rem; }
