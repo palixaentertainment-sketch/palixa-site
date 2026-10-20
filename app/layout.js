@@ -6,6 +6,11 @@ import VisitorTracker from '@/components/VisitorTracker';
 export const metadata = {
   title: { default: 'Palixia', template: '%s | Palixia' },
   description: 'Read and publish stories on Palixia.',
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
 };
 
 export const viewport = {
