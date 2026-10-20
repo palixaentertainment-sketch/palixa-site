@@ -6,11 +6,11 @@ export default function Logo({ size = 'header', href = '/' }) {
   const image = (
     <img
       className={'logo-img logo-' + size}
-      src="/icon.svg"
+      src="/palixia-logo.png"
       alt={href ? '' : BRAND_NAME}
       aria-hidden={href ? 'true' : undefined}
-      width="48"
-      height="48"
+      width="160"
+      height="64"
       style={{ display: 'block', objectFit: 'contain' }}
     />
   );
