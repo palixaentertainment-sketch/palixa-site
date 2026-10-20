@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="223" viewBox="0 0 480 223">
+  <defs>
+    <filter id="remove-white-matte" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="
+        1 0 0 0 0
+        0 1 0 0 0
+        0 0 1 0 0
+        0 -1 0 0 1"/>
+    </filter>
+  </defs>
+  <image href="/brand/palixa-logo.png" width="480" height="223" preserveAspectRatio="xMidYMid meet" filter="url(#remove-white-matte)"/>
+</svg>
