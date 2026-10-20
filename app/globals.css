@@ -1107,7 +1107,7 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 :root[data-theme="dark"] .reader .btn.ghost { color: var(--fg); }
 
 
-/* The legacy wordmark PNG has a white matte. Multiply lets the page background show through in dark mode. */
+/* Keep the original Palixia wordmark fully visible in dark mode until a transparent asset is available. */
 :root[data-theme="dark"] .logo-img {
-  mix-blend-mode: multiply;
+  mix-blend-mode: normal;
 }
