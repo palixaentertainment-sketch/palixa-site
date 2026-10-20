@@ -7,9 +7,9 @@ export const metadata = {
   title: { default: 'Palixia', template: '%s | Palixia' },
   description: 'Read and publish stories on Palixia.',
   icons: {
-    icon: '/brand/palixa-logo-transparent.svg',
-    shortcut: '/brand/palixa-logo-transparent.svg',
-    apple: '/brand/palixa-logo-transparent.svg',
+    icon: '/brand/icon-512.png',
+    shortcut: '/brand/icon-512.png',
+    apple: '/brand/icon-512.png',
   },
 };
 
