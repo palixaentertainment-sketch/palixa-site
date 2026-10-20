@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#ffffff">
+<title>My Offline Books | Palixia</title>
+<style>
+:root{color-scheme:light;--bg:#fff;--surface:#faf8ff;--fg:#1b1033;--muted:#655b80;--line:#e7defa;--accent:#6d28d9}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:14px 18px}header a{color:var(--accent);text-decoration:none;font-weight:700}
+main{max-width:760px;margin:0 auto;padding:24px 18px 60px}h1{font-size:clamp(1.8rem,5vw,2.4rem);line-height:1.1;margin:12px 0}p{color:var(--muted)}.book{border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0;background:var(--surface)}.book h2{margin:0 0 5px;font-size:1.15rem}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}button,.btn{display:inline-block;border:0;border-radius:7px;padding:10px 14px;background:var(--accent);color:white;font:inherit;font-weight:650;text-decoration:none;cursor:pointer}.secondary{background:transparent;color:var(--fg);box-shadow:inset 0 0 0 1px var(--line)}.chapter{padding:18px 0;border-bottom:1px solid var(--line);white-space:pre-wrap;overflow-wrap:anywhere}.chapter h2{font-size:1.3rem}.chapter p{color:var(--fg);white-space:pre-wrap}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.notice{padding:12px;background:var(--surface);border-radius:8px;font-size:.9rem}
+</style>
+</head>
+<body><header><a href="/">← Palixia</a></header><main id="app"><p>Opening your offline library…</p></main>
+<script>
+(function(){
+const DB='palixia-offline-library',STORE='books';let allBooks=[];
+function dbOpen(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(STORE))r.result.createObjectStore(STORE,{keyPath:'id'})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+async function readAll(){const db=await dbOpen();return new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readonly').objectStore(STORE).getAll();r.onsuccess=()=>{db.close();resolve(r.result||[])};r.onerror=()=>{db.close();reject(r.error)}})}
+async function remove(id){const db=await dbOpen();return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).delete(id);tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error)}})}
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function showLibrary(){const app=document.getElementById('app');const params=new URLSearchParams(location.search);const id=params.get('book');const b=allBooks.find(x=>x.id===id);
+if(id&&b){app.innerHTML='<button class="secondary" id="back">← My Offline Books</button><h1>'+esc(b.title)+'</h1><p>Saved for offline reading · '+esc(b.author)+'</p><p class="notice">This copy is stored in this browser on this device. It may be removed if browser data is cleared.</p><div class="toolbar"><button class="secondary" id="smaller">A−</button><button class="secondary" id="larger">A+</button><button class="secondary" id="remove">Remove download</button></div><div id="chapters"></div>';
+document.getElementById('back').onclick=()=>location.href='/offline-library.html';document.getElementById('smaller').onclick=()=>document.getElementById('chapters').style.fontSize=(parseFloat(getComputedStyle(document.getElementById('chapters')).fontSize)-1)+'px';document.getElementById('larger').onclick=()=>document.getElementById('chapters').style.fontSize=(parseFloat(getComputedStyle(document.getElementById('chapters')).fontSize)+1)+'px';document.getElementById('remove').onclick=async()=>{await remove(b.id);location.href='/offline-library.html'};
+document.getElementById('chapters').innerHTML=(b.chapters||[]).map(c=>'<section class="chapter"><h2>Chapter '+esc(c.number)+' — '+esc(c.title)+'</h2><p>'+esc(c.content)+'</p></section>').join('');return}
+app.innerHTML='<h1>My Offline Books</h1><p>Books you save while online will appear here. After saving, you can read them without an internet connection in this browser.</p><p class="notice">Offline copies are stored on this device only. They are not exported as files. This helps discourage casual copying, but browser storage cannot completely prevent copying or screenshots.</p><div id="list"></div><div class="actions"><a class="btn secondary" href="/">Browse Palixia</a></div>';
+const list=document.getElementById('list');if(!allBooks.length){list.innerHTML='<div class="book"><h2>No books saved yet</h2><p>Open a published text book on Palixia and choose “Save for offline” while connected to the internet.</p></div>';return}
+list.innerHTML=allBooks.map(x=>'<article class="book"><h2>'+esc(x.title)+'</h2><p>By '+esc(x.author)+' · '+(x.chapters||[]).length+' chapters</p><div class="actions"><a class="btn" href="/offline-library.html?book='+encodeURIComponent(x.id)+'">Read offline</a><button class="secondary" data-remove="'+esc(x.id)+'">Remove</button></div></article>').join('');
+list.querySelectorAll('[data-remove]').forEach(btn=>btn.onclick=async()=>{await remove(btn.getAttribute('data-remove'));allBooks=await readAll();showLibrary()})
+}
+readAll().then(x=>{allBooks=x;showLibrary()}).catch(()=>{document.getElementById('app').innerHTML='<h1>Offline library unavailable</h1><p>This browser may not support local storage for offline books.</p><a class="btn" href="/">Return to Palixia</a>'});
+})();
+</script></body></html>
