@@ -1,5 +1,4 @@
 import './globals.css';
-import Script from 'next/script';
 import Providers from '@/components/Providers';
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
 import VisitorTracker from '@/components/VisitorTracker';
@@ -25,12 +24,11 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=DM+Mono&family=Instrument+Sans:wght@400;500;600;700;800;900&family=Literata:opsz,wght@7..72,400;7..72,600&display=swap"
         />
-        {/* AdSense site verification script; ad placements will be added separately after approval. */}
-        <Script
+        {/* Keep the verification script in the server-rendered HTML so AdSense can detect it. */}
+        <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6489420167826250"
           crossOrigin="anonymous"
-          strategy="afterInteractive"
         />
       </head>
       <body>
