@@ -6,7 +6,7 @@ export default function Logo({ size = 'header', href = '/' }) {
   const image = (
     <img
       className={'logo-img logo-' + size}
-      src="/palixia-logo.png"
+      src="/brand/palixa-logo.png"
       alt={href ? '' : BRAND_NAME}
       aria-hidden={href ? 'true' : undefined}
       width="160"
