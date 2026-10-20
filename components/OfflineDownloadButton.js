@@ -96,7 +96,7 @@ export default function OfflineDownloadButton({ book, chapters }) {
         <button type="button" className="btn ghost" onClick={download} disabled={busy}>
           {busy ? 'Saving book…' : '↓ Save for offline'}
         </button>
-        <Link className="btn ghost" href="/offline-library">My Offline Books</Link>
+        <Link className="btn ghost" href="/offline-library.html">My Offline Books</Link>
       </div>
       {message && <p className="fine" role="status">{message}</p>}
       <p className="fine">Text books only for now. Saved chapters stay in this browser on this device.</p>
