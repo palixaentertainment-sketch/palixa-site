@@ -76,7 +76,7 @@ begin
     perform cron.schedule(
       'palixia-publish-due-chapters',
       '* * * * *',
-      $$select public.publish_due_chapters();$$
+      $job$select public.publish_due_chapters();$job$
     );
   end if;
 end;
