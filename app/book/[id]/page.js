@@ -12,6 +12,7 @@ import Empty from '@/components/Empty';
 import LikeButton from '@/components/LikeButton';
 import ProfileBadge from '@/components/ProfileBadge';
 import ReleaseJourney from '@/components/ReleaseJourney';
+import OfflineDownloadButton from '@/components/OfflineDownloadButton';
 
 export default function BookPage() {
   const { id } = useParams();
@@ -217,6 +218,7 @@ export default function BookPage() {
         )}
         {isOwner && <Link className="btn ghost" href={'/dashboard/books/' + book.id}>Edit</Link>}
         <button type="button" className="btn ghost" onClick={shareBook}>Share</button>
+        <OfflineDownloadButton book={{ ...book, author_name: author ? author.name : '' }} />
       </div>
       {resumeId && progress && <p className="fine">You are {progress.progress}% through this book.</p>}
       {msg && <p className="msg-err" role="alert">{msg} {!user && <Link className="linkbtn" href={'/login?next=/book/' + id}>Log in</Link>}</p>}
