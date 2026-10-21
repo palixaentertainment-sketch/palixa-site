@@ -21,6 +21,7 @@ function Editor() {
   const [chapter, setChapter] = useState(null);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [scheduledAt, setScheduledAt] = useState('');
   const [items, setItems] = useState([]); // comic pages: { key, url, file? }
   const [err, setErr] = useState('');
   const [ok, setOk] = useState('');
@@ -32,11 +33,12 @@ function Editor() {
       if (!b || b.author_id !== user.id) { setBook(null); return; }
       setBook(b);
       if (isNew) return;
-      const { data: c } = await supabase.from('chapters').select('id,book_id,chapter_number,title,content,status').eq('id', chapterId).maybeSingle();
+      const { data: c } = await supabase.from('chapters').select('id,book_id,chapter_number,title,content,status,scheduled_at').eq('id', chapterId).maybeSingle();
       if (!c || c.book_id !== b.id) { setBook(null); return; }
       setChapter(c);
       setTitle(c.title);
       setContent(c.content || '');
+      setScheduledAt(c.scheduled_at ? new Date(new Date(c.scheduled_at).getTime() - new Date(c.scheduled_at).getTimezoneOffset() * 60000).toISOString().slice(0, 16) : '');
       if (b.book_type === 'comic') {
         const { data: pg } = await supabase.from('chapter_pages').select('id,page_number,image_url').eq('chapter_id', c.id).order('page_number');
         setItems((pg || []).map((p) => ({ key: p.id, url: p.image_url })));
@@ -74,7 +76,7 @@ function Editor() {
     setErr(''); setOk('');
     const isComic = book.book_type === 'comic';
     if (!title.trim()) { setErr('Give the chapter a title.'); return; }
-    if (status === 'published') {
+    if (status === 'published' || status === 'scheduled') {
       if (!isComic && !content.trim()) { setErr('Write some text before publishing this chapter.'); return; }
       if (isComic && items.length === 0) { setErr('Add at least one page image before publishing.'); return; }
     }
@@ -82,18 +84,20 @@ function Editor() {
     try {
       let cid = chapter ? chapter.id : null;
       const finalStatus = status || (chapter ? chapter.status : 'draft');
+      if (finalStatus === 'scheduled' && (!scheduledAt || !Number.isFinite(new Date(scheduledAt).getTime()) || new Date(scheduledAt).getTime() <= Date.now())) { setErr('Choose a future date and time for publishing.'); setBusy(false); return; }
+      const scheduledIso = finalStatus === 'scheduled' ? new Date(scheduledAt).toISOString() : null;
       if (!cid) {
         const { data: last } = await supabase.from('chapters').select('chapter_number').eq('book_id', book.id).order('chapter_number', { ascending: false }).limit(1);
         const number = last && last[0] ? last[0].chapter_number + 1 : 1;
         const { data, error } = await supabase.from('chapters')
-          .insert({ book_id: book.id, chapter_number: number, title: title.trim(), content: isComic ? null : content, status: finalStatus })
-          .select('id,book_id,chapter_number,title,content,status').single();
+          .insert({ book_id: book.id, chapter_number: number, title: title.trim(), content: isComic ? null : content, status: finalStatus, scheduled_at: scheduledIso })
+          .select('id,book_id,chapter_number,title,content,status,scheduled_at').single();
         if (error) throw error;
         cid = data.id;
         setChapter(data);
       } else {
         const { error } = await supabase.from('chapters')
-          .update({ title: title.trim(), content: isComic ? null : content, status: finalStatus, updated_at: new Date().toISOString() })
+          .update({ title: title.trim(), content: isComic ? null : content, status: finalStatus, scheduled_at: scheduledIso, updated_at: new Date().toISOString() })
           .eq('id', cid);
         if (error) throw error;
       }
@@ -115,8 +119,8 @@ function Editor() {
           return { key: 'p' + n + '-' + cid, url: urls[n] };
         }));
       }
-      setChapter((c) => (c ? { ...c, status: finalStatus } : c));
-      setOk(finalStatus === 'published' ? 'Chapter published.' : 'Draft saved.');
+      setChapter((c) => (c ? { ...c, status: finalStatus, scheduled_at: scheduledIso } : c));
+      setOk(finalStatus === 'published' ? 'Chapter published.' : finalStatus === 'scheduled' ? 'Chapter scheduled for automatic release.' : 'Draft saved.');
       if (isNew) router.replace('/dashboard/books/' + book.id + '/chapters/' + cid);
     } catch (e) {
       setErr(friendly(e, 'We could not save this chapter. Your work is still on this page, so try again.'));
@@ -129,13 +133,14 @@ function Editor() {
 
   const isComic = book.book_type === 'comic';
   const published = chapter && chapter.status === 'published';
+  const scheduled = chapter && chapter.status === 'scheduled';
 
   return (
     <div className="stack" style={{ maxWidth: '46rem' }}>
       <Link className="linkbtn" href={'/dashboard/books/' + book.id}>&larr; {book.title}</Link>
       <div className="row between">
         <h1 className="h1">{chapter ? 'Chapter ' + chapter.chapter_number : 'New chapter'}</h1>
-        {chapter && <span className={'badge ' + (published ? 'live' : 'draft')}>{published ? 'Published' : 'Draft'}</span>}
+        {chapter && <span className={'badge ' + (published ? 'live' : 'draft')}>{published ? 'Published' : scheduled ? 'Scheduled' : 'Draft'}</span>}
       </div>
 
       <div className="card">
@@ -178,12 +183,15 @@ function Editor() {
           </div>
         )}
 
+        <div className="field"><label htmlFor="c-scheduled-at">Schedule publishing</label><input id="c-scheduled-at" className="in" type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} /><span className="fine">Uses your device's local time. Leave blank to save a draft or publish immediately.</span></div>
         <p className="msg-err" role="alert">{err}</p>
         {ok && <p className="msg-ok" role="status">{ok}</p>}
         <div className="row">
-          <button type="button" className="btn ghost" disabled={busy} onClick={() => save(published ? 'published' : 'draft')}>{busy ? 'Saving...' : published ? 'Save changes' : 'Save Draft'}</button>
+          <button type="button" className="btn ghost" disabled={busy} onClick={() => save(published ? 'published' : scheduled ? 'scheduled' : 'draft')}>{busy ? 'Saving...' : published ? 'Save changes' : scheduled ? 'Save Schedule Changes' : 'Save Draft'}</button>
           {!published && <button type="button" className="btn" disabled={busy} onClick={() => save('published')}>Publish Chapter</button>}
+          {!published && scheduledAt && <button type="button" className="btn ghost" disabled={busy} onClick={() => save('scheduled')}>Schedule Chapter</button>}
           {published && <button type="button" className="btn ghost" disabled={busy} onClick={() => save('draft')}>Unpublish</button>}
+          {scheduled && <button type="button" className="btn ghost" disabled={busy} onClick={() => save('draft')}>Cancel schedule</button>}
           {chapter && <Link className="btn ghost" href={'/read/' + chapter.id}>Preview</Link>}
         </div>
       </div>
