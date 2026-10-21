@@ -187,7 +187,7 @@ function Editor() {
         <p className="msg-err" role="alert">{err}</p>
         {ok && <p className="msg-ok" role="status">{ok}</p>}
         <div className="row">
-          <button type="button" className="btn ghost" disabled={busy} onClick={() => save(published ? 'published' : 'draft')}>{busy ? 'Saving...' : published ? 'Save changes' : 'Save Draft'}</button>
+          <button type="button" className="btn ghost" disabled={busy} onClick={() => save(published ? 'published' : scheduled ? 'scheduled' : 'draft')}>{busy ? 'Saving...' : published ? 'Save changes' : scheduled ? 'Save Schedule Changes' : 'Save Draft'}</button>
           {!published && <button type="button" className="btn" disabled={busy} onClick={() => save('published')}>Publish Chapter</button>}
           {!published && scheduledAt && <button type="button" className="btn ghost" disabled={busy} onClick={() => save('scheduled')}>Schedule Chapter</button>}
           {published && <button type="button" className="btn ghost" disabled={busy} onClick={() => save('draft')}>Unpublish</button>}
