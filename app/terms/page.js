@@ -33,7 +33,7 @@ export default function Terms() {
       <p>We may review reports and take reasonable action on content that appears to breach these rules or applicable law. You can report concerns through our Contact Us page.</p>
 
       <h2 className="h2">Removing your work</h2>
-      <p>You can request or use available account features to unpublish or remove your book or other content. If the site does not provide a working removal control for an item, email palixia.official@gmail.com from your account email and identify the content you want removed. We will take reasonable steps to process the request. Copies may remain temporarily in backups, technical logs, or where retention is required by law, and content already shared or cached by other users or services may not be removable from those systems by Palixia.</p>
+      <p>You can request or use available account features to unpublish or remove your book or other content. If the site does not provide a working removal control for an item, email info@palixia.com from your account email and identify the content you want removed. We will take reasonable steps to process the request. Copies may remain temporarily in backups, technical logs, or where retention is required by law, and content already shared or cached by other users or services may not be removable from those systems by Palixia.</p>
 
       <h2 className="h2">Suspension and termination</h2>
       <p>We may hide or remove content, restrict features, suspend access, or close accounts where we reasonably believe a user has breached these terms, violated the law or another person's rights, created a security risk, abused the service, or where action is needed to protect users or the platform. Where reasonably practical, we will explain the action and allow the user to contact us about it. We may act without prior notice where urgent action is needed or the law requires it.</p>
@@ -48,7 +48,7 @@ export default function Terms() {
       <p>To the extent permitted by applicable law, Palixia is provided on an “as available” basis. Nothing in these terms excludes rights or responsibilities that cannot legally be excluded. Authors are responsible for the content they submit, and users should use their own judgement when reading user-generated material.</p>
 
       <h2 className="h2">Updates and contact</h2>
-      <p>We may revise these terms as the platform develops. We will update the date above when we make changes. Questions, content-removal requests and complaints can be sent to palixia.official@gmail.com or through our Contact Us page.</p>
+      <p>We may revise these terms as the platform develops. We will update the date above when we make changes. Questions, content-removal requests and complaints can be sent to info@palixia.com or through our Contact Us page.</p>
       <p className="fine">These terms are intended to describe Palixia's current service and are not a substitute for legal advice. Before launch, have them reviewed for the laws that apply to Palixia and its users.</p>
     </div>
   );
