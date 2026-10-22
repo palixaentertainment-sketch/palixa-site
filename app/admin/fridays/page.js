@@ -219,7 +219,7 @@ function FridaysAdmin() {
           <label className="field"><span>Hunt title</span><input className="in" required maxLength={100} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. The Missing Page" /></label>
           <label className="field"><span>Instructions and story</span><textarea className="in" rows={3} required maxLength={1500} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Set the scene and explain how to take part." /></label>
           <div className="fridays-create-questions">
-            <div className="row between"><div><h3>Hunt questions</h3><p className="muted">Add up to 6 questions. Each question needs its correct answer.</p></div><span className="fine">{draftQuestions.filter((q) => q.prompt.trim()).length}/5</span></div>
+            <div className="row between"><div><h3>Hunt questions</h3><p className="muted">Add up to 6 questions. Each question needs its correct answer.</p></div><span className="fine">{draftQuestions.filter((q) => q.prompt.trim()).length}/6</span></div>
             {draftQuestions.map((q, index) => <fieldset className="fridays-draft-question" key={index}>
               <legend>Question {index + 1}</legend>
               <label className="field"><span>Question or clue</span><textarea className="in" rows={2} maxLength={1000} value={q.prompt} onChange={(e) => setDraftQuestions((items) => items.map((item, i) => i === index ? { ...item, prompt: e.target.value } : item))} placeholder="What should readers find?" /></label>
