@@ -21,7 +21,7 @@ export default function CommunityGuidelines() {
       <p>Keep posts, comments, and reading-club discussions relevant and constructive. Do not impersonate another person, manipulate engagement, or use community features for repeated unsolicited promotion.</p>
 
       <h2 className="h2">Reporting and enforcement</h2>
-      <p>If you see content or behaviour that may break these guidelines, contact us at <a href="mailto:palixia.official@gmail.com">palixia.official@gmail.com</a> and include the relevant username, book, post, or link if available. We may review reports and remove content, restrict features, or suspend accounts where appropriate.</p>
+      <p>If you see content or behaviour that may break these guidelines, contact us at <a href="mailto:info@palixia.com">info@palixia.com</a> and include the relevant username, book, post, or link if available. We may review reports and remove content, restrict features, or suspend accounts where appropriate.</p>
 
       <p className="fine">These guidelines describe Palixia's intended community standards and may be updated as features develop. They work alongside our Terms of Service and applicable law.</p>
     </article>
