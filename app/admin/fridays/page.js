@@ -174,6 +174,22 @@ function FridaysAdmin() {
     setBusy(false);
   }
 
+  async function shareHuntLink() {
+    const url = (typeof window !== 'undefined' ? window.location.origin : 'https://www.palixia.com') + '/fridays';
+    const shareData = { title: selected?.title || 'Palixia Fridays', text: 'Join the story hunt on Palixia!', url };
+    try {
+      if (navigator.share) await navigator.share(shareData);
+      else if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+        setMessage('Hunt link copied: ' + url);
+      } else {
+        window.prompt('Copy the Palixia Fridays hunt link:', url);
+      }
+    } catch (err) {
+      if (err?.name !== 'AbortError') setError('Could not open sharing. You can copy this link: ' + url);
+    }
+  }
+
   async function saveWinner(e) {
     e.preventDefault();
     if (!selectedId) return;
@@ -256,7 +272,7 @@ function FridaysAdmin() {
               <label className="field"><span>End date and time</span><input className="in" type="datetime-local" required value={editEndsAt} onChange={(e) => setEditEndsAt(e.target.value)} /></label>
             </div><button className="btn" disabled={busy}>{busy ? 'Saving…' : 'Save draft changes'}</button>
           </form>}
-          <div className="fridays-admin-selected"><div><span className="fridays-live"><span />{selected.status.toUpperCase()}</span><h3>{selected.title}</h3><p>Prize: ₦{Number(selected.prize_value).toLocaleString()} {selected.prize_type}</p><p className="fine">{new Date(selected.starts_at).toLocaleString()} – {new Date(selected.ends_at).toLocaleString()}</p></div><div className="row"><button type="button" className="btn" disabled={busy || selected.status === 'published' || selected.status === 'closed' || selected.status === 'cancelled'} onClick={() => publish('published')}>Publish & announce</button>{selected.status === 'published' && <button type="button" className="btn ghost" disabled={busy} onClick={() => publish('closed')}>Close hunt</button>}{selected.status === 'draft' && <button type="button" className="btn danger" disabled={busy} onClick={() => publish('cancelled')}>Cancel draft</button>}</div></div>
+          <div className="fridays-admin-selected"><div><span className="fridays-live"><span />{selected.status.toUpperCase()}</span><h3>{selected.title}</h3><p>Prize: ₦{Number(selected.prize_value).toLocaleString()} {selected.prize_type}</p><p className="fine">{new Date(selected.starts_at).toLocaleString()} – {new Date(selected.ends_at).toLocaleString()}</p></div><div className="row"><button type="button" className="btn ghost" onClick={shareHuntLink}>Share / copy hunt link ↗</button><button type="button" className="btn" disabled={busy || selected.status === 'published' || selected.status === 'closed' || selected.status === 'cancelled'} onClick={() => publish('published')}>Publish & announce</button>{selected.status === 'published' && <button type="button" className="btn ghost" disabled={busy} onClick={() => publish('closed')}>Close hunt</button>}{selected.status === 'draft' && <button type="button" className="btn danger" disabled={busy} onClick={() => publish('cancelled')}>Cancel draft</button>}</div></div>
           <div className="fridays-admin-clues"><h3>Questions ({questions.length}/6)</h3>{questions.map((q) => <article key={q.id}><b>Question {q.sort_order}</b><p>{q.prompt}</p>{q.source_hint && <small>Search location: {q.source_hint}</small>}{selected.status === 'draft' && <div className="row"><button type="button" className="btn ghost" onClick={() => startEditingQuestion(q)}>Edit question &amp; answer</button><button type="button" className="btn danger" disabled={busy} onClick={() => deleteDraftQuestion(q.id)}>Delete</button></div>}{selected.status === 'draft' && editingQuestionId === q.id && <form className="stack fridays-add-clue" onSubmit={saveQuestionEdit}><label className="field"><span>Question or clue</span><textarea className="in" required rows={2} maxLength={1000} value={editingQuestion.prompt} onChange={(e) => setEditingQuestion((v) => ({ ...v, prompt: e.target.value }))} /></label><label className="field"><span>Correct answer (private)</span><input className="in" required maxLength={500} value={editingQuestion.answer} onChange={(e) => setEditingQuestion((v) => ({ ...v, answer: e.target.value }))} /></label><label className="field"><span>Where should they search? (optional)</span><input className="in" maxLength={200} value={editingQuestion.sourceHint} onChange={(e) => setEditingQuestion((v) => ({ ...v, sourceHint: e.target.value }))} /></label><label className="field"><span>Optional hint</span><input className="in" maxLength={300} value={editingQuestion.hint} onChange={(e) => setEditingQuestion((v) => ({ ...v, hint: e.target.value }))} /></label><div className="row"><button className="btn" disabled={busy}>{busy ? 'Saving…' : 'Save question'}</button><button type="button" className="btn ghost" onClick={() => setEditingQuestionId('')}>Cancel</button></div></form>}</article>)}</div>
           {selected.status === 'draft' && questions.length < 6 && <form className="stack fridays-add-clue" onSubmit={addQuestion}>
             <h3>Add another question</h3><p className="muted">You can add {Math.max(0, 6 - questions.length)} more question(s) to this draft.</p>
@@ -271,7 +287,7 @@ function FridaysAdmin() {
           {selected.status === 'closed' && <form className="stack fridays-winner-form" onSubmit={saveWinner}><h3>Record winner</h3><label className="field"><span>Completed participants</span><select className="in" value={winnerId} onChange={(e) => setWinnerId(e.target.value)}><option value="">Choose a winner…</option>{completedEntries.map((entry) => <option key={entry.user_id} value={entry.user_id}>{entry.profiles?.name || entry.profiles?.username || entry.user_id}</option>)}</select></label><button className="btn" disabled={busy || !winnerId}>Save winner</button>{selected.winner_user_id && <p className="fine">Winner has been recorded. {selected.prize_sent ? 'Prize marked as sent.' : 'Prize has not yet been marked as sent.'}</p>}{selected.winner_user_id && !selected.prize_sent && <button type="button" className="btn ghost" disabled={busy} onClick={markPrizeSent}>Mark prize as sent</button>}</form>}
         </>}
       </section>
-      <p className="fine">Keep the prize within your budget. Publish clear entry, deadline, and winner-selection rules before opening a competition.</p>
+      <p className="fine">Keep the prize within your budget. Publish clear entry, deadline, and winner-selection rules before opening a competition. The shared /fridays link shows the active published hunt; a draft is not visible to readers yet.</p>
     </main>
   );
 }
