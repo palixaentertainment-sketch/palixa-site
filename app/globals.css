@@ -1111,3 +1111,11 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 :root[data-theme="dark"] .logo-img {
   mix-blend-mode: normal;
 }
+
+
+/* Palixia Fridays: question builder in the hunt creation form */
+.fridays-create-questions { display:grid; gap:1rem; padding:1rem 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+.fridays-create-questions h3 { margin:0 0 .25rem; font-size:1.05rem; }
+.fridays-draft-question { min-width:0; display:grid; gap:.8rem; margin:0; padding:1rem; border:1px solid var(--line); border-radius:10px; }
+.fridays-draft-question legend { padding:0 .35rem; font-weight:700; }
+.fridays-draft-question .field { margin:0; }
