@@ -133,7 +133,7 @@ export default function PalixiaFridaysPage() {
           <div className="fridays-hunt-top">
             <div><span className="fridays-live"><span />{notStarted ? 'UPCOMING HUNT' : closed ? 'HUNT CLOSED' : 'HUNT IS LIVE'}</span>
               <h2 className="h2">{hunt.title}</h2>
-              <p>{hunt.description}</p>
+              <div className="fridays-hunt-description" style={{ whiteSpace: 'pre-line' }}>{hunt.description}</div>
             </div>
           </div>
           <div className="fridays-dates"><span>Starts: {formatDate(hunt.starts_at)}</span><span>Ends: {formatDate(hunt.ends_at)}</span></div>
