@@ -5,6 +5,8 @@ import Link from 'next/link';
 import Guard from '@/components/Guard';
 import { supabase, configured } from '@/lib/supabase';
 
+function toLocalInput(value) { if (!value) return ''; const d = new Date(value); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); }
+
 function localDateTime(offsetHours) {
   const date = new Date(Date.now() + offsetHours * 3600000);
   date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
@@ -15,6 +17,12 @@ function FridaysAdmin() {
   const [hunts, setHunts] = useState([]);
   const [selectedId, setSelectedId] = useState('');
   const [questions, setQuestions] = useState([]);
+  const [answerKeys, setAnswerKeys] = useState({});
+  const [editingQuestionId, setEditingQuestionId] = useState('');
+  const [editingQuestion, setEditingQuestion] = useState({ prompt: '', hint: '', sourceHint: '', answer: '' });
+  const [editTitle, setEditTitle] = useState(''); const [editDescription, setEditDescription] = useState('');
+  const [editPrizeType, setEditPrizeType] = useState('airtime'); const [editPrizeValue, setEditPrizeValue] = useState('1000');
+  const [editStartsAt, setEditStartsAt] = useState(''); const [editEndsAt, setEditEndsAt] = useState('');
   const [entries, setEntries] = useState([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -49,9 +57,15 @@ function FridaysAdmin() {
       supabase.from('palixia_friday_entries').select('id,user_id,solved_question_ids,completed_at,created_at,profiles!palixia_friday_entries_user_id_fkey(name,username)').eq('hunt_id', id).order('completed_at', { ascending: true }),
     ]);
     if (q.error || e.error) { setError('Could not load this hunt details. ' + (q.error?.message || e.error?.message || '')); return; }
-    setQuestions(q.data || []);
+    const questionRows = q.data || [];
+    const a = questionRows.length ? await supabase.from('palixia_friday_answer_keys').select('question_id,answer').in('question_id', questionRows.map((item) => item.id)) : { data: [], error: null };
+    if (a.error) { setError('Could not load private answer keys. ' + a.error.message); return; }
+    setQuestions(questionRows);
+    setAnswerKeys(Object.fromEntries((a.data || []).map((item) => [item.question_id, item.answer])));
     setEntries(e.data || []);
     setWinnerId(hunts.find((h) => h.id === id)?.winner_user_id || '');
+    const h = hunts.find((item) => item.id === id);
+    if (h) { setEditTitle(h.title || ''); setEditDescription(h.description || ''); setEditPrizeType(h.prize_type || 'airtime'); setEditPrizeValue(String(h.prize_value ?? 1000)); setEditStartsAt(toLocalInput(h.starts_at)); setEditEndsAt(toLocalInput(h.ends_at)); }
   }, [hunts]);
 
   useEffect(() => { loadHunts(); }, [loadHunts]);
@@ -104,7 +118,7 @@ function FridaysAdmin() {
   async function addQuestion(e) {
     e.preventDefault();
     if (!selectedId) { setError('Create or select a hunt first.'); return; }
-    if (questions.length >= 5) { setError('A Palixia Fridays hunt can have up to five questions.'); return; }
+    if (questions.length >= 6) { setError('A Palixia Fridays hunt can have up to six questions.'); return; }
     if (!prompt.trim() || !answer.trim()) { setError('Each clue needs a question and a correct answer.'); return; }
     setBusy(true); setError(''); setMessage('');
     const { data: question, error: questionError } = await supabase.from('palixia_friday_questions').insert({
@@ -124,6 +138,30 @@ function FridaysAdmin() {
     setBusy(false);
   }
 
+  async function saveDraftDetails(e) {
+    e.preventDefault(); if (!selected || selected.status !== 'draft') return;
+    if (!editTitle.trim() || !editDescription.trim() || !editStartsAt || !editEndsAt || new Date(editEndsAt) <= new Date(editStartsAt)) { setError('Add a title, instructions, valid dates, and an end time after the start time.'); return; }
+    setBusy(true); setError(''); setMessage('');
+    const { error: err } = await supabase.from('palixia_friday_hunts').update({ title: editTitle.trim(), description: editDescription.trim(), prize_type: editPrizeType, prize_value: Number(editPrizeValue), starts_at: new Date(editStartsAt).toISOString(), ends_at: new Date(editEndsAt).toISOString(), updated_at: new Date().toISOString() }).eq('id', selectedId).eq('status', 'draft');
+    if (err) setError('Could not save draft changes: ' + err.message); else { setMessage('Draft details saved.'); await loadHunts(); } setBusy(false);
+  }
+  function startEditingQuestion(q) { setEditingQuestionId(q.id); setEditingQuestion({ prompt: q.prompt || '', hint: q.hint || '', sourceHint: q.source_hint || '', answer: answerKeys[q.id] || '' }); }
+  async function saveQuestionEdit(e) {
+    e.preventDefault(); if (!selected || selected.status !== 'draft' || !editingQuestionId) return;
+    if (!editingQuestion.prompt.trim() || !editingQuestion.answer.trim()) { setError('Each question needs question text and a correct answer.'); return; }
+    setBusy(true); setError(''); setMessage('');
+    const { error: qe } = await supabase.from('palixia_friday_questions').update({ prompt: editingQuestion.prompt.trim(), hint: editingQuestion.hint.trim(), source_hint: editingQuestion.sourceHint.trim() }).eq('id', editingQuestionId).eq('hunt_id', selectedId);
+    if (qe) { setError('Could not update question: ' + qe.message); setBusy(false); return; }
+    const { data: key, error: ke } = await supabase.from('palixia_friday_answer_keys').select('question_id').eq('question_id', editingQuestionId).maybeSingle();
+    if (ke) { setError('Could not check answer key: ' + ke.message); setBusy(false); return; }
+    const saved = key ? await supabase.from('palixia_friday_answer_keys').update({ answer: editingQuestion.answer.trim() }).eq('question_id', editingQuestionId) : await supabase.from('palixia_friday_answer_keys').insert({ question_id: editingQuestionId, answer: editingQuestion.answer.trim() });
+    if (saved.error) setError('Could not save answer: ' + saved.error.message); else { setMessage('Draft question and private answer updated.'); setEditingQuestionId(''); await loadDetails(selectedId); } setBusy(false);
+  }
+  async function deleteDraftQuestion(id) {
+    if (!selected || selected.status !== 'draft' || !window.confirm('Delete this question and its answer key from the draft?')) return;
+    setBusy(true); setError(''); setMessage(''); const { error: err } = await supabase.from('palixia_friday_questions').delete().eq('id', id).eq('hunt_id', selectedId);
+    if (err) setError('Could not delete question: ' + err.message); else { setEditingQuestionId(''); setMessage('Question deleted from draft.'); await loadDetails(selectedId); } setBusy(false);
+  }
   async function publish(status) {
     if (!selectedId) return;
     setBusy(true); setError(''); setMessage('');
@@ -176,12 +214,12 @@ function FridaysAdmin() {
 
       <section className="fridays-admin-panel">
         <h2 className="h2">Create a new hunt</h2>
-        <p className="muted">You can add up to five questions and their private correct answers right here. You can also create a draft first and finish it in Edit a hunt below.</p>
+        <p className="muted">You can add up to six questions and their private correct answers right here. You can also create a draft first and finish it in Edit a hunt below.</p>
         <form className="stack" onSubmit={createHunt}>
           <label className="field"><span>Hunt title</span><input className="in" required maxLength={100} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. The Missing Page" /></label>
           <label className="field"><span>Instructions and story</span><textarea className="in" rows={3} required maxLength={1500} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Set the scene and explain how to take part." /></label>
           <div className="fridays-create-questions">
-            <div className="row between"><div><h3>Hunt questions</h3><p className="muted">Add up to 5 questions. Each question needs its correct answer.</p></div><span className="fine">{draftQuestions.filter((q) => q.prompt.trim()).length}/5</span></div>
+            <div className="row between"><div><h3>Hunt questions</h3><p className="muted">Add up to 6 questions. Each question needs its correct answer.</p></div><span className="fine">{draftQuestions.filter((q) => q.prompt.trim()).length}/6</span></div>
             {draftQuestions.map((q, index) => <fieldset className="fridays-draft-question" key={index}>
               <legend>Question {index + 1}</legend>
               <label className="field"><span>Question or clue</span><textarea className="in" rows={2} maxLength={1000} value={q.prompt} onChange={(e) => setDraftQuestions((items) => items.map((item, i) => i === index ? { ...item, prompt: e.target.value } : item))} placeholder="What should readers find?" /></label>
@@ -190,7 +228,7 @@ function FridaysAdmin() {
               <label className="field"><span>Optional hint</span><input className="in" maxLength={300} value={q.hint} onChange={(e) => setDraftQuestions((items) => items.map((item, i) => i === index ? { ...item, hint: e.target.value } : item))} placeholder="A nudge if readers get stuck." /></label>
               {draftQuestions.length > 1 && <button type="button" className="btn ghost" onClick={() => setDraftQuestions((items) => items.filter((_, i) => i !== index))}>Remove question</button>}
             </fieldset>)}
-            {draftQuestions.length < 5 && <button type="button" className="btn ghost" onClick={() => setDraftQuestions((items) => [...items, { prompt: '', hint: '', sourceHint: '', answer: '' }])}>+ Add question</button>}
+            {draftQuestions.length < 6 && <button type="button" className="btn ghost" onClick={() => setDraftQuestions((items) => [...items, { prompt: '', hint: '', sourceHint: '', answer: '' }])}>+ Add question</button>}
           </div>
           <div className="fridays-admin-grid">
             <label className="field"><span>Prize type</span><select className="in" value={prizeType} onChange={(e) => setPrizeType(e.target.value)}><option value="airtime">Airtime</option><option value="cash">Cash</option></select></label>
@@ -207,10 +245,21 @@ function FridaysAdmin() {
         <label className="field"><span>Select hunt</span><select className="in" value={selectedId} onChange={(e) => setSelectedId(e.target.value)}><option value="">Choose a hunt…</option>{hunts.map((h) => <option key={h.id} value={h.id}>{h.title} · {h.status}</option>)}</select></label>
         {!selected && <p className="muted">Create a draft above to start adding clues.</p>}
         {selected && <>
+          {selected.status === 'draft' && <form className="stack fridays-add-clue" onSubmit={saveDraftDetails}>
+            <h3>Edit draft details</h3>
+            <label className="field"><span>Hunt title</span><input className="in" required maxLength={100} value={editTitle} onChange={(e) => setEditTitle(e.target.value)} /></label>
+            <label className="field"><span>Instructions and story</span><textarea className="in" rows={4} required maxLength={1500} value={editDescription} onChange={(e) => setEditDescription(e.target.value)} /></label>
+            <div className="fridays-admin-grid">
+              <label className="field"><span>Prize type</span><select className="in" value={editPrizeType} onChange={(e) => setEditPrizeType(e.target.value)}><option value="airtime">Airtime</option><option value="cash">Cash</option></select></label>
+              <label className="field"><span>Prize value (₦)</span><input className="in" type="number" min="0" max="1000000" required value={editPrizeValue} onChange={(e) => setEditPrizeValue(e.target.value)} /></label>
+              <label className="field"><span>Start date and time</span><input className="in" type="datetime-local" required value={editStartsAt} onChange={(e) => setEditStartsAt(e.target.value)} /></label>
+              <label className="field"><span>End date and time</span><input className="in" type="datetime-local" required value={editEndsAt} onChange={(e) => setEditEndsAt(e.target.value)} /></label>
+            </div><button className="btn" disabled={busy}>{busy ? 'Saving…' : 'Save draft changes'}</button>
+          </form>}
           <div className="fridays-admin-selected"><div><span className="fridays-live"><span />{selected.status.toUpperCase()}</span><h3>{selected.title}</h3><p>Prize: ₦{Number(selected.prize_value).toLocaleString()} {selected.prize_type}</p><p className="fine">{new Date(selected.starts_at).toLocaleString()} – {new Date(selected.ends_at).toLocaleString()}</p></div><div className="row"><button type="button" className="btn" disabled={busy || selected.status === 'published' || selected.status === 'closed' || selected.status === 'cancelled'} onClick={() => publish('published')}>Publish & announce</button>{selected.status === 'published' && <button type="button" className="btn ghost" disabled={busy} onClick={() => publish('closed')}>Close hunt</button>}{selected.status === 'draft' && <button type="button" className="btn danger" disabled={busy} onClick={() => publish('cancelled')}>Cancel draft</button>}</div></div>
-          <div className="fridays-admin-clues"><h3>Questions ({questions.length}/5)</h3>{questions.map((q) => <article key={q.id}><b>Question {q.sort_order}</b><p>{q.prompt}</p>{q.source_hint && <small>Search location: {q.source_hint}</small>}</article>)}</div>
-          {selected.status === 'draft' && questions.length < 5 && <form className="stack fridays-add-clue" onSubmit={addQuestion}>
-            <h3>Add another question</h3><p className="muted">You can add {Math.max(0, 5 - questions.length)} more question(s) to this draft.</p>
+          <div className="fridays-admin-clues"><h3>Questions ({questions.length}/6)</h3>{questions.map((q) => <article key={q.id}><b>Question {q.sort_order}</b><p>{q.prompt}</p>{q.source_hint && <small>Search location: {q.source_hint}</small>}{selected.status === 'draft' && <div className="row"><button type="button" className="btn ghost" onClick={() => startEditingQuestion(q)}>Edit question &amp; answer</button><button type="button" className="btn danger" disabled={busy} onClick={() => deleteDraftQuestion(q.id)}>Delete</button></div>}{selected.status === 'draft' && editingQuestionId === q.id && <form className="stack fridays-add-clue" onSubmit={saveQuestionEdit}><label className="field"><span>Question or clue</span><textarea className="in" required rows={2} maxLength={1000} value={editingQuestion.prompt} onChange={(e) => setEditingQuestion((v) => ({ ...v, prompt: e.target.value }))} /></label><label className="field"><span>Correct answer (private)</span><input className="in" required maxLength={500} value={editingQuestion.answer} onChange={(e) => setEditingQuestion((v) => ({ ...v, answer: e.target.value }))} /></label><label className="field"><span>Where should they search? (optional)</span><input className="in" maxLength={200} value={editingQuestion.sourceHint} onChange={(e) => setEditingQuestion((v) => ({ ...v, sourceHint: e.target.value }))} /></label><label className="field"><span>Optional hint</span><input className="in" maxLength={300} value={editingQuestion.hint} onChange={(e) => setEditingQuestion((v) => ({ ...v, hint: e.target.value }))} /></label><div className="row"><button className="btn" disabled={busy}>{busy ? 'Saving…' : 'Save question'}</button><button type="button" className="btn ghost" onClick={() => setEditingQuestionId('')}>Cancel</button></div></form>}</article>)}</div>
+          {selected.status === 'draft' && questions.length < 6 && <form className="stack fridays-add-clue" onSubmit={addQuestion}>
+            <h3>Add another question</h3><p className="muted">You can add {Math.max(0, 6 - questions.length)} more question(s) to this draft.</p>
             <label className="field"><span>Question or clue</span><textarea className="in" rows={3} required maxLength={1000} value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="Write the clue participants must solve." /></label>
             <label className="field"><span>Where should they search? (optional)</span><input className="in" maxLength={200} value={sourceHint} onChange={(e) => setSourceHint(e.target.value)} placeholder="e.g. a fantasy story's opening chapters" /></label>
             <label className="field"><span>Optional hint</span><input className="in" maxLength={300} value={hint} onChange={(e) => setHint(e.target.value)} placeholder="A nudge if they get stuck." /></label>
