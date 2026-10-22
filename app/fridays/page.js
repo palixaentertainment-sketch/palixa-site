@@ -109,8 +109,8 @@ export default function PalixiaFridaysPage() {
         <div className="fridays-spark" aria-hidden="true">✦</div>
         <p className="mono">EXPLORE · READ · SOLVE</p>
         <h1 className="h1">Palixia Fridays</h1>
-        <p className="fridays-intro">A story hunt for curious readers. Follow the clues across Palixia, read carefully, and solve each stage for a chance to win.</p>
-        <div className="fridays-hero-tags"><span>🔎 Multi-stage mysteries</span><span>📚 Stories to discover</span><span>🎁 Real prizes</span></div>
+        <p className="fridays-intro">A little story hunt for curious readers. Follow the clues across Palixia, read carefully, and see how far you get.</p>
+        <div className="fridays-hero-tags"><span>🔎 Multi-stage mysteries</span><span>📚 Stories to discover</span><span>🧩 Test your detective skills</span></div>
       </section>
 
       {notice && <p className={'notice fridays-notice ' + noticeType} role="status">{notice}</p>}
@@ -122,7 +122,7 @@ export default function PalixiaFridaysPage() {
           <div className="fridays-empty-icon" aria-hidden="true">✧</div>
           <p className="mono">COMING SOON</p>
           <h2 className="h2">Your next story hunt is almost here.</h2>
-          <p>Palixia Fridays launches on Friday, October 23. Get ready to explore stories, solve clues, and compete for a prize.</p>
+          <p>Palixia Fridays starts on Friday, October 23. Get ready to explore stories, follow clues, and test your detective skills.</p>
           <p className="fridays-coming-date">FRIDAY · OCTOBER 23, 2026</p>
           <Link className="btn" href="/discover">Explore stories while you wait</Link>
         </section>
@@ -135,13 +135,12 @@ export default function PalixiaFridaysPage() {
               <h2 className="h2">{hunt.title}</h2>
               <p>{hunt.description}</p>
             </div>
-            <div className="fridays-prize"><span>PRIZE</span><strong>₦{Number(hunt.prize_value).toLocaleString()}</strong><small>{hunt.prize_type === 'airtime' ? 'Airtime' : 'Cash'}</small></div>
           </div>
           <div className="fridays-dates"><span>Starts: {formatDate(hunt.starts_at)}</span><span>Ends: {formatDate(hunt.ends_at)}</span></div>
 
           {notStarted && <div className="fridays-callout">This hunt has been announced. Come back when it starts to unlock the first clue.</div>}
           {!notStarted && !closed && !user && <div className="fridays-callout">You need a Palixia account to submit answers and track your progress. <Link className="linkbtn" href="/login?next=%2Ffridays">Log in</Link> or <Link className="linkbtn" href="/signup">sign up</Link>.</div>}
-          {completed && <div className="fridays-complete"><span aria-hidden="true">✦</span><div><b>Hunt completed!</b><p>You solved every clue. Your entry is recorded; check back for the winner announcement.</p></div></div>}
+          {completed && <div className="fridays-complete"><span aria-hidden="true">✦</span><div><b>Hunt completed!</b><p>You solved every clue. Your progress has been recorded. Thanks for taking part!</p></div></div>}
           {closed && !completed && <div className="fridays-callout">This hunt has ended. Thanks for taking part. Check back for the next challenge.</div>}
 
           <div className="fridays-progress-head"><b>Your progress</b><span>{Math.min(solved, total)} of {total} clues solved</span></div>
@@ -165,7 +164,7 @@ export default function PalixiaFridaysPage() {
             </article>
           )}
           {total === 0 && <p className="muted">The hunt clues will appear here soon.</p>}
-          <p className="fridays-rules">Free to enter. One entry per account. The winner-selection method and prize details will be stated in the hunt rules before entries open.</p>
+          <p className="fridays-rules">Free to enter. One entry per account. Just follow the clues, explore Palixia, and have fun.</p>
         </section>
       )}
 
