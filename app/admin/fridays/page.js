@@ -139,11 +139,11 @@ function FridaysAdmin() {
   }
 
   async function saveDraftDetails(e) {
-    e.preventDefault(); if (!selected || selected.status !== 'draft') return;
+    e.preventDefault(); if (!selected || !['draft', 'published'].includes(selected.status)) return;
     if (!editTitle.trim() || !editDescription.trim() || !editStartsAt || !editEndsAt || new Date(editEndsAt) <= new Date(editStartsAt)) { setError('Add a title, instructions, valid dates, and an end time after the start time.'); return; }
     setBusy(true); setError(''); setMessage('');
-    const { error: err } = await supabase.from('palixia_friday_hunts').update({ title: editTitle.trim(), description: editDescription.trim(), prize_type: editPrizeType, prize_value: Number(editPrizeValue), starts_at: new Date(editStartsAt).toISOString(), ends_at: new Date(editEndsAt).toISOString(), updated_at: new Date().toISOString() }).eq('id', selectedId).eq('status', 'draft');
-    if (err) setError('Could not save draft changes: ' + err.message); else { setMessage('Draft details saved.'); await loadHunts(); } setBusy(false);
+    const { error: err } = await supabase.from('palixia_friday_hunts').update({ title: editTitle.trim(), description: editDescription.trim(), prize_type: editPrizeType, prize_value: Number(editPrizeValue), starts_at: new Date(editStartsAt).toISOString(), ends_at: new Date(editEndsAt).toISOString(), updated_at: new Date().toISOString() }).eq('id', selectedId).in('status', ['draft', 'published']);
+    if (err) setError('Could not save hunt details: ' + err.message); else { setMessage(selected.status === 'published' ? 'Published hunt details updated.' : 'Draft details saved.'); await loadHunts(); } setBusy(false);
   }
   function startEditingQuestion(q) { setEditingQuestionId(q.id); setEditingQuestion({ prompt: q.prompt || '', hint: q.hint || '', sourceHint: q.source_hint || '', answer: answerKeys[q.id] || '' }); }
   async function saveQuestionEdit(e) {
@@ -261,8 +261,9 @@ function FridaysAdmin() {
         <label className="field"><span>Select hunt</span><select className="in" value={selectedId} onChange={(e) => setSelectedId(e.target.value)}><option value="">Choose a hunt…</option>{hunts.map((h) => <option key={h.id} value={h.id}>{h.title} · {h.status}</option>)}</select></label>
         {!selected && <p className="muted">Create a draft above to start adding clues.</p>}
         {selected && <>
-          {selected.status === 'draft' && <form className="stack fridays-add-clue" onSubmit={saveDraftDetails}>
-            <h3>Edit draft details</h3>
+          {['draft', 'published'].includes(selected.status) && <form className="stack fridays-add-clue" onSubmit={saveDraftDetails}>
+            <h3>{selected.status === 'published' ? 'Edit published hunt details' : 'Edit draft details'}</h3>
+            {selected.status === 'published' && <p className="fine">Changes to the hunt description and schedule apply to the live hunt immediately. Editing these details does not change its questions or private answers.</p>}
             <label className="field"><span>Hunt title</span><input className="in" required maxLength={100} value={editTitle} onChange={(e) => setEditTitle(e.target.value)} /></label>
             <label className="field"><span>Instructions and story</span><textarea className="in" rows={4} required maxLength={1500} value={editDescription} onChange={(e) => setEditDescription(e.target.value)} /></label>
             <div className="fridays-admin-grid">
