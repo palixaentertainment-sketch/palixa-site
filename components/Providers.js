@@ -31,7 +31,7 @@ export default function Providers({ children }) {
                 <div className="foot-social">
                   <span className="foot-heading">Connect with us</span>
                   <SocialLinks compact />
-                  <a href="mailto:palixia.official@gmail.com">palixia.official@gmail.com</a>
+                  <a href="mailto:info@palixia.com">info@palixia.com</a>
                 </div>
               </div>
               <div className="foot-column">

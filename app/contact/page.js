@@ -29,8 +29,8 @@ export default function ContactPage() {
           that best describes your message and email us.
         </p>
         <p>
-          <a className="linkbtn" href="mailto:palixia.official@gmail.com">
-            palixia.official@gmail.com
+          <a className="linkbtn" href="mailto:info@palixia.com">
+            info@palixia.com
           </a>
         </p>
       </header>
@@ -43,7 +43,7 @@ export default function ContactPage() {
             <p>
               <a
                 className="btn ghost"
-                href={`mailto:palixia.official@gmail.com?subject=${encodeURIComponent(contact.subject)}`}
+                href={`mailto:info@palixia.com?subject=${encodeURIComponent(contact.subject)}`}
               >
                 Email us
               </a>
