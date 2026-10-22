@@ -3,7 +3,7 @@ import Cover from '@/components/Cover';
 
 export default function BookCard({ b }) {
   return (
-    <Link href={'/book/' + b.id} className="bcard">
+    <Link href={'/book/' + (b.slug || b.id)} className="bcard">
       <Cover b={b} />
       <div>
         <h3>{b.title}</h3>
