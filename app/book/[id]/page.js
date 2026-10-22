@@ -37,11 +37,12 @@ export default function BookPage() {
 
     // Fetch the book first. Avoid nested PostgREST joins here: a missing or
     // differently named relationship can make a real book look unpublished/missing.
-    const { data, error } = await supabase
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(bookId);
+    let lookup = supabase
       .from('books')
-      .select('id,author_id,title,description,cover_url,book_type,status,reads,is_sample,genre_id,like_count')
-      .eq('id', bookId)
-      .maybeSingle();
+      .select('id,slug,author_id,title,description,cover_url,book_type,status,reads,is_sample,genre_id,like_count');
+    lookup = isUuid ? lookup.eq('id', bookId) : lookup.eq('slug', bookId);
+    const { data, error } = await lookup.maybeSingle();
 
     if (error) {
       console.error('Palixia book lookup failed:', error);
@@ -63,7 +64,7 @@ export default function BookPage() {
       data.genre_id
         ? supabase.from('genres').select('name,slug').eq('id', data.genre_id).maybeSingle()
         : Promise.resolve({ data: null, error: null }),
-      supabase.from('chapters').select('id,chapter_number,title,status,reads,created_at,updated_at').eq('book_id', bookId).order('chapter_number'),
+      supabase.from('chapters').select('id,chapter_number,title,status,reads,created_at,updated_at').eq('book_id', data.id).order('chapter_number'),
       supabase.rpc('author_stats', { p_author: data.author_id }),
       supabase.from('profile_badges').select('badge_type').eq('profile_id', data.author_id).maybeSingle(),
     ]);
@@ -87,7 +88,7 @@ export default function BookPage() {
     if (!user || !book) return;
     (async () => {
       const [bm, fl, pr] = await Promise.all([
-        supabase.from('bookmarks').select('chapter_id').eq('user_id', user.id).eq('book_id', id),
+        supabase.from('bookmarks').select('chapter_id').eq('user_id', user.id).eq('book_id', book.id),
         supabase.from('follows').select('id').eq('user_id', user.id).eq('author_id', book.author_id).maybeSingle(),
         supabase.from('reading_progress').select('chapter_id,progress').eq('user_id', user.id).eq('book_id', id).maybeSingle(),
       ]);
@@ -109,7 +110,7 @@ export default function BookPage() {
       if (error) { setMsg(friendly(error)); return; }
       setSaved(false);
     } else {
-      const { error } = await supabase.from('bookmarks').insert({ user_id: user.id, book_id: id, chapter_id: null });
+      const { error } = await supabase.from('bookmarks').insert({ user_id: user.id, book_id: book.id, chapter_id: null });
       if (error) { setMsg(friendly(error)); return; }
       setSaved(true);
     }
@@ -117,7 +118,9 @@ export default function BookPage() {
 
   async function shareBook() {
     setMsg('');
-    const url = typeof window !== 'undefined' ? window.location.href : '';
+    const url = typeof window !== 'undefined'
+      ? window.location.origin + '/book/' + (book.slug || book.id)
+      : '';
     const shareData = { title: book.title, text: 'Read ' + book.title + ' on Palixia', url };
     try {
       if (typeof navigator !== 'undefined' && navigator.share) {
@@ -219,7 +222,7 @@ export default function BookPage() {
         <button type="button" className="btn ghost" onClick={shareBook}>Share</button>
       </div>
       {resumeId && progress && <p className="fine">You are {progress.progress}% through this book.</p>}
-      {msg && <p className="msg-err" role="alert">{msg} {!user && <Link className="linkbtn" href={'/login?next=/book/' + id}>Log in</Link>}</p>}
+      {msg && <p className="msg-err" role="alert">{msg} {!user && <Link className="linkbtn" href={'/login?next=/book/' + (book.slug || book.id)}>Log in</Link>}</p>}
 
       <section className="stack">
         <h2 className="h2">About this {book.book_type === 'comic' ? 'comic' : 'book'}</h2>
