@@ -38,7 +38,7 @@ export default function Privacy() {
       <p>Our infrastructure providers may store or process information in countries other than your own. Where applicable law requires safeguards for cross-border processing, we will take steps required by that law.</p>
 
       <h2 className="h2">Changes and contact</h2>
-      <p>We may update this policy as the platform develops. We will update the date above when changes are made. For privacy questions or requests, email palixia.official@gmail.com.</p>
+      <p>We may update this policy as the platform develops. We will update the date above when changes are made. For privacy questions or requests, email info@palixia.com.</p>
       <p className="fine">This policy is a working draft based on the current known platform setup. Before inviting the public, verify the actual data flows, retention settings and applicable legal requirements, including Nigerian data-protection law where applicable. Consider legal review before publication.</p>
     </div>
   );
