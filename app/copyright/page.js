@@ -12,7 +12,7 @@ export default function CopyrightPolicy() {
       <p>Publish only work you created or have permission to use, including text, illustrations, comic panels, covers, and promotional images. Do not upload someone else's copyrighted work without the rights or permission needed.</p>
 
       <h2 className="h2">Report a copyright concern</h2>
-      <p>If you believe material on Palixia infringes your copyright, email <a href="mailto:palixia.official@gmail.com?subject=Copyright%20Report">palixia.official@gmail.com</a> with the subject “Copyright Report”. Please include:</p>
+      <p>If you believe material on Palixia infringes your copyright, email <a href="mailto:info@palixia.com?subject=Copyright%20Report">info@palixia.com</a> with the subject “Copyright Report”. Please include:</p>
       <ul>
         <li>Your name and a reliable way to contact you.</li>
         <li>A description of the copyrighted work you believe has been infringed.</li>
@@ -25,7 +25,7 @@ export default function CopyrightPolicy() {
       <p>We will review reports and may contact you for clarification. Where appropriate, we may restrict access to or remove reported material and contact the person who posted it. Repeated or serious infringement may lead to account restrictions or closure. We may also consider relevant responses or counterclaims before deciding what further action is appropriate.</p>
 
       <h2 className="h2">Questions</h2>
-      <p>For copyright questions, contact <a href="mailto:palixia.official@gmail.com">palixia.official@gmail.com</a>. This page explains Palixia's current reporting approach and is not legal advice. The process should be reviewed against applicable law before launch.</p>
+      <p>For copyright questions, contact <a href="mailto:info@palixia.com">info@palixia.com</a>. This page explains Palixia's current reporting approach and is not legal advice. The process should be reviewed against applicable law before launch.</p>
     </article>
   );
 }
