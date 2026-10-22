@@ -18,7 +18,7 @@ export default function CookiePolicy() {
       <p>You can usually view, block, or delete cookies through your browser settings. Browser controls vary by device and browser. Blocking all cookies may affect essential website functions. Where applicable law requires consent before optional cookies or similar technologies are used, Palixia should obtain that consent before activating them.</p>
 
       <h2 className="h2">Changes and contact</h2>
-      <p>We may update this page as the website changes. For questions about cookies or privacy, email <a href="mailto:palixia.official@gmail.com">palixia.official@gmail.com</a> and see our <a href="/privacy">Privacy Policy</a>.</p>
+      <p>We may update this page as the website changes. For questions about cookies or privacy, email <a href="mailto:info@palixia.com">info@palixia.com</a> and see our <a href="/privacy">Privacy Policy</a>.</p>
     </article>
   );
 }
