@@ -182,6 +182,23 @@ export default function Reader() {
     );
   }
 
+  if (!user && ch.status === 'published' && book.status === 'published' && Number(ch.chapter_number) > 3) {
+    return (
+      <div className="reader" data-rtheme={theme}>
+        <div className="wrap stack" style={{ padding: '3rem 16px', maxWidth: '38rem' }}>
+          <p className="mono">KEEP READING ON PALIXIA</p>
+          <h1 className="h1">Enjoying the story?</h1>
+          <p>You’ve reached the end of the 3 chapters guests can read. Create a free Palixia account to continue reading this story and discover more books.</p>
+          <div className="row">
+            <Link className="btn" href={'/signup?next=' + encodeURIComponent('/read/' + id)}>Create free account</Link>
+            <Link className="btn ghost" href={'/login?next=' + encodeURIComponent('/read/' + id)}>Log in</Link>
+          </div>
+          <Link className="linkbtn" href={'/book/' + book.id}>Back to book</Link>
+        </div>
+      </div>
+    );
+  }
+
   const prev = index > 0 ? sibs[index - 1] : null;
   const next = index > -1 && index < sibs.length - 1 ? sibs[index + 1] : null;
   const isComic = book.book_type === 'comic';
