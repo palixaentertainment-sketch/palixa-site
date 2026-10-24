@@ -16,6 +16,7 @@ function AdminPanel() {
   const [profiles, setProfiles] = useState([]);
   const [badges, setBadges] = useState({});
   const [books, setBooks] = useState([]);
+  const [viewDrafts, setViewDrafts] = useState({});
   const [reports, setReports] = useState([]);
   const [chapterComments, setChapterComments] = useState([]);
   const [communityComments, setCommunityComments] = useState([]);
@@ -98,7 +99,7 @@ function AdminPanel() {
       supabase.from('chapters').select('id', { count: 'exact', head: true }),
       supabase.from('profiles').select('id,name,username,role,status,created_at').order('created_at', { ascending: false }).limit(200),
       supabase.from('profile_badges').select('profile_id,badge_type'),
-      supabase.from('books').select('id,title,status,story_status,created_at,author_id').order('created_at', { ascending: false }).limit(100),
+      supabase.from('books').select('id,title,status,story_status,created_at,author_id,reads,custom_views').order('created_at', { ascending: false }).limit(100),
     ]);
     const failed = [usersCount, booksCount, publishedCount, chaptersCount, userRows, badgeRows, bookRows].find((r) => r.error);
     if (failed) setError(friendly(failed.error, 'We could not load the admin data. Make sure the admin SQL setup has been run.'));
@@ -107,6 +108,7 @@ function AdminPanel() {
       setProfiles(userRows.data || []);
       setBadges(Object.fromEntries((badgeRows.data || []).map((b) => [b.profile_id, b.badge_type])));
       setBooks(bookRows.data || []);
+      setViewDrafts(Object.fromEntries((bookRows.data || []).map((b) => [b.id, b.custom_views == null ? '' : String(b.custom_views)])));
     }
     setLoading(false);
     await loadModeration();
@@ -140,6 +142,24 @@ function AdminPanel() {
     const { error: actionError } = await action();
     if (actionError) setError(friendly(actionError, 'The action could not be completed.'));
     else { setMessage(label); await load(); }
+    setBusyId('');
+  }
+
+  async function setCustomViews(book) {
+    const raw = String(viewDrafts[book.id] ?? '').trim();
+    const customViews = raw === '' ? null : Number(raw);
+    if (customViews !== null && (!Number.isSafeInteger(customViews) || customViews < 0)) {
+      setError('Enter a whole number of 0 or more, or leave the field blank to use real views.');
+      return;
+    }
+    setBusyId(book.id); setError(''); setMessage('');
+    const { error: saveError } = await supabase.rpc('admin_set_book_custom_views', { p_book_id: book.id, p_custom_views: customViews });
+    if (saveError) {
+      setError('Could not save custom views. Run supabase/custom_book_views.sql in the Supabase SQL Editor first. Details: ' + saveError.message);
+    } else {
+      setMessage(customViews === null ? 'Custom views cleared; real views are showing again.' : 'Custom views saved for "' + book.title + '".');
+      await load();
+    }
     setBusyId('');
   }
 
@@ -279,7 +299,8 @@ function AdminPanel() {
 
       <section className="stack">
         <h2 className="h2">Recent books</h2>
-        {loading ? <p className="muted">Loading books…</p> : <div className="tablewrap"><table><thead><tr><th>Book</th><th>Publishing</th><th>Story</th><th>Actions</th></tr></thead><tbody>{books.map(b=><tr key={b.id}><td><b>{b.title}</b></td><td>{b.status}</td><td>{b.story_status||'ongoing'}</td><td><div className="row" style={{gap:'.35rem',flexWrap:'wrap'}}><Link className="btn ghost small" href={'/book/'+b.id}>View</Link>{b.status!=='draft'&&<button className="btn ghost small" disabled={busyId===b.id} onClick={()=>runAction(b.id,'Book status updated.',()=>supabase.rpc('admin_set_book_status',{p_book_id:b.id,p_status:b.status==='published'?'unpublished':'published'}))}>{b.status==='published'?'Unpublish':'Republish'}</button>}</div></td></tr>)}</tbody></table></div>}
+        <p className="fine">Testing tool: set a custom view count for a book without changing its real read total. Leave the field blank and save to restore the real count.</p>
+        {loading ? <p className="muted">Loading books…</p> : <div className="tablewrap"><table><thead><tr><th>Book</th><th>Publishing</th><th>Story</th><th>Custom views</th><th>Actions</th></tr></thead><tbody>{books.map(b=><tr key={b.id}><td><b>{b.title}</b><br/><span className="fine">Real views: {Number(b.reads || 0).toLocaleString()}</span></td><td>{b.status}</td><td>{b.story_status||'ongoing'}</td><td><div className="stack" style={{gap:'.35rem',minWidth:'9rem'}}><input aria-label={'Custom views for '+b.title} className="in" type="number" min="0" step="1" inputMode="numeric" value={viewDrafts[b.id] ?? ''} onChange={e=>setViewDrafts(v=>({...v,[b.id]:e.target.value}))} placeholder="Use real views"/><button className="btn small" type="button" disabled={busyId===b.id} onClick={()=>setCustomViews(b)}>{busyId===b.id?'Saving…':'Save views'}</button>{b.custom_views != null && <span className="fine">Showing {Number(b.custom_views).toLocaleString()} custom views</span>}</div></td><td><div className="row" style={{gap:'.35rem',flexWrap:'wrap'}}><Link className="btn ghost small" href={'/book/'+b.id}>View</Link>{b.status!=='draft'&&<button className="btn ghost small" disabled={busyId===b.id} onClick={()=>runAction(b.id,'Book status updated.',()=>supabase.rpc('admin_set_book_status',{p_book_id:b.id,p_status:b.status==='published'?'unpublished':'published'}))}>{b.status==='published'?'Unpublish':'Republish'}</button>}</div></td></tr>)}</tbody></table></div>}
       </section>
       {moderationError && <p className="msg-err" role="alert">{moderationError}</p>}
     </div>
