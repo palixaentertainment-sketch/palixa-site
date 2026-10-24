@@ -82,6 +82,7 @@ export default function Header() {
             <>
               <NotificationsBell user={user} />
               <Link className="authlinks linkbtn" href="/library">Library</Link>
+              <Link className="authlinks linkbtn" href="/offline">Offline books</Link>
               {isAuthor && <Link className="authlinks linkbtn" href="/dashboard">Dashboard</Link>}
               {isAdmin && <Link className="authlinks linkbtn" href="/admin">Admin</Link>}
               <details className="menu" key={pathname}>
@@ -90,6 +91,7 @@ export default function Header() {
                   <div className="who"><b>{profile ? profile.name : 'Your account'}</b><span className="fine">{profile ? '@' + profile.username : ''}</span></div>
                   <Link href="/profile">Profile</Link>
                   <Link href="/library">Library</Link>
+                  <Link href="/offline">My Books · Offline</Link>
                   {isAuthor ? <Link href="/dashboard">Author dashboard</Link> : <Link href="/profile#author">Become an author</Link>}
                   {isAdmin && <Link href="/admin">Admin dashboard</Link>}
                   {isAdmin && <Link href="/admin/fridays">Manage Palixia Fridays</Link>}
