@@ -240,7 +240,7 @@ export default function BookPage() {
                   <span className="n">{String(c.chapter_number).padStart(2, '0')}</span>
                   <span>Chapter {c.chapter_number} &mdash; {c.title}</span>
                   <span className="fine">
-                    {c.status === 'draft' ? <span className="badge draft">Draft</span> : marked[c.id] ? <span className="badge">Bookmarked</span> : resumeId === c.id ? <span className="badge">Here</span> : null}
+                    {c.status === 'draft' ? <span className="badge draft">Draft</span> : !user && book.status === 'published' && Number(c.chapter_number) > 3 ? <span className="badge">Sign up to continue</span> : marked[c.id] ? <span className="badge">Bookmarked</span> : resumeId === c.id ? <span className="badge">Here</span> : null}
                   </span>
                 </Link>
               </li>
