@@ -39,7 +39,7 @@ export default function BookPage() {
     // differently named relationship can make a real book look unpublished/missing.
     const { data, error } = await supabase
       .from('books')
-      .select('id,author_id,title,description,cover_url,book_type,status,reads,is_sample,genre_id,like_count')
+      .select('id,author_id,title,description,cover_url,book_type,status,reads,custom_views,is_sample,genre_id,like_count')
       .eq('id', bookId)
       .maybeSingle();
 
@@ -196,7 +196,7 @@ export default function BookPage() {
           <h1 className="h1">{book.title}</h1>
           <p className="muted">by <Link className="linkbtn" href={'/author/' + (author ? author.username : '')}>{author ? author.name : 'Unknown'}</Link>{' '}<ProfileBadge type={authorBadge} /></p>
           <dl className="facts">
-            {isOwner && <div><dt>Reads</dt><dd>{fmtNum(book.reads)}</dd></div>}
+            {isOwner && <div><dt>Reads</dt><dd>{fmtNum(book.custom_views ?? book.reads)}</dd></div>}
             <div><dt>Chapters</dt><dd>{live.length}</dd></div>
             <div><dt>Format</dt><dd>{typeLabel(book.book_type)}</dd></div>
           </dl>
