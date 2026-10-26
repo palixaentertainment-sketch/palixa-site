@@ -35,7 +35,7 @@ export default function OfflineReaderPage() {
   if (!chapters.length) return <main className="page wrap stack"><h1 className="h1">No saved chapters found</h1><p className="muted">Connect to the internet and download this book first.</p><Link className="btn" href="/offline">Back to My Books</Link></main>;
 
   const chapter = chapters[Math.min(selected, chapters.length - 1)];
-  const paragraphs = (chapter.content || '').split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+  const paragraphs = (chapter.content || '').replace(/\r\n?/g, '\n').split(/\n+/).map((p) => p.trim()).filter(Boolean);
   return <main className="page wrap" data-theme={theme}>
     <div className="row between"><Link href="/offline" className="linkbtn">← My Books</Link><button className="btn ghost small" onClick={() => { const next = theme === 'dark' ? 'light' : 'dark'; setTheme(next); localStorage.setItem('palixa-rtheme', next); }}>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</button></div>
     <section className="stack" style={{gap:'.4rem'}}><p className="mono">OFFLINE READING</p><h1 className="h1">{chapters[0].book_title}</h1><p className="muted">{chapters[0].author_name}</p></section>
