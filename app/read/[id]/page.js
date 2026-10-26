@@ -202,7 +202,7 @@ export default function Reader() {
   const prev = index > 0 ? sibs[index - 1] : null;
   const next = index > -1 && index < sibs.length - 1 ? sibs[index + 1] : null;
   const isComic = book.book_type === 'comic';
-  const paragraphs = (ch.content || '').split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+  const paragraphs = (ch.content || '').replace(/\r\n?/g, '\n').split(/\n+/).map((p) => p.trim()).filter(Boolean);
   const bookPct = total > 0 && index > -1 ? Math.round(((index + pct / 100) / total) * 100) : 0;
 
   return (
