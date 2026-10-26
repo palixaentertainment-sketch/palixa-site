@@ -286,16 +286,16 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .rpanel { border-bottom: 1px solid var(--line); background: var(--surface); }
 .rpanel .wrap { max-width: 52rem; display: flex; gap: 0.6rem; flex-wrap: wrap; padding-block: 0.8rem; align-items: center; }
 .rbody { padding-block: 1.5rem 2rem; }
-.rtext { max-width: 44rem; margin-inline: auto; padding-inline: 18px; font-family: var(--read); line-height: 1.85; }
+.rtext { max-width: 44rem; margin-inline: auto; padding-inline: 18px; font-family: var(--read); line-height: 1.75; }
 .rtext h1 { font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.9rem; line-height: 1.1; margin-bottom: 1.6rem; }
-.rtext p + p { margin-top: 1.15em; }
+.rtext p + p { margin-top: 0.8em; }
 .rstrip { max-width: 44rem; margin-inline: auto; display: grid; gap: 0; }
 .rstrip img { width: 100%; height: auto; display: block; background: var(--soft); }
 .rnav { max-width: 44rem; margin: 2.5rem auto 0; padding: 0 18px 4rem; display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; }
 .rnav .btn.ghost { background: transparent; }
 .rhead { max-width: 44rem; margin: 0 auto 1.2rem; padding-inline: 18px; }
 .rtext p { margin: 0; }
-.rtext p + p { margin-top: 1.15em; }
+.rtext p + p { margin-top: 0.8em; }
 
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; animation: none !important; } }
 
