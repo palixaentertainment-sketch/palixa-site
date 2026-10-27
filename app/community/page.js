@@ -30,6 +30,7 @@ export default function CommunityPage() {
   const [category, setCategory] = useState('all');
   const [feedQuery, setFeedQuery] = useState('');
   const [feedSort, setFeedSort] = useState('latest');
+  const [showSavedOnly, setShowSavedOnly] = useState(false);
   const [blockedUserIds, setBlockedUserIds] = useState([]);
   const [savedPostIds, setSavedPostIds] = useState([]);
   const [followedUserIds, setFollowedUserIds] = useState([]);
@@ -362,6 +363,7 @@ export default function CommunityPage() {
 
   const visiblePosts = (posts || [])
     .filter((post) => !blockedUserIds.includes(post.user_id))
+    .filter((post) => !showSavedOnly || savedPostIds.includes(post.id))
     .filter((post) => category === 'all' || post.category === category)
     .filter((post) => {
       const q = feedQuery.trim().toLowerCase();
@@ -456,9 +458,12 @@ export default function CommunityPage() {
         </div>
         <div className="community-feed-tools">
           <label className="community-search"><span aria-hidden="true">⌕</span><span className="sr-only">Search community posts</span><input value={feedQuery} onChange={(e) => setFeedQuery(e.target.value)} placeholder="Search conversations…" /></label>
-          <div className="community-sort" role="group" aria-label="Sort community posts">
-            <button type="button" aria-pressed={feedSort === 'latest'} className={feedSort === 'latest' ? 'selected' : ''} onClick={() => setFeedSort('latest')}>Latest</button>
-            <button type="button" aria-pressed={feedSort === 'trending'} className={feedSort === 'trending' ? 'selected' : ''} onClick={() => setFeedSort('trending')}>Trending</button>
+          <div className="community-feed-options">
+            <button type="button" className={'community-saved-filter' + (showSavedOnly ? ' selected' : '')} aria-pressed={showSavedOnly} onClick={() => setShowSavedOnly((old) => !old)}>🔖 Saved {showSavedOnly ? '✓' : ''}</button>
+            <div className="community-sort" role="group" aria-label="Sort community posts">
+              <button type="button" aria-pressed={feedSort === 'latest'} className={feedSort === 'latest' ? 'selected' : ''} onClick={() => setFeedSort('latest')}>Latest</button>
+              <button type="button" aria-pressed={feedSort === 'trending'} className={feedSort === 'trending' ? 'selected' : ''} onClick={() => setFeedSort('trending')}>Trending</button>
+            </div>
           </div>
         </div>
         <div className="community-categories" role="group" aria-label="Filter posts by category">
