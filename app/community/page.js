@@ -11,7 +11,7 @@ const CATEGORIES = [
   ['reading-room', 'Reading Room'],
   ['writers-corner', "Writers’ Corner"],
   ['share-your-work', 'Share Your Work'],
-  ['comics-art', 'Creative Corner'],
+  ['comics-art', 'Comics & Art'],
   ['general', 'General Lounge'],
 ];
 const LABELS = Object.fromEntries(CATEGORIES.filter(([id]) => id !== 'all'));
@@ -28,13 +28,6 @@ export default function CommunityPage() {
   const { user, profile } = useAuth();
   const [posts, setPosts] = useState(null);
   const [category, setCategory] = useState('all');
-  const [feedQuery, setFeedQuery] = useState('');
-  const [feedSort, setFeedSort] = useState('latest');
-  const [showSavedOnly, setShowSavedOnly] = useState(false);
-  const [blockedUserIds, setBlockedUserIds] = useState([]);
-  const [savedPostIds, setSavedPostIds] = useState([]);
-  const [followedUserIds, setFollowedUserIds] = useState([]);
-  const [followBusyIds, setFollowBusyIds] = useState([]);
   const [postCategory, setPostCategory] = useState('general');
   const [body, setBody] = useState('');
   const [imageFile, setImageFile] = useState(null);
@@ -56,7 +49,7 @@ export default function CommunityPage() {
     if (!configured) { setPosts([]); setLoadError(true); setLoadErrorMessage('Supabase is not configured in this deployment.'); return; }
     const { data, error: queryError } = await supabase
       .from('community_posts')
-      .select('id,user_id,category,body,image_url,book_id,created_at,profiles!community_posts_user_id_fkey(id,name,username,avatar_url),books(id,title,book_type),community_likes(user_id),community_comments(id),community_reposts(user_id)')
+      .select('id,user_id,category,body,image_url,book_id,created_at,profiles!community_posts_user_id_fkey(name,username,avatar_url),books(id,title,book_type),community_likes(user_id),community_comments(id)')
       .eq('status', 'visible')
       .order('created_at', { ascending: false })
       .limit(60);
@@ -73,94 +66,11 @@ export default function CommunityPage() {
       ...post,
       likeCount: (post.community_likes || []).length,
       commentCount: (post.community_comments || []).length,
-      repostCount: (post.community_reposts || []).length,
-      reposted: Boolean(user && (post.community_reposts || []).some((item) => item.user_id === user.id)),
-      saved: savedPostIds.includes(post.id),
       liked: Boolean(user && (post.community_likes || []).some((like) => like.user_id === user.id)),
     })));
-  }, [user, savedPostIds]);
+  }, [user]);
 
   useEffect(() => { loadPosts(); }, [loadPosts]);
-
-  useEffect(() => {
-    let active = true;
-    if (!user || !configured) { setBlockedUserIds([]); return () => { active = false; }; }
-    supabase.from('community_blocks').select('blocked_id').eq('blocker_id', user.id)
-      .then(({ data, error: blockLoadError }) => {
-        if (!active) return;
-        if (blockLoadError) {
-          console.error('Could not load blocked accounts:', blockLoadError);
-          return;
-        }
-        setBlockedUserIds((data || []).map((row) => row.blocked_id));
-      });
-    return () => { active = false; };
-  }, [user]);
-
-  useEffect(() => {
-    let active = true;
-    if (!user || !configured) { setSavedPostIds([]); return () => { active = false; }; }
-    supabase.from('community_saved_posts').select('post_id').eq('user_id', user.id)
-      .then(({ data, error: savedLoadError }) => {
-        if (!active) return;
-        if (savedLoadError) {
-          console.error('Could not load saved Community posts:', savedLoadError);
-          return;
-        }
-        setSavedPostIds((data || []).map((row) => row.post_id));
-      });
-    return () => { active = false; };
-  }, [user]);
-
-  useEffect(() => {
-    let active = true;
-    if (!user || !configured) { setFollowedUserIds([]); return () => { active = false; }; }
-    supabase.from('follows').select('author_id').eq('user_id', user.id)
-      .then(({ data, error: followLoadError }) => {
-        if (!active) return;
-        if (followLoadError) {
-          console.error('Could not load followed Community accounts:', followLoadError);
-          return;
-        }
-        setFollowedUserIds((data || []).map((row) => row.author_id));
-      });
-    return () => { active = false; };
-  }, [user]);
-
-  async function toggleFollowUser(post) {
-    if (!user) { setNotice('Log in to follow readers and writers.'); return; }
-    const targetId = post.profiles?.id || post.user_id;
-    if (targetId === user.id || followBusyIds.includes(targetId)) return;
-    const isFollowing = followedUserIds.includes(targetId);
-    setFollowBusyIds((old) => [...old, targetId]);
-    const result = isFollowing
-      ? await supabase.from('follows').delete().eq('user_id', user.id).eq('author_id', targetId)
-      : await supabase.from('follows').insert({ user_id: user.id, author_id: targetId });
-    setFollowBusyIds((old) => old.filter((id) => id !== targetId));
-    if (result.error) {
-      console.error('Could not update Community follow:', result.error);
-      setNotice('Could not update follow. Please try again.');
-      return;
-    }
-    setFollowedUserIds((old) => isFollowing ? old.filter((id) => id !== targetId) : [...old, targetId]);
-    setNotice(isFollowing ? 'You unfollowed this account.' : 'You are now following this account.');
-  }
-
-  async function toggleSavePost(post) {
-    if (!user) { setNotice('Log in to save posts.'); return; }
-    const alreadySaved = savedPostIds.includes(post.id);
-    const result = alreadySaved
-      ? await supabase.from('community_saved_posts').delete().eq('post_id', post.id).eq('user_id', user.id)
-      : await supabase.from('community_saved_posts').insert({ post_id: post.id, user_id: user.id });
-    if (result.error) {
-      console.error('Could not update saved Community post:', result.error);
-      setNotice('Could not update saved posts. Please try again.');
-      return;
-    }
-    setSavedPostIds((old) => alreadySaved ? old.filter((id) => id !== post.id) : [...old, post.id]);
-    setPosts((old) => (old || []).map((item) => item.id === post.id ? { ...item, saved: !alreadySaved } : item));
-    setNotice(alreadySaved ? 'Removed from saved posts.' : 'Post saved for later.');
-  }
 
   useEffect(() => {
     if (!configured) return;
@@ -283,36 +193,6 @@ export default function CommunityPage() {
     await loadPosts();
   }
 
-  async function repostPost(post) {
-    if (!user) { setNotice('Log in to repost.'); return; }
-    if (post.user_id === user.id) { setNotice('You cannot repost your own post.'); return; }
-    const result = post.reposted
-      ? await supabase.from('community_reposts').delete().eq('post_id', post.id).eq('user_id', user.id)
-      : await supabase.from('community_reposts').insert({ post_id: post.id, user_id: user.id });
-    if (result.error) {
-      console.error('Community repost failed:', result.error);
-      setNotice('Repost could not be saved. Please try again.');
-      return;
-    }
-    setNotice(post.reposted ? 'Repost removed.' : 'Reposted to the Community.');
-    await loadPosts();
-  }
-
-  async function blockUser(post) {
-    if (!user) { setNotice('Log in to block an account.'); return; }
-    if (post.user_id === user.id) return;
-    const name = post.profiles?.name || 'this account';
-    if (!window.confirm('Block ' + name + '? Their posts will be hidden from your Community feed.')) return;
-    const { error: blockError } = await supabase.from('community_blocks').insert({ blocker_id: user.id, blocked_id: post.user_id });
-    if (blockError && blockError.code !== '23505') {
-      console.error('Community block failed:', blockError);
-      setNotice('Could not block this account. Please try again.');
-      return;
-    }
-    setBlockedUserIds((old) => old.includes(post.user_id) ? old : [...old, post.user_id]);
-    setNotice(name + ' is now blocked.');
-  }
-
   async function sharePost(postId) {
     const postUrl = window.location.origin + '/community#post-' + encodeURIComponent(postId);
     try {
@@ -332,20 +212,6 @@ export default function CommunityPage() {
     window.prompt('Copy this link to share the post:', postUrl);
   }
 
-  async function copyPostLink(postId) {
-    const postUrl = window.location.origin + '/community#post-' + encodeURIComponent(postId);
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(postUrl);
-        setNotice('Post link copied. Share it anywhere.');
-        return;
-      }
-    } catch (copyError) {
-      console.error('Could not copy community post link:', copyError);
-    }
-    window.prompt('Copy this link to share the post:', postUrl);
-  }
-
   async function reportPost(postId) {
     await reportCommunityItem('community_post', postId, 'Briefly tell us why you are reporting this post:');
   }
@@ -361,29 +227,16 @@ export default function CommunityPage() {
     setNotice(reportError ? 'The report could not be saved. Please try again.' : 'Thank you. Your report has been submitted to Palixia moderation.');
   }
 
-  const visiblePosts = (posts || [])
-    .filter((post) => !blockedUserIds.includes(post.user_id))
-    .filter((post) => !showSavedOnly || savedPostIds.includes(post.id))
-    .filter((post) => category === 'all' || post.category === category)
-    .filter((post) => {
-      const q = feedQuery.trim().toLowerCase();
-      if (!q) return true;
-      return [post.body, post.profiles?.name, post.profiles?.username, LABELS[post.category]]
-        .some((value) => String(value || '').toLowerCase().includes(q));
-    })
-    .sort((a, b) => feedSort === 'trending'
-      ? ((b.likeCount * 2 + b.commentCount + (b.repostCount || 0) * 3) - (a.likeCount * 2 + a.commentCount + (a.repostCount || 0) * 3)) || new Date(b.created_at) - new Date(a.created_at)
-      : new Date(b.created_at) - new Date(a.created_at));
+  const visiblePosts = (posts || []).filter((post) => category === 'all' || post.category === category);
 
   return (
     <div className="community stack">
       <section className="community-hero">
         <p className="mono">READ · PUBLISH · CONNECT</p>
         <h1 className="h1">The Palixia Community</h1>
-        <p>Find your people, talk about the stories you love, and share what you’re creating.</p>
-        <div className="community-hero-actions">
-          <Link className="btn" href="/groups">Explore reading groups <span aria-hidden="true">→</span></Link>
-          <span className="community-hero-note">A space for readers and writers at every stage.</span>
+        <p>Talk about the stories you love, meet other writers, and share what you’re creating.</p>
+        <div className="row" style={{ marginTop: '1rem' }}>
+          <Link className="btn" href="/groups">Explore Reading Groups</Link>
         </div>
       </section>
 
@@ -395,14 +248,8 @@ export default function CommunityPage() {
         </div>
       )}
 
-      <section className="community-daily">
-        <div className="community-daily-icon" aria-hidden="true">✦</div>
-        <div><p className="mono">TODAY’S CONVERSATION</p><h2>Which fictional character would you defend no matter what?</h2><p className="fine">Drop your answer in the feed and tell us why.</p></div>
-        <button type="button" className="btn ghost small" onClick={() => { setBody((old) => old ? old : 'Which fictional character would you defend no matter what? My answer is… '); document.getElementById('community-body')?.focus(); }}>Join in</button>
-      </section>
-
       <section className="community-compose">
-        <div className="community-section-heading"><div><p className="mono">YOUR CORNER OF PALIXIA</p><h2 className="h2">Start a conversation</h2></div></div>
+        <h2 className="h2">Start a conversation</h2>
         {user ? (
           <form className="stack" onSubmit={createPost}>
             <div className="community-compose-head">
@@ -411,13 +258,13 @@ export default function CommunityPage() {
             </div>
             <label className="sr-only" htmlFor="community-body">Your post</label>
             <textarea id="community-body" className="in community-textarea" maxLength={2000} rows={4}
-              placeholder="Share a thought, ask a question, or tell us what you’re creating…" value={body}
+              placeholder="What are you reading, writing, or thinking about?" value={body}
               onChange={(e) => setBody(e.target.value)} />
             <div className="community-image-picker">
               <label className="btn ghost small" htmlFor="community-image">＋ Add image</label>
               <input id="community-image" className="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/gif"
                 onChange={handleImageChange} disabled={busy} />
-              <span className="fine">JPG, PNG, WebP or GIF · up to 5 MB</span>
+              <span className="fine">JPG, PNG, WebP or GIF · max 5 MB</span>
               {imagePreview && (
                 <div className="community-image-preview">
                   <img src={imagePreview} alt="Preview of the image attached to your post" />
@@ -436,9 +283,9 @@ export default function CommunityPage() {
                 </select>
               </label>
               <label className="field community-field"><span className="sr-only">Attach a book or comic</span>
-                <select className="in" value={bookId} onChange={(e) => setBookId(e.target.value)} aria-label="Attach a published book">
-                  <option value="">No book attached</option>
-                  {books.map((book) => <option key={book.id} value={book.id}>{book.title}</option>)}
+                <select className="in" value={bookId} onChange={(e) => setBookId(e.target.value)} aria-label="Attach a published book or comic">
+                  <option value="">No book or comic attached</option>
+                  {books.map((book) => <option key={book.id} value={book.id}>{book.title}{book.book_type === 'comic' ? ' · Comic' : ''}</option>)}
                 </select>
               </label>
               <button className="btn" disabled={busy}>{busy ? 'Posting…' : 'Publish post'}</button>
@@ -453,18 +300,8 @@ export default function CommunityPage() {
 
       <section className="stack">
         <div className="community-feed-head">
-          <div><p className="mono">WHAT’S HAPPENING</p><h2 className="h2">Community feed</h2></div>
-          <span className="community-count">{visiblePosts.length} {visiblePosts.length === 1 ? 'post' : 'posts'}</span>
-        </div>
-        <div className="community-feed-tools">
-          <label className="community-search"><span aria-hidden="true">⌕</span><span className="sr-only">Search community posts</span><input value={feedQuery} onChange={(e) => setFeedQuery(e.target.value)} placeholder="Search conversations…" /></label>
-          <div className="community-feed-options">
-            <button type="button" className={'community-saved-filter' + (showSavedOnly ? ' selected' : '')} aria-pressed={showSavedOnly} onClick={() => setShowSavedOnly((old) => !old)}>🔖 Saved {showSavedOnly ? '✓' : ''}</button>
-            <div className="community-sort" role="group" aria-label="Sort community posts">
-              <button type="button" aria-pressed={feedSort === 'latest'} className={feedSort === 'latest' ? 'selected' : ''} onClick={() => setFeedSort('latest')}>Latest</button>
-              <button type="button" aria-pressed={feedSort === 'trending'} className={feedSort === 'trending' ? 'selected' : ''} onClick={() => setFeedSort('trending')}>Trending</button>
-            </div>
-          </div>
+          <h2 className="h2">Community feed</h2>
+          <span className="fine">{visiblePosts.length} {visiblePosts.length === 1 ? 'post' : 'posts'}</span>
         </div>
         <div className="community-categories" role="group" aria-label="Filter posts by category">
           {CATEGORIES.map(([id, label]) => <button key={id} type="button" className={'chip' + (category === id ? ' active' : '')}
@@ -473,7 +310,7 @@ export default function CommunityPage() {
 
         {posts === null && <p className="muted">Loading community posts…</p>}
         {posts && !loadError && visiblePosts.length === 0 && (
-          <div className="empty"><div><b>Nothing to show just yet.</b><p>{feedQuery ? 'Try another search or clear the search box.' : 'Be the first to start a conversation in this corner of Palixia.'}</p></div></div>
+          <div className="empty"><div><b>No posts here yet.</b><p>Start a conversation and give the community something to talk about.</p></div></div>
         )}
         {visiblePosts.map((post) => {
           const mine = user && post.user_id === user.id;
@@ -486,26 +323,21 @@ export default function CommunityPage() {
                   <b>{post.profiles ? post.profiles.name : 'Reader'}</b>
                   <span className="fine">{post.profiles ? '@' + post.profiles.username + ' · ' : ''}{timeLabel(post.created_at)}</span>
                 </div>
-                {!mine && <button className={'community-follow-button' + (followedUserIds.includes(post.profiles?.id || post.user_id) ? ' is-following' : '')} type="button" onClick={() => toggleFollowUser(post)} disabled={followBusyIds.includes(post.profiles?.id || post.user_id)} aria-pressed={followedUserIds.includes(post.profiles?.id || post.user_id)}>{followBusyIds.includes(post.profiles?.id || post.user_id) ? '…' : followedUserIds.includes(post.profiles?.id || post.user_id) ? 'Following' : '+ Follow'}</button>}
                 <span className="community-category">{LABELS[post.category] || 'General Lounge'}</span>
               </div>
               <p className="community-post-body">{post.body}</p>
               {post.image_url && <a className="community-post-image-link" href={post.image_url} target="_blank" rel="noreferrer" aria-label="Open attached image in full size"><img className="community-post-image" src={post.image_url} alt={'Image shared by ' + (post.profiles ? post.profiles.name : 'a community member')} loading="lazy" /></a>}
-              {post.books && <Link className="community-book-link" href={'/book/' + post.books.id}>📚 {post.books.title} <span>Open story →</span></Link>}
+              {post.books && <Link className="community-book-link" href={'/book/' + post.books.id}>📚 {post.books.title}{post.books.book_type === 'comic' ? ' · Comic' : ''} <span>Open story →</span></Link>}
               <div className="community-post-actions">
                 <button className={'linkbtn' + (post.liked ? ' community-liked' : '')} type="button" onClick={() => toggleLike(post)} aria-pressed={post.liked}>♥ {post.likeCount} {post.likeCount === 1 ? 'like' : 'likes'}</button>
                 <button className="linkbtn" type="button" onClick={() => openComments[post.id] ? setOpenComments((old) => ({ ...old, [post.id]: false })) : loadComments(post.id)}>💬 {post.commentCount} replies</button>
-                <button className={'linkbtn community-repost-action' + (post.reposted ? ' is-reposted' : '')} type="button" onClick={() => repostPost(post)} aria-pressed={Boolean(post.reposted)} title="Repost to the Community">🔁 {post.repostCount || 0} {post.repostCount === 1 ? 'repost' : 'reposts'}</button>
                 <button className="linkbtn" type="button" onClick={() => sharePost(post.id)} aria-label="Share post link" title="Share post link">
                   <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: 'middle' }}>
                     <path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                     <path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                   </svg>
                 </button>
-                <button className={'linkbtn' + (savedPostIds.includes(post.id) ? ' community-saved-action' : '')} type="button" onClick={() => toggleSavePost(post)} aria-pressed={savedPostIds.includes(post.id)} title={savedPostIds.includes(post.id) ? 'Remove from saved posts' : 'Save this post'}>{savedPostIds.includes(post.id) ? '🔖 Saved' : '🔖 Save'}</button>
-                <button className="linkbtn" type="button" onClick={() => copyPostLink(post.id)} title="Copy a direct link to this post">Copy link</button>
                 {mine && <button className="linkbtn" type="button" onClick={() => deletePost(post.id)}>Delete</button>}
-                {!mine && <button className="linkbtn fine" type="button" onClick={() => blockUser(post)}>Block user</button>}
                 {!mine && <button className="linkbtn fine" type="button" onClick={() => reportPost(post.id)}>Report</button>}
               </div>
               {openComments[post.id] && (
