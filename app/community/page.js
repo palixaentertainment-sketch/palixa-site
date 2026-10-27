@@ -11,7 +11,7 @@ const CATEGORIES = [
   ['reading-room', 'Reading Room'],
   ['writers-corner', "Writers’ Corner"],
   ['share-your-work', 'Share Your Work'],
-  ['comics-art', 'Comics & Art'],
+  ['comics-art', 'Creative Corner'],
   ['general', 'General Lounge'],
 ];
 const LABELS = Object.fromEntries(CATEGORIES.filter(([id]) => id !== 'all'));
@@ -28,6 +28,8 @@ export default function CommunityPage() {
   const { user, profile } = useAuth();
   const [posts, setPosts] = useState(null);
   const [category, setCategory] = useState('all');
+  const [feedQuery, setFeedQuery] = useState('');
+  const [feedSort, setFeedSort] = useState('latest');
   const [postCategory, setPostCategory] = useState('general');
   const [body, setBody] = useState('');
   const [imageFile, setImageFile] = useState(null);
@@ -227,16 +229,27 @@ export default function CommunityPage() {
     setNotice(reportError ? 'The report could not be saved. Please try again.' : 'Thank you. Your report has been submitted to Palixia moderation.');
   }
 
-  const visiblePosts = (posts || []).filter((post) => category === 'all' || post.category === category);
+  const visiblePosts = (posts || [])
+    .filter((post) => category === 'all' || post.category === category)
+    .filter((post) => {
+      const q = feedQuery.trim().toLowerCase();
+      if (!q) return true;
+      return [post.body, post.profiles?.name, post.profiles?.username, LABELS[post.category]]
+        .some((value) => String(value || '').toLowerCase().includes(q));
+    })
+    .sort((a, b) => feedSort === 'trending'
+      ? ((b.likeCount * 2 + b.commentCount) - (a.likeCount * 2 + a.commentCount)) || new Date(b.created_at) - new Date(a.created_at)
+      : new Date(b.created_at) - new Date(a.created_at));
 
   return (
     <div className="community stack">
       <section className="community-hero">
         <p className="mono">READ · PUBLISH · CONNECT</p>
         <h1 className="h1">The Palixia Community</h1>
-        <p>Talk about the stories you love, meet other writers, and share what you’re creating.</p>
-        <div className="row" style={{ marginTop: '1rem' }}>
-          <Link className="btn" href="/groups">Explore Reading Groups</Link>
+        <p>Find your people, talk about the stories you love, and share what you’re creating.</p>
+        <div className="community-hero-actions">
+          <Link className="btn" href="/groups">Explore reading groups <span aria-hidden="true">→</span></Link>
+          <span className="community-hero-note">A space for readers and writers at every stage.</span>
         </div>
       </section>
 
@@ -248,8 +261,14 @@ export default function CommunityPage() {
         </div>
       )}
 
+      <section className="community-daily">
+        <div className="community-daily-icon" aria-hidden="true">✦</div>
+        <div><p className="mono">TODAY’S CONVERSATION</p><h2>Which fictional character would you defend no matter what?</h2><p className="fine">Drop your answer in the feed and tell us why.</p></div>
+        <button type="button" className="btn ghost small" onClick={() => { setBody((old) => old ? old : 'Which fictional character would you defend no matter what? My answer is… '); document.getElementById('community-body')?.focus(); }}>Join in</button>
+      </section>
+
       <section className="community-compose">
-        <h2 className="h2">Start a conversation</h2>
+        <div className="community-section-heading"><div><p className="mono">YOUR CORNER OF PALIXIA</p><h2 className="h2">Start a conversation</h2></div></div>
         {user ? (
           <form className="stack" onSubmit={createPost}>
             <div className="community-compose-head">
@@ -258,13 +277,13 @@ export default function CommunityPage() {
             </div>
             <label className="sr-only" htmlFor="community-body">Your post</label>
             <textarea id="community-body" className="in community-textarea" maxLength={2000} rows={4}
-              placeholder="What are you reading, writing, or thinking about?" value={body}
+              placeholder="Share a thought, ask a question, or tell us what you’re creating…" value={body}
               onChange={(e) => setBody(e.target.value)} />
             <div className="community-image-picker">
               <label className="btn ghost small" htmlFor="community-image">＋ Add image</label>
               <input id="community-image" className="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/gif"
                 onChange={handleImageChange} disabled={busy} />
-              <span className="fine">JPG, PNG, WebP or GIF · max 5 MB</span>
+              <span className="fine">JPG, PNG, WebP or GIF · up to 5 MB</span>
               {imagePreview && (
                 <div className="community-image-preview">
                   <img src={imagePreview} alt="Preview of the image attached to your post" />
@@ -283,9 +302,9 @@ export default function CommunityPage() {
                 </select>
               </label>
               <label className="field community-field"><span className="sr-only">Attach a book or comic</span>
-                <select className="in" value={bookId} onChange={(e) => setBookId(e.target.value)} aria-label="Attach a published book or comic">
-                  <option value="">No book or comic attached</option>
-                  {books.map((book) => <option key={book.id} value={book.id}>{book.title}{book.book_type === 'comic' ? ' · Comic' : ''}</option>)}
+                <select className="in" value={bookId} onChange={(e) => setBookId(e.target.value)} aria-label="Attach a published book">
+                  <option value="">No book attached</option>
+                  {books.map((book) => <option key={book.id} value={book.id}>{book.title}</option>)}
                 </select>
               </label>
               <button className="btn" disabled={busy}>{busy ? 'Posting…' : 'Publish post'}</button>
@@ -300,8 +319,15 @@ export default function CommunityPage() {
 
       <section className="stack">
         <div className="community-feed-head">
-          <h2 className="h2">Community feed</h2>
-          <span className="fine">{visiblePosts.length} {visiblePosts.length === 1 ? 'post' : 'posts'}</span>
+          <div><p className="mono">WHAT’S HAPPENING</p><h2 className="h2">Community feed</h2></div>
+          <span className="community-count">{visiblePosts.length} {visiblePosts.length === 1 ? 'post' : 'posts'}</span>
+        </div>
+        <div className="community-feed-tools">
+          <label className="community-search"><span aria-hidden="true">⌕</span><span className="sr-only">Search community posts</span><input value={feedQuery} onChange={(e) => setFeedQuery(e.target.value)} placeholder="Search conversations…" /></label>
+          <div className="community-sort" role="group" aria-label="Sort community posts">
+            <button type="button" aria-pressed={feedSort === 'latest'} className={feedSort === 'latest' ? 'selected' : ''} onClick={() => setFeedSort('latest')}>Latest</button>
+            <button type="button" aria-pressed={feedSort === 'trending'} className={feedSort === 'trending' ? 'selected' : ''} onClick={() => setFeedSort('trending')}>Trending</button>
+          </div>
         </div>
         <div className="community-categories" role="group" aria-label="Filter posts by category">
           {CATEGORIES.map(([id, label]) => <button key={id} type="button" className={'chip' + (category === id ? ' active' : '')}
@@ -310,7 +336,7 @@ export default function CommunityPage() {
 
         {posts === null && <p className="muted">Loading community posts…</p>}
         {posts && !loadError && visiblePosts.length === 0 && (
-          <div className="empty"><div><b>No posts here yet.</b><p>Start a conversation and give the community something to talk about.</p></div></div>
+          <div className="empty"><div><b>Nothing to show just yet.</b><p>{feedQuery ? 'Try another search or clear the search box.' : 'Be the first to start a conversation in this corner of Palixia.'}</p></div></div>
         )}
         {visiblePosts.map((post) => {
           const mine = user && post.user_id === user.id;
