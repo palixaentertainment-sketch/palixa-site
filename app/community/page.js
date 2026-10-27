@@ -353,7 +353,7 @@ export default function CommunityPage() {
               </div>
               <p className="community-post-body">{post.body}</p>
               {post.image_url && <a className="community-post-image-link" href={post.image_url} target="_blank" rel="noreferrer" aria-label="Open attached image in full size"><img className="community-post-image" src={post.image_url} alt={'Image shared by ' + (post.profiles ? post.profiles.name : 'a community member')} loading="lazy" /></a>}
-              {post.books && <Link className="community-book-link" href={'/book/' + post.books.id}>📚 {post.books.title}{post.books.book_type === 'comic' ? ' · Comic' : ''} <span>Open story →</span></Link>}
+              {post.books && <Link className="community-book-link" href={'/book/' + post.books.id}>📚 {post.books.title} <span>Open story →</span></Link>}
               <div className="community-post-actions">
                 <button className={'linkbtn' + (post.liked ? ' community-liked' : '')} type="button" onClick={() => toggleLike(post)} aria-pressed={post.liked}>♥ {post.likeCount} {post.likeCount === 1 ? 'like' : 'likes'}</button>
                 <button className="linkbtn" type="button" onClick={() => openComments[post.id] ? setOpenComments((old) => ({ ...old, [post.id]: false })) : loadComments(post.id)}>💬 {post.commentCount} replies</button>
