@@ -14,6 +14,7 @@ export default function NotificationsPage() {
   const [items, setItems] = useState([]);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState('');
+  const [filter, setFilter] = useState('all');
 
   const load = useCallback(async () => {
     if (!user || !configured) { setItems([]); setBusy(false); return; }
@@ -40,6 +41,9 @@ export default function NotificationsPage() {
     window.location.href = item.link_url || '/community';
   }
 
+  const unreadCount = items.filter((item) => !item.read_at).length;
+  const visibleItems = filter === 'unread' ? items.filter((item) => !item.read_at) : items;
+
   async function markAllRead() {
     if (!user) return;
     await supabase.from('notifications').update({ read_at: new Date().toISOString() }).eq('recipient_id', user.id).is('read_at', null);
@@ -51,11 +55,15 @@ export default function NotificationsPage() {
 
   return (
     <section className="stack">
-      <div className="sechead"><h1 className="h1">Notifications</h1><button className="btn ghost small" onClick={markAllRead}>Mark all read</button></div>
+      <div className="sechead"><div><h1 className="h1">Notifications</h1><p className="muted">{unreadCount ? `${unreadCount} unread` : 'You’re up to date'}</p></div>{unreadCount > 0 && <button className="btn ghost small" onClick={markAllRead}>Mark all read</button>}</div>
+      <div className="notification-filters" role="group" aria-label="Filter notifications">
+        <button type="button" className={filter === 'all' ? 'selected' : ''} aria-pressed={filter === 'all'} onClick={() => setFilter('all')}>All</button>
+        <button type="button" className={filter === 'unread' ? 'selected' : ''} aria-pressed={filter === 'unread'} onClick={() => setFilter('unread')}>Unread {unreadCount > 0 ? `(${unreadCount})` : ''}</button>
+      </div>
       {error && <p className="notice">{error} Run <code>supabase/notifications.sql</code> in Supabase SQL Editor, then refresh.</p>}
       {busy && <p className="muted">Loading notifications…</p>}
-      {!busy && !error && items.length === 0 && <div className="empty"><b>You’re all caught up.</b><p className="muted">Likes, comments, new followers, new books from authors you follow, and new chapters from followed or saved books will show up here.</p></div>}
-      {items.map((item) => {
+      {!busy && !error && items.length === 0 && <div className="empty"><b>You’re all caught up.</b><p className="muted">Likes, comments, replies, reposts, new followers, new books from authors you follow, and new chapters from followed or saved books will show up here.</p></div>}
+      {visibleItems.map((item) => {
         const actor = item.profiles;
         return <button key={item.id} type="button" onClick={() => openNotification(item)} className="notification-item" style={{ background: item.read_at ? 'var(--bg)' : 'var(--surface)' }}>
           <span className="notification-dot" aria-hidden="true" style={{ opacity: item.read_at ? 0 : 1 }} />
