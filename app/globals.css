@@ -1279,3 +1279,16 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 @media (prefers-reduced-motion: no-preference) {
   .community .btn, .community .chip, .community-post-actions button { transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease; }
 }
+
+
+/* Social actions */
+.community-repost-action.is-reposted { color: #15803d !important; font-weight: 700; }
+.community-post-actions { row-gap: 0.45rem; }
+.community-post-actions .linkbtn { border-radius: 7px; padding: 0.3rem 0.42rem; }
+.community-post-actions .linkbtn:focus-visible,
+.community-sort button:focus-visible,
+.community-search:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 380px) {
+  .community-post-actions { gap: 0.45rem 0.55rem; }
+  .community-post-actions .linkbtn { font-size: 0.82rem; }
+}
