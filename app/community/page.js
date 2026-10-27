@@ -30,6 +30,7 @@ export default function CommunityPage() {
   const [category, setCategory] = useState('all');
   const [feedQuery, setFeedQuery] = useState('');
   const [feedSort, setFeedSort] = useState('latest');
+  const [blockedUserIds, setBlockedUserIds] = useState([]);
   const [postCategory, setPostCategory] = useState('general');
   const [body, setBody] = useState('');
   const [imageFile, setImageFile] = useState(null);
@@ -51,7 +52,7 @@ export default function CommunityPage() {
     if (!configured) { setPosts([]); setLoadError(true); setLoadErrorMessage('Supabase is not configured in this deployment.'); return; }
     const { data, error: queryError } = await supabase
       .from('community_posts')
-      .select('id,user_id,category,body,image_url,book_id,created_at,profiles!community_posts_user_id_fkey(name,username,avatar_url),books(id,title,book_type),community_likes(user_id),community_comments(id)')
+      .select('id,user_id,category,body,image_url,book_id,created_at,profiles!community_posts_user_id_fkey(name,username,avatar_url),books(id,title,book_type),community_likes(user_id),community_comments(id),community_reposts(user_id)')
       .eq('status', 'visible')
       .order('created_at', { ascending: false })
       .limit(60);
@@ -68,6 +69,8 @@ export default function CommunityPage() {
       ...post,
       likeCount: (post.community_likes || []).length,
       commentCount: (post.community_comments || []).length,
+      repostCount: (post.community_reposts || []).length,
+      reposted: Boolean(user && (post.community_reposts || []).some((item) => item.user_id === user.id)),
       liked: Boolean(user && (post.community_likes || []).some((like) => like.user_id === user.id)),
     })));
   }, [user]);
@@ -195,6 +198,36 @@ export default function CommunityPage() {
     await loadPosts();
   }
 
+  async function repostPost(post) {
+    if (!user) { setNotice('Log in to repost.'); return; }
+    if (post.user_id === user.id) { setNotice('You cannot repost your own post.'); return; }
+    const result = post.reposted
+      ? await supabase.from('community_reposts').delete().eq('post_id', post.id).eq('user_id', user.id)
+      : await supabase.from('community_reposts').insert({ post_id: post.id, user_id: user.id });
+    if (result.error) {
+      console.error('Community repost failed:', result.error);
+      setNotice('Repost could not be saved. Please try again.');
+      return;
+    }
+    setNotice(post.reposted ? 'Repost removed.' : 'Reposted to the Community.');
+    await loadPosts();
+  }
+
+  async function blockUser(post) {
+    if (!user) { setNotice('Log in to block an account.'); return; }
+    if (post.user_id === user.id) return;
+    const name = post.profiles?.name || 'this account';
+    if (!window.confirm('Block ' + name + '? Their posts will be hidden from your Community feed.')) return;
+    const { error: blockError } = await supabase.from('community_blocks').insert({ blocker_id: user.id, blocked_id: post.user_id });
+    if (blockError && blockError.code !== '23505') {
+      console.error('Community block failed:', blockError);
+      setNotice('Could not block this account. Please try again.');
+      return;
+    }
+    setBlockedUserIds((old) => old.includes(post.user_id) ? old : [...old, post.user_id]);
+    setNotice(name + ' is now blocked.');
+  }
+
   async function sharePost(postId) {
     const postUrl = window.location.origin + '/community#post-' + encodeURIComponent(postId);
     try {
@@ -230,6 +263,7 @@ export default function CommunityPage() {
   }
 
   const visiblePosts = (posts || [])
+    .filter((post) => !blockedUserIds.includes(post.user_id))
     .filter((post) => category === 'all' || post.category === category)
     .filter((post) => {
       const q = feedQuery.trim().toLowerCase();
@@ -238,7 +272,7 @@ export default function CommunityPage() {
         .some((value) => String(value || '').toLowerCase().includes(q));
     })
     .sort((a, b) => feedSort === 'trending'
-      ? ((b.likeCount * 2 + b.commentCount) - (a.likeCount * 2 + a.commentCount)) || new Date(b.created_at) - new Date(a.created_at)
+      ? ((b.likeCount * 2 + b.commentCount + (b.repostCount || 0) * 3) - (a.likeCount * 2 + a.commentCount + (a.repostCount || 0) * 3)) || new Date(b.created_at) - new Date(a.created_at)
       : new Date(b.created_at) - new Date(a.created_at));
 
   return (
@@ -357,6 +391,7 @@ export default function CommunityPage() {
               <div className="community-post-actions">
                 <button className={'linkbtn' + (post.liked ? ' community-liked' : '')} type="button" onClick={() => toggleLike(post)} aria-pressed={post.liked}>♥ {post.likeCount} {post.likeCount === 1 ? 'like' : 'likes'}</button>
                 <button className="linkbtn" type="button" onClick={() => openComments[post.id] ? setOpenComments((old) => ({ ...old, [post.id]: false })) : loadComments(post.id)}>💬 {post.commentCount} replies</button>
+                <button className={'linkbtn community-repost-action' + (post.reposted ? ' is-reposted' : '')} type="button" onClick={() => repostPost(post)} aria-pressed={Boolean(post.reposted)} title="Repost to the Community">🔁 {post.repostCount || 0} {post.repostCount === 1 ? 'repost' : 'reposts'}</button>
                 <button className="linkbtn" type="button" onClick={() => sharePost(post.id)} aria-label="Share post link" title="Share post link">
                   <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: 'middle' }}>
                     <path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
@@ -364,7 +399,7 @@ export default function CommunityPage() {
                   </svg>
                 </button>
                 {mine && <button className="linkbtn" type="button" onClick={() => deletePost(post.id)}>Delete</button>}
-                {!mine && <button className="linkbtn fine" type="button" onClick={() => reportPost(post.id)}>Report</button>}
+                {!mine && <button className="linkbtn fine" type="button" onClick={() => blockUser(post)}>Block user</button><button className="linkbtn fine" type="button" onClick={() => reportPost(post.id)}>Report</button>}
               </div>
               {openComments[post.id] && (
                 <div className="community-comments">
