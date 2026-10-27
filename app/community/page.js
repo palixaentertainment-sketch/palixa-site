@@ -78,6 +78,21 @@ export default function CommunityPage() {
   useEffect(() => { loadPosts(); }, [loadPosts]);
 
   useEffect(() => {
+    let active = true;
+    if (!user || !configured) { setBlockedUserIds([]); return () => { active = false; }; }
+    supabase.from('community_blocks').select('blocked_id').eq('blocker_id', user.id)
+      .then(({ data, error: blockLoadError }) => {
+        if (!active) return;
+        if (blockLoadError) {
+          console.error('Could not load blocked accounts:', blockLoadError);
+          return;
+        }
+        setBlockedUserIds((data || []).map((row) => row.blocked_id));
+      });
+    return () => { active = false; };
+  }, [user]);
+
+  useEffect(() => {
     if (!configured) return;
     supabase.from('book_cards').select('id,title,book_type').order('title').limit(200)
       .then(({ data }) => setBooks(data || []));
