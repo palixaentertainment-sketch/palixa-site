@@ -31,6 +31,7 @@ export default function CommunityPage() {
   const [feedQuery, setFeedQuery] = useState('');
   const [feedSort, setFeedSort] = useState('latest');
   const [blockedUserIds, setBlockedUserIds] = useState([]);
+  const [savedPostIds, setSavedPostIds] = useState([]);
   const [postCategory, setPostCategory] = useState('general');
   const [body, setBody] = useState('');
   const [imageFile, setImageFile] = useState(null);
@@ -71,9 +72,10 @@ export default function CommunityPage() {
       commentCount: (post.community_comments || []).length,
       repostCount: (post.community_reposts || []).length,
       reposted: Boolean(user && (post.community_reposts || []).some((item) => item.user_id === user.id)),
+      saved: savedPostIds.includes(post.id),
       liked: Boolean(user && (post.community_likes || []).some((like) => like.user_id === user.id)),
     })));
-  }, [user]);
+  }, [user, savedPostIds]);
 
   useEffect(() => { loadPosts(); }, [loadPosts]);
 
@@ -91,6 +93,37 @@ export default function CommunityPage() {
       });
     return () => { active = false; };
   }, [user]);
+
+  useEffect(() => {
+    let active = true;
+    if (!user || !configured) { setSavedPostIds([]); return () => { active = false; }; }
+    supabase.from('community_saved_posts').select('post_id').eq('user_id', user.id)
+      .then(({ data, error: savedLoadError }) => {
+        if (!active) return;
+        if (savedLoadError) {
+          console.error('Could not load saved Community posts:', savedLoadError);
+          return;
+        }
+        setSavedPostIds((data || []).map((row) => row.post_id));
+      });
+    return () => { active = false; };
+  }, [user]);
+
+  async function toggleSavePost(post) {
+    if (!user) { setNotice('Log in to save posts.'); return; }
+    const alreadySaved = savedPostIds.includes(post.id);
+    const result = alreadySaved
+      ? await supabase.from('community_saved_posts').delete().eq('post_id', post.id).eq('user_id', user.id)
+      : await supabase.from('community_saved_posts').insert({ post_id: post.id, user_id: user.id });
+    if (result.error) {
+      console.error('Could not update saved Community post:', result.error);
+      setNotice('Could not update saved posts. Please try again.');
+      return;
+    }
+    setSavedPostIds((old) => alreadySaved ? old.filter((id) => id !== post.id) : [...old, post.id]);
+    setPosts((old) => (old || []).map((item) => item.id === post.id ? { ...item, saved: !alreadySaved } : item));
+    setNotice(alreadySaved ? 'Removed from saved posts.' : 'Post saved for later.');
+  }
 
   useEffect(() => {
     if (!configured) return;
@@ -427,6 +460,7 @@ export default function CommunityPage() {
                     <path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                   </svg>
                 </button>
+                <button className={'linkbtn' + (savedPostIds.includes(post.id) ? ' community-saved-action' : '')} type="button" onClick={() => toggleSavePost(post)} aria-pressed={savedPostIds.includes(post.id)} title={savedPostIds.includes(post.id) ? 'Remove from saved posts' : 'Save this post'}>{savedPostIds.includes(post.id) ? '🔖 Saved' : '🔖 Save'}</button>
                 <button className="linkbtn" type="button" onClick={() => copyPostLink(post.id)} title="Copy a direct link to this post">Copy link</button>
                 {mine && <button className="linkbtn" type="button" onClick={() => deletePost(post.id)}>Delete</button>}
                 {!mine && <button className="linkbtn fine" type="button" onClick={() => blockUser(post)}>Block user</button><button className="linkbtn fine" type="button" onClick={() => reportPost(post.id)}>Report</button>}
