@@ -32,6 +32,8 @@ export default function CommunityPage() {
   const [feedSort, setFeedSort] = useState('latest');
   const [blockedUserIds, setBlockedUserIds] = useState([]);
   const [savedPostIds, setSavedPostIds] = useState([]);
+  const [followedUserIds, setFollowedUserIds] = useState([]);
+  const [followBusyIds, setFollowBusyIds] = useState([]);
   const [postCategory, setPostCategory] = useState('general');
   const [body, setBody] = useState('');
   const [imageFile, setImageFile] = useState(null);
@@ -53,7 +55,7 @@ export default function CommunityPage() {
     if (!configured) { setPosts([]); setLoadError(true); setLoadErrorMessage('Supabase is not configured in this deployment.'); return; }
     const { data, error: queryError } = await supabase
       .from('community_posts')
-      .select('id,user_id,category,body,image_url,book_id,created_at,profiles!community_posts_user_id_fkey(name,username,avatar_url),books(id,title,book_type),community_likes(user_id),community_comments(id),community_reposts(user_id)')
+      .select('id,user_id,category,body,image_url,book_id,created_at,profiles!community_posts_user_id_fkey(id,name,username,avatar_url),books(id,title,book_type),community_likes(user_id),community_comments(id),community_reposts(user_id)')
       .eq('status', 'visible')
       .order('created_at', { ascending: false })
       .limit(60);
@@ -108,6 +110,40 @@ export default function CommunityPage() {
       });
     return () => { active = false; };
   }, [user]);
+
+  useEffect(() => {
+    let active = true;
+    if (!user || !configured) { setFollowedUserIds([]); return () => { active = false; }; }
+    supabase.from('follows').select('author_id').eq('user_id', user.id)
+      .then(({ data, error: followLoadError }) => {
+        if (!active) return;
+        if (followLoadError) {
+          console.error('Could not load followed Community accounts:', followLoadError);
+          return;
+        }
+        setFollowedUserIds((data || []).map((row) => row.author_id));
+      });
+    return () => { active = false; };
+  }, [user]);
+
+  async function toggleFollowUser(post) {
+    if (!user) { setNotice('Log in to follow readers and writers.'); return; }
+    const targetId = post.profiles?.id || post.user_id;
+    if (targetId === user.id || followBusyIds.includes(targetId)) return;
+    const isFollowing = followedUserIds.includes(targetId);
+    setFollowBusyIds((old) => [...old, targetId]);
+    const result = isFollowing
+      ? await supabase.from('follows').delete().eq('user_id', user.id).eq('author_id', targetId)
+      : await supabase.from('follows').insert({ user_id: user.id, author_id: targetId });
+    setFollowBusyIds((old) => old.filter((id) => id !== targetId));
+    if (result.error) {
+      console.error('Could not update Community follow:', result.error);
+      setNotice('Could not update follow. Please try again.');
+      return;
+    }
+    setFollowedUserIds((old) => isFollowing ? old.filter((id) => id !== targetId) : [...old, targetId]);
+    setNotice(isFollowing ? 'You unfollowed this account.' : 'You are now following this account.');
+  }
 
   async function toggleSavePost(post) {
     if (!user) { setNotice('Log in to save posts.'); return; }
@@ -445,6 +481,7 @@ export default function CommunityPage() {
                   <b>{post.profiles ? post.profiles.name : 'Reader'}</b>
                   <span className="fine">{post.profiles ? '@' + post.profiles.username + ' · ' : ''}{timeLabel(post.created_at)}</span>
                 </div>
+                {!mine && <button className={'community-follow-button' + (followedUserIds.includes(post.profiles?.id || post.user_id) ? ' is-following' : '')} type="button" onClick={() => toggleFollowUser(post)} disabled={followBusyIds.includes(post.profiles?.id || post.user_id)} aria-pressed={followedUserIds.includes(post.profiles?.id || post.user_id)}>{followBusyIds.includes(post.profiles?.id || post.user_id) ? '…' : followedUserIds.includes(post.profiles?.id || post.user_id) ? 'Following' : '+ Follow'}</button>}
                 <span className="community-category">{LABELS[post.category] || 'General Lounge'}</span>
               </div>
               <p className="community-post-body">{post.body}</p>
