@@ -1119,3 +1119,55 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 .fridays-draft-question { min-width:0; display:grid; gap:.8rem; margin:0; padding:1rem; border:1px solid var(--line); border-radius:10px; }
 .fridays-draft-question legend { padding:0 .35rem; font-weight:700; }
 .fridays-draft-question .field { margin:0; }
+
+
+/* Discover: lightweight, Wattpad-inspired motion while keeping Palixia's own visual identity. */
+.discover-intro {
+  animation: discover-intro-in 360ms ease-out both;
+}
+.discover-book-grid {
+  align-items: stretch;
+}
+.discover-book-reveal {
+  min-width: 0;
+  opacity: 0;
+  animation: discover-book-in 420ms cubic-bezier(.2,.75,.25,1) both;
+  animation-delay: calc(var(--discover-index, 0) * 35ms);
+}
+.discover-book-reveal .bcard {
+  height: 100%;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+  transform: translateZ(0);
+}
+.discover-book-reveal .bcard:hover,
+.discover-book-reveal .bcard:focus-visible {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 22px rgb(35 18 56 / 12%);
+}
+.discover-book-reveal .bcard:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+@keyframes discover-intro-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes discover-book-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .discover-intro,
+  .discover-book-reveal {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .discover-book-reveal .bcard {
+    transition: none;
+  }
+  .discover-book-reveal .bcard:hover,
+  .discover-book-reveal .bcard:focus-visible {
+    transform: none;
+  }
+}

@@ -96,7 +96,7 @@ function Discover() {
 
   return (
     <>
-      <div className="stack">
+      <div className="stack discover-intro">
         <h1 className="h1">Discover stories</h1>
         <form onSubmit={submit} role="search" className="row" style={{ flexWrap: 'nowrap' }}>
           <label className="sr-only" htmlFor="dq">Search books, authors or genres</label>
@@ -150,7 +150,7 @@ function Discover() {
         )}
         {rows && rows.length > 0 && (
           <>
-            <div className="grid">{rows.map((b) => <BookCard key={b.id} b={b} />)}</div>
+            <div className="grid discover-book-grid">{rows.map((b, index) => <div className="discover-book-reveal" key={b.id} style={{ "--discover-index": index % 12 }}><BookCard b={b} /></div>)}</div>
             {more && (
               <div className="row" style={{ justifyContent: 'center', marginTop: '1.5rem' }}>
                 <button type="button" className="btn ghost" onClick={loadMore} disabled={busy}>{busy ? 'Loading...' : 'Load more'}</button>
