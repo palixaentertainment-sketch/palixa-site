@@ -1316,3 +1316,8 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 @media (max-width: 380px) {
   .community-follow-button { padding-inline: 0.5rem; font-size: 0.74rem; }
 }
+
+.community-feed-options { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.community-saved-filter { min-height: 2.5rem; padding: 0.45rem 0.75rem; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); color: var(--muted); font-size: 0.84rem; font-weight: 650; }
+.community-saved-filter.selected { border-color: var(--accent); color: var(--accent); background: var(--soft); }
+.community-feed-options .community-sort { flex: 1; }
