@@ -1292,3 +1292,27 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
   .community-post-actions { gap: 0.45rem 0.55rem; }
   .community-post-actions .linkbtn { font-size: 0.82rem; }
 }
+
+
+/* Community save and follow controls */
+.community-saved-action { color: var(--accent) !important; font-weight: 700; }
+.community-follow-button {
+  flex: 0 0 auto;
+  min-height: 2rem;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.community-follow-button.is-following {
+  background: var(--surface);
+  color: var(--accent);
+}
+.community-follow-button:disabled { opacity: 0.65; cursor: wait; }
+@media (max-width: 380px) {
+  .community-follow-button { padding-inline: 0.5rem; font-size: 0.74rem; }
+}
