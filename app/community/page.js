@@ -505,7 +505,8 @@ export default function CommunityPage() {
                 <button className={'linkbtn' + (savedPostIds.includes(post.id) ? ' community-saved-action' : '')} type="button" onClick={() => toggleSavePost(post)} aria-pressed={savedPostIds.includes(post.id)} title={savedPostIds.includes(post.id) ? 'Remove from saved posts' : 'Save this post'}>{savedPostIds.includes(post.id) ? '🔖 Saved' : '🔖 Save'}</button>
                 <button className="linkbtn" type="button" onClick={() => copyPostLink(post.id)} title="Copy a direct link to this post">Copy link</button>
                 {mine && <button className="linkbtn" type="button" onClick={() => deletePost(post.id)}>Delete</button>}
-                {!mine && <button className="linkbtn fine" type="button" onClick={() => blockUser(post)}>Block user</button><button className="linkbtn fine" type="button" onClick={() => reportPost(post.id)}>Report</button>}
+                {!mine && <button className="linkbtn fine" type="button" onClick={() => blockUser(post)}>Block user</button>}
+                {!mine && <button className="linkbtn fine" type="button" onClick={() => reportPost(post.id)}>Report</button>}
               </div>
               {openComments[post.id] && (
                 <div className="community-comments">
