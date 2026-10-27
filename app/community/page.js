@@ -262,6 +262,20 @@ export default function CommunityPage() {
     window.prompt('Copy this link to share the post:', postUrl);
   }
 
+  async function copyPostLink(postId) {
+    const postUrl = window.location.origin + '/community#post-' + encodeURIComponent(postId);
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(postUrl);
+        setNotice('Post link copied. Share it anywhere.');
+        return;
+      }
+    } catch (copyError) {
+      console.error('Could not copy community post link:', copyError);
+    }
+    window.prompt('Copy this link to share the post:', postUrl);
+  }
+
   async function reportPost(postId) {
     await reportCommunityItem('community_post', postId, 'Briefly tell us why you are reporting this post:');
   }
@@ -413,6 +427,7 @@ export default function CommunityPage() {
                     <path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                   </svg>
                 </button>
+                <button className="linkbtn" type="button" onClick={() => copyPostLink(post.id)} title="Copy a direct link to this post">Copy link</button>
                 {mine && <button className="linkbtn" type="button" onClick={() => deletePost(post.id)}>Delete</button>}
                 {!mine && <button className="linkbtn fine" type="button" onClick={() => blockUser(post)}>Block user</button><button className="linkbtn fine" type="button" onClick={() => reportPost(post.id)}>Report</button>}
               </div>
