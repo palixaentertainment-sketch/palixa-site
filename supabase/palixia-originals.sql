@@ -1,9 +1,6 @@
--- Palixia Originals: run this in Supabase SQL Editor.
--- This creates a separate view and does not modify the existing book_cards view.
-ALTER TABLE public.books
-ADD COLUMN IF NOT EXISTS is_palixia_original BOOLEAN NOT NULL DEFAULT FALSE;
-
-CREATE OR REPLACE VIEW public.palixia_original_cards
+-- Create a fresh, separate view for the Palixia Originals homepage section.
+-- The is_palixia_original column has already been added to public.books.
+CREATE VIEW public.palixia_originals_home_cards_v2
 WITH (security_invoker = true) AS
 SELECT
   b.id,
