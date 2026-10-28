@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { supabase, configured } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 import Avatar from '@/components/Avatar';
+import CommunityBookPolls from '@/components/CommunityBookPolls';
 
 const CATEGORIES = [
   ['all', 'All posts'],
@@ -400,6 +401,8 @@ export default function CommunityPage() {
         <div><p className="mono">TODAY’S CONVERSATION</p><h2>Which fictional character would you defend no matter what?</h2><p className="fine">Drop your answer in the feed and tell us why.</p></div>
         <button type="button" className="btn ghost small" onClick={() => { setBody((old) => old ? old : 'Which fictional character would you defend no matter what? My answer is… '); document.getElementById('community-body')?.focus(); }}>Join in</button>
       </section>
+
+      <CommunityBookPolls />
 
       <section className="community-compose">
         <div className="community-section-heading"><div><p className="mono">YOUR CORNER OF PALIXIA</p><h2 className="h2">Start a conversation</h2></div></div>
