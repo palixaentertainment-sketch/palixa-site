@@ -22,6 +22,7 @@ export default function Home() {
   const [recommendationNote, setRecommendationNote] = useState('');
   const [failed, setFailed] = useState(false);
   const [creatorBook, setCreatorBook] = useState(null);
+  const [creatorDescriptionExpanded, setCreatorDescriptionExpanded] = useState(false);
   const [benefitIndex, setBenefitIndex] = useState(0);
   const [comingSoonBooks, setComingSoonBooks] = useState([]);
   const publishBenefits = [
@@ -227,8 +228,9 @@ export default function Home() {
               <h2 className="h2">{creatorBook.author_name || 'Meet a Palixia creator'}</h2>
               <p className="fine">Discover a story from the Palixia community.</p>
               <h3>{creatorBook.title}</h3>
-              <p>{creatorBook.description || 'Discover this story on Palixia.'}</p>
-              <Link className="btn" href={'/book/' + creatorBook.id}>Read the book</Link>
+              <p className={creatorDescriptionExpanded ? 'creator-week-description expanded' : 'creator-week-description'}>{creatorBook.description || 'Discover this story on Palixia.'}</p>
+              {(creatorBook.description || '').length > 140 && <button type="button" className="creator-week-read-more" aria-expanded={creatorDescriptionExpanded} onClick={() => setCreatorDescriptionExpanded((expanded) => !expanded)}>{creatorDescriptionExpanded ? 'Read less' : 'Read more'}</button>}
+              <Link className="btn small" href={'/book/' + creatorBook.id}>Read the book</Link>
             </>
           ) : (
             <>
