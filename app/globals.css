@@ -1335,3 +1335,31 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
   cursor: pointer;
 }
 .notification-filters button.selected { border-color: var(--accent); background: var(--soft); color: var(--accent); }
+
+
+/* Community Book Polls */
+.community-polls { gap: 0.8rem; }
+.community-poll-create, .community-poll-card, .community-poll-empty { min-width:0; padding:1rem; border:1px solid var(--line); border-radius:12px; background:var(--bg); box-shadow:0 3px 14px rgba(46,16,101,.035); }
+.community-poll-create { background:var(--surface); }
+.community-poll-create .field { margin:0; }
+.community-poll-option-editor { display:grid; gap:.65rem; }
+.community-poll-create-actions { display:flex; flex-wrap:wrap; align-items:center; gap:.6rem; }
+.community-poll-create-actions .btn:last-child { margin-left:auto; }
+.community-poll-card { display:grid; gap:.8rem; }
+.community-poll-byline { display:flex; align-items:center; gap:.55rem; min-width:0; }
+.community-poll-byline > span:nth-child(2) { flex:1; min-width:0; overflow-wrap:anywhere; }
+.community-poll-mark { display:grid; place-items:center; flex:0 0 2.2rem; height:2.2rem; border-radius:10px; background:var(--soft); color:var(--accent); }
+.community-poll-vote-count { color:var(--muted); font-size:.78rem; white-space:nowrap; }
+.community-poll-card h3 { margin:0; font-size:1.08rem; line-height:1.5; overflow-wrap:anywhere; }
+.community-poll-choices { display:grid; gap:.5rem; }
+.community-poll-choice { display:grid; gap:.55rem; width:100%; min-width:0; padding:.75rem; border:1px solid var(--line); border-radius:9px; background:var(--surface); color:var(--fg); text-align:left; cursor:pointer; }
+.community-poll-choice:disabled { cursor:default; }
+.community-poll-choice:not(:disabled):hover { border-color:var(--accent); background:var(--soft); }
+.community-poll-choice.chosen { border-color:var(--accent); background:var(--soft); }
+.community-poll-choice-label { overflow-wrap:anywhere; line-height:1.45; }
+.community-poll-result { display:flex; align-items:center; gap:.6rem; }
+.community-poll-result > span { display:block; flex:1; height:.42rem; min-width:0; border-radius:99px; background:var(--accent); }
+.community-poll-result b { min-width:2.6rem; color:var(--accent); font-size:.82rem; text-align:right; }
+.community-poll-empty { text-align:center; background:var(--surface); }
+.community-poll-empty p { margin-top:.35rem; color:var(--muted); }
+@media (min-width:38rem) { .community-poll-option-editor { grid-template-columns:repeat(2,minmax(0,1fr)); } }
