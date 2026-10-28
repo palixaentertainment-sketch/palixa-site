@@ -99,7 +99,7 @@ function AdminPanel() {
       supabase.from('chapters').select('id', { count: 'exact', head: true }),
       supabase.from('profiles').select('id,name,username,role,status,created_at').order('created_at', { ascending: false }).limit(200),
       supabase.from('profile_badges').select('profile_id,badge_type'),
-      supabase.from('books').select('id,title,status,story_status,created_at,author_id,reads,custom_views').order('created_at', { ascending: false }).limit(100),
+      supabase.from('books').select('id,title,status,story_status,created_at,author_id,reads,custom_views,is_palixia_original').order('created_at', { ascending: false }).limit(100),
     ]);
     const failed = [usersCount, booksCount, publishedCount, chaptersCount, userRows, badgeRows, bookRows].find((r) => r.error);
     if (failed) setError(friendly(failed.error, 'We could not load the admin data. Make sure the admin SQL setup has been run.'));
@@ -158,6 +158,22 @@ function AdminPanel() {
       setError('Could not save custom views. Run supabase/custom_book_views.sql in the Supabase SQL Editor first. Details: ' + saveError.message);
     } else {
       setMessage(customViews === null ? 'Custom views cleared; real views are showing again.' : 'Custom views saved for "' + book.title + '".');
+      await load();
+    }
+    setBusyId('');
+  }
+
+  async function setPalixiaOriginal(book) {
+    const nextValue = !book.is_palixia_original;
+    setBusyId(book.id); setError(''); setMessage('');
+    const { error: saveError } = await supabase.rpc('admin_set_palixia_original', {
+      p_book_id: book.id,
+      p_is_original: nextValue,
+    });
+    if (saveError) {
+      setError('Could not update Palixia Originals. Run supabase/palixia-originals-admin.sql in Supabase SQL Editor, then try again. Details: ' + saveError.message);
+    } else {
+      setMessage(nextValue ? '"' + book.title + '" added to Palixia Originals.' : '"' + book.title + '" removed from Palixia Originals.');
       await load();
     }
     setBusyId('');
@@ -295,6 +311,16 @@ function AdminPanel() {
             <button className="btn ghost" type="button" onClick={() => { setCreatorSelection(''); }} disabled={creatorBusy}>Clear selection</button>
           </div>
         </>}
+      </section>
+
+
+      <section className="stack">
+        <div className="sechead"><h2 className="h2">Palixia Originals</h2><span className="badge">{books.filter(b => b.is_palixia_original).length} selected</span></div>
+        <p className="fine">Choose books created by Palixia to feature in the Palixia Originals shelf on the homepage. Only mark stories Palixia owns or created.</p>
+        {loading ? <p className="muted">Loading books…</p> : <div className="tablewrap"><table><thead><tr><th>Book</th><th>Status</th><th>Homepage shelf</th></tr></thead><tbody>
+          {books.map(b => <tr key={'original-'+b.id}><td><b>{b.title}</b></td><td>{b.status}</td><td><button className={b.is_palixia_original ? 'btn small' : 'btn ghost small'} type="button" disabled={busyId===b.id || b.status!=='published'} onClick={() => setPalixiaOriginal(b)}>{busyId===b.id ? 'Saving…' : b.is_palixia_original ? 'Remove Original' : 'Mark Original'}</button></td></tr>)}
+          {books.length===0 && <tr><td colSpan="3">No books found.</td></tr>}
+        </tbody></table></div>}
       </section>
 
       <section className="stack">
