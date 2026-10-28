@@ -505,13 +505,18 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .benefit-dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #d4c6ef; }
 .benefit-dot.active { width: 1.2rem; border-radius: 999px; background: var(--accent); }
 .benefit-dot:focus-visible, .benefit-arrow:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-.creator-week { display: grid; grid-template-columns: minmax(0, 1fr) minmax(7rem, 10rem); gap: 1.25rem; align-items: center; padding: clamp(1.25rem, 4vw, 2rem); border-radius: 12px; background: var(--soft); }
-.creator-week-copy { display: grid; justify-items: start; gap: 0.65rem; }
+.creator-week { display: grid; grid-template-columns: minmax(0, 1fr) minmax(6rem, 8rem); gap: 1rem; align-items: center; padding: 1rem 1.15rem; border-radius: 12px; background: var(--soft); }
+.creator-week-copy { display: grid; justify-items: start; gap: 0.4rem; min-width: 0; }
 .creator-week-copy .home-eyebrow { color: var(--accent); }
-.creator-week-copy h3 { font-family: var(--display); font-size: 1.3rem; }
-.creator-week-copy > p:not(.fine) { color: var(--muted); font-size: 0.92rem; }
-.creator-week-cover { width: 100%; max-width: 10rem; justify-self: end; }
-@media (max-width: 420px) { .publish-benefits { gap: 0.9rem; } .publish-benefit-card { min-height: 6.5rem; padding: 0.9rem; gap: 0.75rem; } .creator-week { grid-template-columns: minmax(0, 1fr) 6.5rem; gap: 0.8rem; } }
+.creator-week-copy h2 { font-size: 1.15rem; line-height: 1.25; }
+.creator-week-copy h3 { font-family: var(--display); font-size: 1.05rem; line-height: 1.3; }
+.creator-week-copy > p:not(.fine) { color: var(--muted); font-size: 0.88rem; margin: 0; }
+.creator-week-description { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+.creator-week-description.expanded { display: block; overflow: visible; }
+.creator-week-read-more { padding: 0; color: var(--accent); font-size: .84rem; font-weight: 700; }
+.creator-week-read-more:hover { text-decoration: underline; }
+.creator-week-cover { width: 100%; max-width: 8rem; justify-self: end; }
+@media (max-width: 420px) { .publish-benefits { gap: 0.9rem; } .publish-benefit-card { min-height: 6.5rem; padding: 0.9rem; gap: 0.75rem; } .creator-week { grid-template-columns: minmax(0, 1fr) 5.5rem; gap: 0.7rem; padding: .85rem; } .creator-week-cover { max-width: 5.5rem; } }
 
 
 /* Installable Palixia app prompt */
