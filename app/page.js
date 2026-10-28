@@ -14,6 +14,7 @@ import PalixiaFridaysBanner from '@/components/PalixiaFridaysBanner';
 export default function Home() {
   const { user } = useAuth();
   const [data, setData] = useState(null);
+  const [originals, setOriginals] = useState([]);
   const [genres, setGenres] = useState([]);
   const [authors, setAuthors] = useState([]);
   const [continueReading, setContinueReading] = useState([]);
@@ -55,13 +56,14 @@ export default function Home() {
 
     (async () => {
       try {
-        const [f, t, n, g, a, creatorSelection] = await Promise.all([
+        const [f, t, n, g, a, creatorSelection, o] = await Promise.all([
           supabase.from('book_cards').select('*').eq('featured', true).order('reads', { ascending: false }).limit(6),
           supabase.from('book_cards').select('*').order('reads', { ascending: false }).limit(12),
           supabase.from('book_cards').select('*').order('created_at', { ascending: false }).limit(12),
           supabase.from('genres').select('*').order('sort'),
           supabase.rpc('popular_authors', { lim: 8 }),
           supabase.from('creator_of_week').select('book_id').eq('id', true).maybeSingle(),
+          supabase.from('book_cards').select('*').eq('is_palixia_original', true).order('created_at', { ascending: false }).limit(12),
         ]);
         if (f.error || t.error || n.error) throw new Error('Could not load books');
         if (cancelled) return;
@@ -70,6 +72,7 @@ export default function Home() {
         const trending = t.data || [];
         const fresh = n.data || [];
         setData({ featured, trending, fresh });
+        setOriginals(o.error ? [] : (o.data || []));
         // Keep the Comics genre hidden until Palixia has comics ready to feature.
         setGenres((g.data || []).filter((genre) => genre.slug !== 'comics'));
         setAuthors(a.data || []);
@@ -285,6 +288,13 @@ export default function Home() {
               </article>
             ))}
           </div>
+        </section>
+      )}
+
+      {originals.length > 0 && (
+        <section className="palixia-originals">
+          <div className="sechead"><div><h2 className="h2">Palixia Originals</h2><p className="fine">Stories created by Palixia, made for our readers.</p></div><Link href="/discover">Explore stories</Link></div>
+          <div className="shelf">{originals.map((b) => <BookCard key={b.id} b={b} badge="PALIXIA ORIGINAL" />)}</div>
         </section>
       )}
 
