@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { supabase, configured } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 import Avatar from '@/components/Avatar';
+import CommunityBookPolls from '@/components/CommunityBookPolls';
 
 const CATEGORIES = [
   ['all', 'All posts'],
@@ -239,6 +240,8 @@ export default function CommunityPage() {
           <Link className="btn" href="/groups">Explore Reading Groups</Link>
         </div>
       </section>
+
+      <CommunityBookPolls />
 
       {notice && <p className="notice" role="status">{notice}</p>}
       {loadError && (
