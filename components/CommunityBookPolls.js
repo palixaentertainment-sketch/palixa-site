@@ -11,6 +11,7 @@ export default function CommunityBookPolls() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [voting, setVoting] = useState({});
+  const [deleting, setDeleting] = useState({});
   const [message, setMessage] = useState('');
 
   const loadPolls = useCallback(async () => {
@@ -50,6 +51,23 @@ export default function CommunityBookPolls() {
     setQuestion(''); setOptions(['','']); setMessage('Your Book Poll is live!'); setCreating(false); await loadPolls();
   }
 
+  async function deletePoll(poll) {
+    if (!user || poll.creator_id !== user.id || deleting[poll.id]) return;
+    if (!window.confirm('Delete this poll? This cannot be undone.')) return;
+    setDeleting(old => ({ ...old, [poll.id]: true }));
+    setMessage('');
+    const { error } = await supabase.from('community_polls').delete()
+      .eq('id', poll.id).eq('creator_id', user.id);
+    if (error) {
+      console.error('Could not delete poll:', error);
+      setMessage('Could not delete this poll. Please refresh and try again.');
+    } else {
+      setPolls(old => old.filter(item => item.id !== poll.id));
+      setMessage('Poll deleted.');
+    }
+    setDeleting(old => ({ ...old, [poll.id]: false }));
+  }
+
   async function vote(poll, optionId) {
     if (!user) { setMessage('Log in to vote in Book Polls.'); return; }
     if ((poll.community_poll_votes || []).some(v => v.user_id === user.id) || voting[poll.id]) return;
@@ -80,7 +98,7 @@ export default function CommunityBookPolls() {
       const votes = poll.community_poll_votes || [], opts = poll.community_poll_options || [];
       const mine = user && votes.find(v => v.user_id === user.id), total = votes.length;
       return <article className="community-poll-card" key={poll.id}>
-        <div className="community-poll-byline"><span className="community-poll-mark" aria-hidden="true">✦</span><span><b>{poll.profiles?.name || 'Palixia reader'}</b><span className="fine"> asked the community</span></span><span className="community-poll-vote-count">{total} {total===1?'vote':'votes'}</span></div>
+        <div className="community-poll-byline"><span className="community-poll-mark" aria-hidden="true">✦</span><span><b>{poll.profiles?.name || 'Palixia reader'}</b><span className="fine"> asked the community</span></span><span className="community-poll-vote-count">{total} {total===1?'vote':'votes'}</span>{user && user.id === poll.creator_id && <button type="button" className="linkbtn" onClick={() => deletePoll(poll)} disabled={Boolean(deleting[poll.id])} aria-label="Delete your poll">{deleting[poll.id] ? 'Deleting…' : 'Delete'}</button>}</div>
         <h3>{poll.question}</h3>
         <div className="community-poll-choices">{opts.map(option => {
           const count = votes.filter(v => v.option_id === option.id).length, pct = total ? Math.round(count/total*100) : 0;
