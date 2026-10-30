@@ -12,6 +12,7 @@ import Empty from '@/components/Empty';
 import LikeButton from '@/components/LikeButton';
 import ProfileBadge from '@/components/ProfileBadge';
 import ReleaseJourney from '@/components/ReleaseJourney';
+import TipAuthor from '@/components/TipAuthor';
 
 export default function BookPage() {
   const { id } = useParams();
@@ -215,6 +216,7 @@ export default function BookPage() {
         {!isOwner && (
           <button type="button" className={'btn ghost' + (following ? ' on' : '')} aria-pressed={following} onClick={toggleFollow}>{following ? 'Following' : 'Follow Author'}</button>
         )}
+        {!isOwner && <TipAuthor authorName={author?.name} contextTitle={book.title} />}
         {isOwner && <Link className="btn ghost" href={'/dashboard/books/' + book.id}>Edit</Link>}
         <button type="button" className="btn ghost" onClick={shareBook}>Share</button>
       </div>

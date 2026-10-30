@@ -11,6 +11,7 @@ import Empty from '@/components/Empty';
 import Link from 'next/link';
 import ProfileBadge from '@/components/ProfileBadge';
 import ReleaseJourney from '@/components/ReleaseJourney';
+import TipAuthor from '@/components/TipAuthor';
 
 export default function AuthorPage() {
   const { username } = useParams();
@@ -96,7 +97,7 @@ export default function AuthorPage() {
           </dl>
           <div className="row">
             {self ? <Link className="btn ghost" href="/profile">Edit profile</Link> : (
-              <><button type="button" className={'btn' + (following ? ' ghost on' : '')} aria-pressed={following} onClick={toggle}>{following ? 'Following' : 'Follow'}</button>{user && <button type="button" className="btn ghost" onClick={reportAuthor}>Report author</button>}</>
+              <><button type="button" className={'btn' + (following ? ' ghost on' : '')} aria-pressed={following} onClick={toggle}>{following ? 'Following' : 'Follow'}</button><TipAuthor authorName={p.name} /><>{user && <button type="button" className="btn ghost" onClick={reportAuthor}>Report author</button>}</></>
             )}
           </div>
           {msg && <p className="msg-err" role="alert">{msg} {!user && <Link className="linkbtn" href={'/login?next=/author/' + p.username}>Log in</Link>}</p>}
