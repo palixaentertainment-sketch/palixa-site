@@ -29,20 +29,20 @@ export default function PaystackTestPage() {
   }
 
   return (
-    <main className="shell stack" style={{ maxWidth: 560, paddingTop: 40, paddingBottom: 64 }}>
+    <main className="wrap page narrow" style={{ maxWidth: 560, paddingTop: 40, paddingBottom: 64 }}>
       <Link href="/" className="fine">← Back to Palixia</Link>
       <section className="card stack">
         <span className="badge">Developer test · Not live</span>
         <h1 className="h1">Test a Paystack checkout</h1>
         <p>This private-development step checks whether Palixia can initialise a test transaction and return from Paystack. It does not tip an author, create earnings or move real money.</p>
         <form className="stack" onSubmit={startCheckout}>
-          <label className="stack">
+          <label className="field">
             <span className="fine">Test email address</span>
-            <input className="input" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
+            <input className="in" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
           </label>
-          <label className="stack">
+          <label className="field">
             <span className="fine">Test amount (NGN)</span>
-            <select className="input" value={amountNaira} onChange={(e) => setAmountNaira(e.target.value)}>
+            <select className="in" value={amountNaira} onChange={(e) => setAmountNaira(e.target.value)}>
               <option value="100">₦100</option>
               <option value="500">₦500</option>
               <option value="1000">₦1,000</option>
