@@ -1232,3 +1232,10 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 .book-description-text { margin:0; white-space:pre-line; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; overflow:hidden; }
 .book-description-text.expanded { display:block; overflow:visible; }
 .book-description-toggle { display:inline-block; margin-top:.35rem; padding:0; border:0; background:none; color:var(--accent); font:inherit; font-weight:650; cursor:pointer; }
+
+
+/* Palixia Sparks — compact author-support card. */
+.tip-author-section { border-radius: 10px; }
+.tip-author-section-copy h2 { color: var(--accent-deep); }
+.tip-author-section .tip-author-wrap { gap: .2rem; }
+.tip-author-section .tip-author-wrap .btn { white-space: nowrap; }
