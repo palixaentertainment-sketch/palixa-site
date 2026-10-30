@@ -260,7 +260,7 @@ export default function BookPage() {
               <div className="row" style={{ gap: '0.5rem' }}><b>{author.name}</b><ProfileBadge type={authorBadge} /></div>
               <p className="muted">{author.bio || 'This author has not added a bio yet.'}</p>
               <p className="fine">{stats ? stats.books + ' published ' + (stats.books === 1 ? 'book' : 'books') : ''}{isOwner && stats ? ' · ' + fmtNum(stats.followers) + ' followers' : ''}</p>
-              <div className="row"><Link className="btn ghost small" href={'/author/' + author.username}>View Author</Link>{!isOwner && <TipAuthor authorName={author.name} contextTitle={book.title} compact />}</div>
+              <div><Link className="btn ghost small" href={'/author/' + author.username}>View Author</Link></div>
             </div>
           </div>
         </section>
