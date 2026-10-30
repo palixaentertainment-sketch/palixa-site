@@ -1204,3 +1204,25 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 .community-poll-empty { text-align:center; background:var(--surface); }
 .community-poll-empty p { margin-top:.35rem; color:var(--muted); }
 @media (min-width:38rem) { .community-poll-option-editor { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+
+
+/* Give Tip the Author a dedicated space instead of squeezing it into action rows. */
+.tip-author-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1.1rem 0 1.5rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.tip-author-section-copy { min-width: 0; }
+.tip-author-section-copy h2 { margin: 0 0 .25rem; font-size: 1rem; }
+.tip-author-section-copy p { margin: 0; color: var(--muted); font-size: .9rem; }
+.tip-author-section .tip-author-wrap { flex: 0 0 auto; align-items: flex-end; }
+@media (max-width: 30rem) {
+  .tip-author-section { align-items: flex-start; flex-direction: column; }
+  .tip-author-section .tip-author-wrap { align-items: flex-start; }
+}
