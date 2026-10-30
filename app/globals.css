@@ -1226,3 +1226,9 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
   .tip-author-section { align-items: flex-start; flex-direction: column; }
   .tip-author-section .tip-author-wrap { align-items: flex-start; }
 }
+
+
+/* Keep long book descriptions compact until a reader chooses to expand them. */
+.book-description-text { margin:0; white-space:pre-line; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; overflow:hidden; }
+.book-description-text.expanded { display:block; overflow:visible; }
+.book-description-toggle { display:inline-block; margin-top:.35rem; padding:0; border:0; background:none; color:var(--accent); font:inherit; font-weight:650; cursor:pointer; }
