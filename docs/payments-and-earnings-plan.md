@@ -30,7 +30,7 @@ Authors must only see their own earnings and transactions. Admins need a separat
 
 ## Commercial decisions that must be confirmed before live payments
 
-1. Author-tip commission percentage.
+1. Author-tip commission: 10% to Palixia and 90% to the author, before any separately agreed treatment of Paystack processing fees.
 2. Whether Paystack processing fees are absorbed by Palixia or deducted before calculating the author share.
 3. Minimum payout amount, payout schedule, and payout fees.
 4. Whether Paystack approves this marketplace/platform model and what account type or transfer/split-payment arrangement is required.
