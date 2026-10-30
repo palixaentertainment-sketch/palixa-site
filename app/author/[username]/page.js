@@ -97,9 +97,18 @@ export default function AuthorPage() {
           </dl>
           <div className="row">
             {self ? <Link className="btn ghost" href="/profile">Edit profile</Link> : (
-              <><button type="button" className={'btn' + (following ? ' ghost on' : '')} aria-pressed={following} onClick={toggle}>{following ? 'Following' : 'Follow'}</button><TipAuthor authorName={p.name} /><>{user && <button type="button" className="btn ghost" onClick={reportAuthor}>Report author</button>}</></>
+              <><button type="button" className={'btn' + (following ? ' ghost on' : '')} aria-pressed={following} onClick={toggle}>{following ? 'Following' : 'Follow'}</button>{user && <button type="button" className="btn ghost" onClick={reportAuthor}>Report author</button>}</>
             )}
           </div>
+          {!self && (
+            <div className="tip-author-section tip-author-profile-section">
+              <div className="tip-author-section-copy">
+                <h2>Support this author</h2>
+                <p>Enjoy their stories? Show your appreciation.</p>
+              </div>
+              <TipAuthor authorName={p.name} />
+            </div>
+          )}
           {msg && <p className="msg-err" role="alert">{msg} {!user && <Link className="linkbtn" href={'/login?next=/author/' + p.username}>Log in</Link>}</p>}
         </div>
       </section>
