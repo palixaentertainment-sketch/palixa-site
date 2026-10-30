@@ -25,6 +25,7 @@ export default function BookPage() {
   const [progress, setProgress] = useState(null);
   const [marked, setMarked] = useState({});
   const [msg, setMsg] = useState('');
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [loadError, setLoadError] = useState('');
   const [authorBadge, setAuthorBadge] = useState(null);
 
@@ -234,7 +235,14 @@ export default function BookPage() {
 
       <section className="stack">
         <h2 className="h2">About this {book.book_type === 'comic' ? 'comic' : 'book'}</h2>
-        <p style={{ maxWidth: '40rem', whiteSpace: 'pre-line' }}>{book.description || 'The author has not added a description yet.'}</p>
+        <div className="book-description" style={{ maxWidth: '40rem' }}>
+          <p className={descriptionExpanded ? 'book-description-text expanded' : 'book-description-text'}>{book.description || 'The author has not added a description yet.'}</p>
+          {book.description && book.description.length > 180 && (
+            <button type="button" className="linkbtn book-description-toggle" aria-expanded={descriptionExpanded} onClick={() => setDescriptionExpanded((value) => !value)}>
+              {descriptionExpanded ? 'Read less' : 'Read more'}
+            </button>
+          )}
+        </div>
       </section>
 
       <ReleaseJourney chapters={visible} />
