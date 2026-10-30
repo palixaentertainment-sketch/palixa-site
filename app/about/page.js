@@ -4,7 +4,7 @@ import PublishLink from '@/components/PublishLink';
 
 export const metadata = {
   title: 'About Palixia',
-  description: 'Meet Palixia and learn why we are building a place for independent writers and readers.',
+  description: 'Palixia brings independent writers and readers together to discover, share and enjoy original stories.',
 };
 
 export default function About() {
@@ -13,33 +13,33 @@ export default function About() {
       <h1 className="h1">About Palixia</h1>
 
       <section className="stack">
-        <h2>A little about us</h2>
+        <h2>Where stories meet readers</h2>
         <p>My name is Paul Osula. I’m a writer from Benin City, Nigeria, and the person behind Palixia.</p>
-        <p>As a writer, I understand how much goes into creating a story. Every book begins with an idea, but turning that idea into something people can read and enjoy takes time, creativity, and dedication.</p>
-        <p>I wanted to help create a space where stories could find their readers and writers could share their work with the world.</p>
+        <p>Writing a book takes imagination, patience, and a lot of work. But finding readers can be just as difficult, especially for writers building their audience independently.</p>
+        <p>I started Palixia to make that journey a little easier: a place where writers can share their work and readers can discover stories beyond the familiar.</p>
       </section>
 
       <section className="stack">
-        <h2>Why I started Palixia</h2>
-        <p>Palixia began with a simple idea: make it easier for independent writers to publish their stories and connect with readers.</p>
-        <p>I believe great stories deserve a chance to be discovered, regardless of whether their authors have a traditional publisher behind them.</p>
-        <p>That’s why Palixia brings books, authors, and readers together in one place. It’s a platform where creators can share their work and readers can discover stories they might never have found otherwise.</p>
+        <h2>What Palixia is about</h2>
+        <p>Palixia is an independent reading and publishing platform built to bring authors and readers closer together.</p>
+        <p>We welcome stories from around the world, including voices from Africa and its diaspora. A great story should have the chance to find its audience wherever it comes from.</p>
+        <p>Readers can explore books, follow authors, join conversations and connect through a shared love of reading. Writers can publish their work for free and build an audience of their own.</p>
       </section>
 
       <section className="stack">
-        <h2>Our vision</h2>
-        <p>Palixia is being built for people who love stories, whether they’re writing them or reading them.</p>
-        <p>Our goal is to build a growing community where independent authors can publish their books, readers can discover new favourites, and more stories can find the audiences they deserve.</p>
-        <p>We’re just getting started, and there’s still a lot to build.</p>
+        <h2>What we are building</h2>
+        <p>We want Palixia to be a welcoming home for independent storytelling: open to new voices, different perspectives and readers with curious minds.</p>
+        <p>From discovering your next favourite book to sharing your own work, our aim is to make reading and publishing feel connected rather than separate.</p>
+        <p>Palixia is still growing, and the community will help shape what it becomes.</p>
       </section>
 
       <section className="stack">
-        <h2>Be part of the journey</h2>
-        <p>Whether you’re a reader searching for your next favourite book or a writer ready to share your work, there’s a place for you on Palixia.</p>
-        <p><strong>Your next favourite story could be waiting here.</strong></p>
+        <h2>There is a place for you here</h2>
+        <p>Come to discover a new author, find your next read, meet fellow book lovers, or publish a story of your own. Reading is free, and publishing is free too.</p>
+        <p><strong>Every story deserves a reader. Yours included.</strong></p>
         <div className="row">
-          <Link className="btn" href="/discover">Discover Stories</Link>
-          <PublishLink className="btn ghost">Publish Your Story</PublishLink>
+          <Link className="btn" href="/discover">Explore stories</Link>
+          <PublishLink className="btn ghost">Publish your story</PublishLink>
         </div>
       </section>
     </div>

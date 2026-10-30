@@ -5,7 +5,7 @@ import VisitorTracker from '@/components/VisitorTracker';
 
 export const metadata = {
   title: { default: 'Palixia', template: '%s | Palixia' },
-  description: 'Read and publish stories on Palixia.',
+  description: 'Discover original stories from independent authors around the world. Read for free and publish your own stories for free on Palixia.',
   icons: {
     icon: '/brand/icon-512.png',
     shortcut: '/brand/icon-512.png',
