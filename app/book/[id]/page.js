@@ -224,8 +224,8 @@ export default function BookPage() {
       {!isOwner && (
         <section className="tip-author-section" aria-label="Support the author">
           <div className="tip-author-section-copy">
-            <h2>Enjoying this story?</h2>
-            <p>Show your support for {author?.name || 'the author'}.</p>
+            <h2>Palixia Sparks</h2>
+            <p>Send a little money to support this author.</p>
           </div>
           <TipAuthor authorName={author?.name} contextTitle={book.title} />
         </section>
