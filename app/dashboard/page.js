@@ -66,9 +66,10 @@ function Dashboard() {
       <p className="fine">A read counts the first time a signed-in reader opens any chapter of your book.</p>
 
       <section className="card">
-        <div className="sechead"><h2 className="h2">Author earnings</h2><span className="badge">Coming soon</span></div>
-        <p className="muted">Readers will be able to tip your work on Palixia. Your earnings and transaction history will appear here once payments are approved and enabled.</p>
-        <p className="fine">Planned tip split: 90% to the author and 10% to Palixia. Payment processing fees and payout arrangements are still being finalised. No tips are being collected yet.</p>
+        <div className="sechead"><h2 className="h2">Author earnings</h2><span className="badge">Wallet preview</span></div>
+        <p className="muted">View your earnings, transaction history and wallet status in one place.</p>
+        <Link className="btn" href="/dashboard/earnings">Open author wallet</Link>
+        <p className="fine">Planned tip split: 90% to the author and 10% to Palixia. Withdrawals are not available yet.</p>
       </section>
 
       <section>
