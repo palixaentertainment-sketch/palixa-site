@@ -2,24 +2,26 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 
 export default function PaystackTestCallbackPage() {
-  const searchParams = useSearchParams();
-  const reference = searchParams.get('reference') || searchParams.get('trxref') || '';
+  const [reference, setReference] = useState('');
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    let active = true;
-    if (!reference) {
+    const params = new URLSearchParams(window.location.search);
+    const returnedReference = params.get('reference') || params.get('trxref') || '';
+    setReference(returnedReference);
+    if (!returnedReference) {
       setError('Paystack did not return a transaction reference.');
-      return () => { active = false; };
+      return;
     }
+
+    let active = true;
     fetch('/api/paystack/test/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reference }),
+      body: JSON.stringify({ reference: returnedReference }),
     })
       .then(async (response) => {
         const data = await response.json();
@@ -29,7 +31,7 @@ export default function PaystackTestCallbackPage() {
       .then((data) => { if (active) setResult(data); })
       .catch((err) => { if (active) setError(err.message || 'Verification failed.'); });
     return () => { active = false; };
-  }, [reference]);
+  }, []);
 
   return (
     <main className="shell stack" style={{ maxWidth: 560, paddingTop: 40, paddingBottom: 64 }}>
