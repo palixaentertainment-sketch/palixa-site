@@ -164,14 +164,14 @@ export default function Home() {
     <>
       <section className="homehero">
         <div className="homehero-copy">
-          <span className="home-eyebrow">YOUR NEXT FAVOURITE STORY STARTS HERE</span>
-          <h1>Stories worth staying up for.</h1>
-          <p>Discover stories from independent authors around the world, including African and diaspora voices. Read free, or publish your own.</p>
+          <span className="home-eyebrow">A HOME FOR INDEPENDENT STORIES</span>
+          <h1>Every story deserves a reader.</h1>
+          <p>Discover original stories from independent authors around the world. Find new voices, explore different worlds, and share stories of your own.</p>
           <div className="row homehero-actions">
             <Link className="btn" href="/discover">Explore stories</Link>
             <PublishLink className="btn ghost">Publish your story</PublishLink>
           </div>
-          <p className="homehero-free-note">Free to read. Free to publish.</p>
+          <p className="homehero-free-note">Read for free. Publish for free.</p>
         </div>
         <div className="homehero-art" aria-hidden="true">
           <div className="hero-book hero-book-back"><span>NEW WORLDS</span><b>Find a story<br />that stays.</b></div>
@@ -203,7 +203,7 @@ export default function Home() {
         <div className="publish-benefits-intro">
           <span className="home-eyebrow">FOR THE STORYTELLERS</span>
           <h2 className="h2">Why publish on Palixia?</h2>
-          <p className="fine">A place to share your work, build your presence, and help new readers discover your stories.</p>
+          <p className="fine">Share your work, reach new readers, and build your place in a community that loves stories.</p>
         </div>
         <div className="publish-benefits-slider" aria-roledescription="carousel" aria-label="Reasons to publish on Palixia">
           <article className="publish-benefit-card" aria-live="polite">
@@ -281,7 +281,7 @@ export default function Home() {
 
       {featured.length > 0 && (
         <section>
-          <div className="sechead"><div><h2 className="h2">Featured stories</h2><p className="fine">Stories worth a closer look.</p></div><Link href="/discover">Explore</Link></div>
+          <div className="sechead"><div><h2 className="h2">Featured stories</h2><p className="fine">A few stories we think you should know.</p></div><Link href="/discover">Explore</Link></div>
           <div className="featured">
             {featured.map((b) => (
               <article className="fcard" key={b.id}>
@@ -313,10 +313,10 @@ export default function Home() {
       )}
 
       {authors.length > 0 && (
-        <section><div className="sechead"><div><h2 className="h2">Meet the authors</h2><p className="fine">Follow writers and keep up with their work.</p></div><Link href="/authors">All authors</Link></div><div className="authors">{authors.map((a) => <Link key={a.id} href={'/author/' + a.username} className="acard"><Avatar src={a.avatar_url} name={a.name} size="4.2rem" /><b>{a.name}</b></Link>)}</div></section>
+        <section><div className="sechead"><div><h2 className="h2">Meet the authors</h2><p className="fine">Find writers whose stories you want to read next.</p></div><Link href="/authors">All authors</Link></div><div className="authors">{authors.map((a) => <Link key={a.id} href={'/author/' + a.username} className="acard"><Avatar src={a.avatar_url} name={a.name} size="4.2rem" /><b>{a.name}</b></Link>)}</div></section>
       )}
 
-      <section className="home-cta"><div><span className="home-eyebrow">MADE FOR STORYTELLERS</span><h2>Your story deserves readers.</h2><p>Publish your work, grow your audience, and give readers something new to love.</p></div><PublishLink className="btn">Start publishing</PublishLink></section>
+      <section className="home-cta"><div><span className="home-eyebrow">MADE FOR STORYTELLERS</span><h2>Have a story to share?</h2><p>Publish for free and let readers around the world discover your work.</p></div><PublishLink className="btn">Start publishing</PublishLink></section>
     </>
   );
 }
