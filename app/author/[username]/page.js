@@ -103,8 +103,8 @@ export default function AuthorPage() {
           {!self && (
             <div className="tip-author-section tip-author-profile-section">
               <div className="tip-author-section-copy">
-                <h2>Support this author</h2>
-                <p>Enjoy their stories? Show your appreciation.</p>
+                <h2>Palixia Sparks</h2>
+                <p>Send a little money to support this author.</p>
               </div>
               <TipAuthor authorName={p.name} />
             </div>
