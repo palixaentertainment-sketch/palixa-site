@@ -97,10 +97,11 @@ function Discover() {
   return (
     <>
       <div className="stack discover-intro">
-        <h1 className="h1">Discover stories</h1>
+        <h1 className="h1">Find your next favourite story.</h1>
+        <p className="fine">Explore books from independent authors around the world. Your next great read might come from a voice you have not discovered yet.</p>
         <form onSubmit={submit} role="search" className="row" style={{ flexWrap: 'nowrap' }}>
-          <label className="sr-only" htmlFor="dq">Search books, authors or genres</label>
-          <input id="dq" className="in" type="search" placeholder="Search books, authors or genres" value={input} onChange={(e) => setInput(e.target.value)} />
+          <label className="sr-only" htmlFor="dq">Search for a book, author or genre</label>
+          <input id="dq" className="in" type="search" placeholder="Search for a book, author or genre" value={input} onChange={(e) => setInput(e.target.value)} />
           <button className="btn" type="submit">Search</button>
         </form>
         <div className="chips" role="group" aria-label="Format">
