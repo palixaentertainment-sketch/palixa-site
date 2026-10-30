@@ -69,7 +69,7 @@ function EarningsWallet() {
   const totals = useMemo(() => {
     const sum = (status) => entries.filter((e) => e.status === status).reduce((n, e) => {
       const amount = Number(e.amount_kobo) || 0;
-      if (e.entry_type === 'refund' || e.entry_type === 'chargeback' || e.entry_type === 'payout') return n - amount;
+      if (e.entry_type === 'platform_fee' || e.entry_type === 'refund' || e.entry_type === 'chargeback' || e.entry_type === 'payout') return n - amount;
       return n + amount;
     }, 0);
     return { pending: sum('pending'), available: sum('available'), paid: entries.filter(e => e.status === 'paid' && e.entry_type === 'payout').reduce((n,e)=>n+Number(e.amount_kobo||0),0) };
