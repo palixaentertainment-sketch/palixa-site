@@ -65,6 +65,12 @@ function Dashboard() {
       </div>
       <p className="fine">A read counts the first time a signed-in reader opens any chapter of your book.</p>
 
+      <section className="card">
+        <div className="sechead"><h2 className="h2">Author earnings</h2><span className="badge">Coming soon</span></div>
+        <p className="muted">Readers will be able to tip your work on Palixia. Your earnings and transaction history will appear here once payments are approved and enabled.</p>
+        <p className="fine">Planned tip split: 90% to the author and 10% to Palixia. Payment processing fees and payout arrangements are still being finalised. No tips are being collected yet.</p>
+      </section>
+
       <section>
         <div className="sechead"><h2 className="h2">Reader engagement</h2></div>
         <div className="stats">
