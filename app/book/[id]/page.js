@@ -12,6 +12,7 @@ import Empty from '@/components/Empty';
 import LikeButton from '@/components/LikeButton';
 import ProfileBadge from '@/components/ProfileBadge';
 import ReleaseJourney from '@/components/ReleaseJourney';
+import TipAuthor from '@/components/TipAuthor';
 
 export default function BookPage() {
   const { id } = useParams();
@@ -215,6 +216,7 @@ export default function BookPage() {
         {!isOwner && (
           <button type="button" className={'btn ghost' + (following ? ' on' : '')} aria-pressed={following} onClick={toggleFollow}>{following ? 'Following' : 'Follow Author'}</button>
         )}
+        {!isOwner && <TipAuthor authorName={author?.name} contextTitle={book.title} />}
         {isOwner && <Link className="btn ghost" href={'/dashboard/books/' + book.id}>Edit</Link>}
         <button type="button" className="btn ghost" onClick={shareBook}>Share</button>
       </div>
@@ -258,7 +260,7 @@ export default function BookPage() {
               <div className="row" style={{ gap: '0.5rem' }}><b>{author.name}</b><ProfileBadge type={authorBadge} /></div>
               <p className="muted">{author.bio || 'This author has not added a bio yet.'}</p>
               <p className="fine">{stats ? stats.books + ' published ' + (stats.books === 1 ? 'book' : 'books') : ''}{isOwner && stats ? ' · ' + fmtNum(stats.followers) + ' followers' : ''}</p>
-              <div><Link className="btn ghost small" href={'/author/' + author.username}>View Author</Link></div>
+              <div className="row"><Link className="btn ghost small" href={'/author/' + author.username}>View Author</Link>{!isOwner && <TipAuthor authorName={author.name} contextTitle={book.title} compact />}</div>
             </div>
           </div>
         </section>
