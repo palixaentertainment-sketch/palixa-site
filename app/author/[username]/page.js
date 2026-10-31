@@ -106,7 +106,7 @@ export default function AuthorPage() {
                 <h2>Palixia Sparks</h2>
                 <p>Send a little money to support this author.</p>
               </div>
-              <TipAuthor authorName={p.name} />
+              <TipAuthor authorName={p.name} authorId={p.id} />
             </div>
           )}
           {msg && <p className="msg-err" role="alert">{msg} {!user && <Link className="linkbtn" href={'/login?next=/author/' + p.username}>Log in</Link>}</p>}
