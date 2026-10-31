@@ -68,7 +68,7 @@ function EarningsWallet() {
     .reduce((sum, entry) => sum + Number(entry.amount_kobo || 0), 0);
   const pending = total('pending');
   const available = total('available');
-  const paid = entries.filter((entry) => entry.status === 'paid')
+  const paid = entries.filter((entry) => entry.status === 'paid' && entry.entry_type === 'tip_credit')
     .reduce((sum, entry) => sum + Number(entry.amount_kobo || 0), 0);
 
   return (
