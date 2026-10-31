@@ -25,6 +25,10 @@ declare
   v_existing uuid;
   v_kobo bigint;
 begin
+  -- Temporary test gate: only active Palixia admins may send Sparks before public launch.
+  if not public.is_admin() then
+    raise exception 'Sparks is currently restricted to Palixia admins during testing' using errcode = '42501';
+  end if;
   if v_reader_id is null then
     raise exception 'Authentication required' using errcode = '28000';
   end if;
