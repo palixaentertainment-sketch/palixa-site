@@ -16,19 +16,27 @@ function EarningsWallet() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [agreementAccepted, setAgreementAccepted] = useState(false);
+  const [agreementLoading, setAgreementLoading] = useState(true);
+  const [accepting, setAccepting] = useState(false);
+  const [agreementError, setAgreementError] = useState('');
+  const [agreementConfirmed, setAgreementConfirmed] = useState(false);
 
   const load = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     setError('');
-    const [ledger, withdrawals] = await Promise.all([
+    const [ledger, withdrawals, agreement] = await Promise.all([
       supabase.from('author_wallet_ledger')
         .select('id,entry_type,status,amount_kobo,currency,description,created_at,reference')
         .eq('author_id', user.id).order('created_at', { ascending: false }).limit(50),
       supabase.from('author_withdrawal_requests')
         .select('id,amount_kobo,currency,status,requested_at,reviewed_at,paid_at,admin_note')
         .eq('author_id', user.id).order('requested_at', { ascending: false }).limit(20),
+      supabase.from('author_earnings_agreements').select('id').eq('author_id', user.id).eq('agreement_version', 'sparks-v1').maybeSingle(),
     ]);
+    setAgreementLoading(false);
+    if (!agreement.error) setAgreementAccepted(Boolean(agreement.data));
     if (ledger.error || withdrawals.error) {
       console.error('Author wallet could not load:', ledger.error || withdrawals.error);
       setError('Your wallet information could not be loaded. Please try again later.');
@@ -40,6 +48,20 @@ function EarningsWallet() {
   }, [user]);
 
   useEffect(() => { load(); }, [load]);
+
+  async function acceptAgreement() {
+    if (!user || !agreementConfirmed) return;
+    setAccepting(true);
+    setAgreementError('');
+    const { error: insertError } = await supabase.from('author_earnings_agreements').insert({ author_id: user.id, agreement_version: 'sparks-v1' });
+    setAccepting(false);
+    if (insertError && insertError.code !== '23505') {
+      setAgreementError('We could not save your acceptance. Please try again.');
+      return;
+    }
+    setAgreementAccepted(true);
+    setAgreementConfirmed(false);
+  }
 
   const total = (status) => entries
     .filter((entry) => entry.status === status && entry.entry_type === 'tip_credit')
@@ -61,7 +83,25 @@ function EarningsWallet() {
         <div className="stat"><span className="mono">Available</span><b>{naira(available)}</b></div>
         <div className="stat"><span className="mono">Paid</span><b>{naira(paid)}</b></div>
       </section>
-      <p className="fine">Pending earnings are not withdrawable. Available funds may be requested once Palixia enables an approved payout process. Minimum withdrawal planned: ₦1,000.</p>
+      {!agreementLoading && !agreementAccepted && (
+        <section className="card stack">
+          <h2 className="h2">Set up Sparks earnings</h2>
+          <p>Before readers can send you Sparks, please review and accept these conditions:</p>
+          <ul className="fine" style={{ paddingLeft: '1.25rem' }}>
+            <li>Reader support is recorded in your Palixia author wallet.</li>
+            <li>All author credits remain pending while Palixia finalises its earnings and payout policy.</li>
+            <li>Pending credits cannot be withdrawn, transferred or treated as a guaranteed payment.</li>
+            <li>Any future withdrawal will be subject to the published payout rules, verification and applicable fees.</li>
+          </ul>
+          <label className="row" style={{ alignItems: 'flex-start', gap: '0.55rem' }}>
+            <input type="checkbox" checked={agreementConfirmed} onChange={(event) => setAgreementConfirmed(event.target.checked)} />
+            <span className="fine">I have read and agree to these Sparks earnings conditions.</span>
+          </label>
+          {agreementError && <p className="msg-err" role="alert">{agreementError}</p>}
+          <button className="btn" type="button" disabled={!agreementConfirmed || accepting} onClick={acceptAgreement}>{accepting ? 'Saving…' : 'Accept and enable author support'}</button>
+        </section>
+      )}
+      {agreementAccepted && <p className="fine">Sparks earnings conditions accepted. Reader credits remain pending until Palixia publishes and enables its payout policy. Minimum withdrawal is not yet active.</p>}
       {error && <p className="msg-err" role="alert">{error}</p>}
       <section className="card stack">
         <div className="sechead"><h2 className="h2">Earnings activity</h2><button className="btn ghost small" type="button" onClick={load}>Refresh</button></div>
