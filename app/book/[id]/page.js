@@ -227,7 +227,7 @@ export default function BookPage() {
             <h2>Palixia Sparks</h2>
             <p>Send a little money to support this author.</p>
           </div>
-          <TipAuthor authorName={author?.name} contextTitle={book.title} />
+          <TipAuthor authorName={author?.name} authorId={book.author_id} bookId={book.id} />
         </section>
       )}
       {resumeId && progress && <p className="fine">You are {progress.progress}% through this book.</p>}
