@@ -13,6 +13,10 @@ export async function POST(request) {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const paystackSecret = process.env.PAYSTACK_SECRET_KEY;
   if (!supabaseUrl || !anonKey || !serviceKey || !paystackSecret) return fail('Sparks payments are not configured.', 503);
+  // Fail closed: this release is an admin-only test, never a public/live checkout.
+  if (process.env.SPARKS_ADMIN_ONLY !== 'true' || process.env.PAYSTACK_TEST_MODE !== 'true' || !paystackSecret.startsWith('sk_test_')) {
+    return fail('Sparks testing is not enabled. Admin-only Paystack test mode is required.', 503);
+  }
 
   const authHeader = request.headers.get('authorization') || '';
   const accessToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
@@ -25,12 +29,9 @@ export async function POST(request) {
   const { data: userData, error: authError } = await userClient.auth.getUser(accessToken);
   if (authError || !userData?.user?.id) return fail('Your session has expired. Please sign in again.', 401);
 
-  if (process.env.SPARKS_ADMIN_ONLY === 'true') {
-    if (process.env.PAYSTACK_TEST_MODE !== 'true') return fail('Admin testing requires Paystack test mode.', 503);
-    const gateClient = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
-    const { data: profile } = await gateClient.from('profiles').select('role,status').eq('id', userData.user.id).maybeSingle();
-    if (profile?.role !== 'admin' || profile?.status !== 'active') return fail('Sparks is currently available to Palixia admins only.', 403);
-  }
+  const gateClient = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const { data: profile, error: profileError } = await gateClient.from('profiles').select('role,status').eq('id', userData.user.id).maybeSingle();
+  if (profileError || profile?.role !== 'admin' || profile?.status !== 'active') return fail('Sparks is currently available to Palixia admins only.', 403);
 
   let body;
   try { body = await request.json(); } catch { return fail('Invalid request body.'); }
