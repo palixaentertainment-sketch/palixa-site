@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 const PAIRS = [
   ['#2e1065', '#6d28d9'],
   ['#240b54', '#9333ea'],
@@ -23,10 +25,22 @@ export default function Cover({ b }) {
     </span>
   );
   if (b.cover_url) {
+    const optimizable = /^https:\/\/[^/]+\.supabase\.co\/storage\/v1\//i.test(b.cover_url);
     return (
       <div className="cover has-img">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={b.cover_url} alt={'Cover of ' + title} loading="lazy" />
+        {optimizable ? (
+          <Image
+            src={b.cover_url}
+            alt={'Cover of ' + title}
+            fill
+            sizes="(max-width: 640px) 42vw, (max-width: 1024px) 22vw, 180px"
+            quality={76}
+          />
+        ) : (
+          // Local previews and non-Supabase legacy URLs stay compatible.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={b.cover_url} alt={'Cover of ' + title} loading="lazy" decoding="async" />
+        )}
         {tags}
       </div>
     );
