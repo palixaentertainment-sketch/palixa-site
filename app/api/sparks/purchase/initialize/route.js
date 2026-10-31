@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { randomUUID } from 'node:crypto';
 
 export const runtime = 'nodejs';
 
@@ -51,7 +52,7 @@ export async function POST(request) {
   const admin = createClient(supabaseUrl, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const reference = `PLXSPK_${crypto.randomUUID().replace(/-/g, '')}`;
+  const reference = `PLXSPK_${randomUUID().replace(/-/g, '')}`;
 
   const { error: insertError } = await admin.from('spark_purchases').insert({
     reader_id: userData.user.id,
