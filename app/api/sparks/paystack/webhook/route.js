@@ -13,6 +13,8 @@ export async function POST(request) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!secret || !url || !serviceKey) return response(503);
+  // The webhook must never credit transactions unless the admin-only test gate is active.
+  if (process.env.SPARKS_ADMIN_ONLY !== 'true' || process.env.PAYSTACK_TEST_MODE !== 'true' || !secret.startsWith('sk_test_')) return response(503);
 
   const rawBody = await request.text();
   const signature = request.headers.get('x-paystack-signature') || '';
@@ -59,6 +61,14 @@ export async function POST(request) {
     .maybeSingle();
   if (purchaseError) return response(500);
   if (!purchase) return response(200);
+
+  const { data: buyer, error: buyerError } = await admin
+    .from('profiles')
+    .select('role,status')
+    .eq('id', purchase.reader_id)
+    .maybeSingle();
+  if (buyerError) return response(500);
+  if (buyer?.role !== 'admin' || buyer?.status !== 'active') return response(403);
 
   if (transaction.reference !== reference ||
       transaction.amount !== Number(purchase.amount_kobo) ||
