@@ -35,7 +35,7 @@ export default function BookForm({ userId, book, locked, onSaved }) {
     const f = e.target.files[0] || null;
     setErr('');
     if (f) {
-      const problem = checkImage(f, 2);
+      const problem = checkImage(f, 8);
       if (problem) { setErr(problem); e.target.value = ''; setFile(null); return; }
     }
     setFile(f);
@@ -127,7 +127,7 @@ export default function BookForm({ userId, book, locked, onSaved }) {
           <Cover b={shownCover} />
           <div className="stack" style={{ gap: '0.5rem' }}>
             <input id="b-cover" className="in" type="file" accept="image/png,image/jpeg,image/webp" onChange={pick} />
-            <span className="fine">Best at a 2:3 ratio, for example 800 by 1200 pixels. JPG, PNG or WebP, up to 2 MB. Without a cover, Palixia makes a purple one from your title.</span>
+            <span className="fine">Best at a 2:3 ratio, for example 800 by 1200 pixels. JPG, PNG or WebP, up to 8 MB. Palixia automatically compresses the cover for faster loading. Without a cover, Palixia makes a purple one from your title.</span>
           </div>
         </div>
       </div>
