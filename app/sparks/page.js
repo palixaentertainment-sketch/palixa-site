@@ -15,6 +15,7 @@ function SparksWallet() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(null);
   const [notice, setNotice] = useState('');
+  const [access, setAccess] = useState('checking');
 
   const loadWallet = useCallback(async () => {
     if (!user) return;
@@ -28,7 +29,21 @@ function SparksWallet() {
     setLoading(false);
   }, [user]);
 
-  useEffect(() => { loadWallet(); }, [loadWallet]);
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      const token = data?.session?.access_token;
+      if (!token) { if (active) setAccess('denied'); return; }
+      const response = await fetch('/api/sparks/access', { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' });
+      if (!active) return;
+      if (!response.ok) { setAccess('denied'); return; }
+      const result = await response.json();
+      setAccess(result.enabled ? 'allowed' : 'denied');
+      if (result.enabled) loadWallet();
+    })();
+    return () => { active = false; };
+  }, [loadWallet]);
 
   async function buy(amountNaira) {
     setBusy(amountNaira);
@@ -50,6 +65,9 @@ function SparksWallet() {
       setBusy(null);
     }
   }
+
+  if (access === 'checking') return <main className="wrap page"><p className="muted">Checking Sparks access…</p></main>;
+  if (access !== 'allowed') return <main className="wrap page"><h1 className="h1">Sparks testing is restricted</h1><p className="muted">This feature is currently available to Palixia administrators only.</p></main>;
 
   return (
     <main className="wrap page stack" style={{ maxWidth: 760 }}>
