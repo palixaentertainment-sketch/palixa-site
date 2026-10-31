@@ -22,6 +22,7 @@ export default function Reader() {
   const [book, setBook] = useState(null);
   const [sibs, setSibs] = useState([]);
   const [pages, setPages] = useState([]);
+  const [pagesLoaded, setPagesLoaded] = useState(false);
   const [theme, setTheme] = useState('light');
   const [size, setSize] = useState(1.1);
   const [panel, setPanel] = useState(false);
@@ -41,21 +42,23 @@ export default function Reader() {
 
   const fetchAll = useCallback(async () => {
     setCh(undefined);
-    const { data, error } = await supabase
+    // Fetch the chapter and its parent book in one PostgREST request.
+    // The previous two sequential requests added a full network round-trip
+    // before the reader could display anything.
+    const { data: row, error } = await supabase
       .from('chapters')
-      .select('id,book_id,chapter_number,title,content,status,like_count')
+      .select('id,book_id,chapter_number,title,content,status,like_count,book:books!chapters_book_id_fkey(id,title,book_type,author_id,status)')
       .eq('id', id)
       .maybeSingle();
-    if (error || !data) { setCh(null); return; }
-    const { data: b, error: bookError } = await supabase
-      .from('books').select('id,title,book_type,author_id,status').eq('id', data.book_id).maybeSingle();
-    if (bookError || !b) { setCh(null); return; }
+    if (error || !row || !row.book) { setCh(null); return; }
+    const { book: b, ...data } = row;
 
-    // Show the chapter as soon as its book is known. Navigation and comic pages
-    // load alongside it instead of delaying the first readable content.
+    // Render the chapter immediately; chapter navigation and comic pages
+    // continue loading in the background.
     setBook(b);
     setCh(data);
     setPages([]);
+    setPagesLoaded(b.book_type !== 'comic');
 
     const requests = [
       supabase.from('chapters').select('id,chapter_number,title,status')
@@ -67,9 +70,13 @@ export default function Reader() {
     ];
     if (b.book_type === 'comic') {
       requests.push(
-        supabase.from('chapter_pages').select('id,page_number,image_url,alt')
+        supabase.from('chapter_pages').select('id,page_number,image_url,alt,width,height')
           .eq('chapter_id', id).order('page_number')
-          .then(({ data: pg }) => setPages(pg || []))
+          .then(({ data: pg, error: pageError }) => {
+            setPages(pg || []);
+            setPagesLoaded(true);
+            if (pageError) setMsg('Some comic pages could not be loaded. Please try refreshing.');
+          })
       );
     }
     await Promise.all(requests);
@@ -258,10 +265,20 @@ export default function Reader() {
             onCut={(e) => e.preventDefault()}
             onContextMenu={(e) => e.preventDefault()}
             onSelectStart={(e) => e.preventDefault()}>
-            {pages.length === 0 && <p className="rtext">This chapter has no pages yet.</p>}
-            {pages.map((p) => (
+            {pages.length === 0 && <p className="rtext">{pagesLoaded ? 'This chapter has no pages yet.' : 'Loading pages…'}</p>}
+            {pages.map((p, i) => (
               // eslint-disable-next-line @next/next/no-img-element
-              <img key={p.id} src={p.image_url} alt={p.alt || 'Page ' + p.page_number} loading="lazy" />
+              <img
+                key={p.id}
+                src={p.image_url}
+                alt={p.alt || 'Page ' + p.page_number}
+                width={p.width || undefined}
+                height={p.height || undefined}
+                loading={i === 0 ? 'eager' : 'lazy'}
+                fetchPriority={i === 0 ? 'high' : 'auto'}
+                decoding="async"
+                style={p.width > 0 && p.height > 0 ? { aspectRatio: p.width + ' / ' + p.height } : undefined}
+              />
             ))}
           </div>
         ) : (
