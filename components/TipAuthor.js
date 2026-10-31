@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 
@@ -8,6 +8,19 @@ export default function TipAuthor({ authorName, authorId, bookId = null, compact
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [amount, setAmount] = useState('10');
+  const [allowed, setAllowed] = useState(false);
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      const token = data?.session?.access_token;
+      if (!token) return;
+      const response = await fetch('/api/sparks/access', { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' });
+      if (active && response.ok) { const result = await response.json(); setAllowed(Boolean(result.enabled)); }
+    })();
+    return () => { active = false; };
+  }, []);
+  if (!allowed) return null;
 
   async function send() {
     setMessage('');
