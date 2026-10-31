@@ -55,8 +55,8 @@ function Editor() {
     if (items.length + files.length > MAX_PAGES) { setErr('A chapter can have up to ' + MAX_PAGES + ' pages.'); return; }
     files.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
     for (const f of files) {
-      const problem = checkImage(f, 3);
-      if (problem) { setErr(f.name + ': ' + problem.replace('2 MB', '3 MB')); return; }
+      const problem = checkImage(f, 12);
+      if (problem) { setErr(f.name + ': ' + problem); return; }
     }
     setItems((cur) => [...cur, ...files.map((f) => ({ key: 'n' + Date.now() + Math.random().toString(36).slice(2, 6), url: URL.createObjectURL(f), file: f }))]);
   }
@@ -153,7 +153,7 @@ function Editor() {
           <div className="field">
             <label htmlFor="c-pages">Page images</label>
             <input id="c-pages" className="in" type="file" accept="image/png,image/jpeg,image/webp" multiple onChange={addFiles} />
-            <span className="fine">Files are added in file-name order, so name them 01, 02, 03. Reorder below if needed. JPG, PNG or WebP, up to 3 MB each, up to {MAX_PAGES} pages. Narrow, tall images read best on phones.</span>
+            <span className="fine">Files are added in file-name order, so name them 01, 02, 03. Reorder below if needed. JPG, PNG or WebP, up to 12 MB each before automatic compression, up to {MAX_PAGES} pages. Palixia optimizes page images for faster reading. Narrow, tall images read best on phones.</span>
             {items.length === 0 ? (
               <p className="empty">No pages yet. Choose images above.</p>
             ) : (
