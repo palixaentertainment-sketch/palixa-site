@@ -56,7 +56,11 @@ export async function POST(request) {
   if (transaction.status !== 'success') {
     return NextResponse.json({ status: transaction.status || 'pending', credited: false });
   }
-  if (transaction.reference !== reference ||
+  const configuredTestMode = process.env.PAYSTACK_TEST_MODE === 'true';
+  const secretIsTest = paystackSecret.startsWith('sk_test_');
+  if (configuredTestMode !== secretIsTest ||
+      Boolean(transaction.metadata?.test_mode) !== secretIsTest ||
+      transaction.reference !== reference ||
       transaction.amount !== Number(purchase.amount_kobo) ||
       transaction.currency !== purchase.currency ||
       transaction.metadata?.purpose !== 'palixia_sparks_purchase' ||
