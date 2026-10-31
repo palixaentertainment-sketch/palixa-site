@@ -43,6 +43,13 @@ export async function POST(request) {
   const { data: userData, error: authError } = await userClient.auth.getUser(accessToken);
   if (authError || !userData?.user?.id || !userData.user.email) return fail('Your session has expired. Please sign in again.', 401);
 
+  if (process.env.SPARKS_ADMIN_ONLY === 'true') {
+    if (process.env.PAYSTACK_TEST_MODE !== 'true') return fail('Admin testing requires Paystack test mode.', 503);
+    const gateClient = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+    const { data: profile } = await gateClient.from('profiles').select('role,status').eq('id', userData.user.id).maybeSingle();
+    if (profile?.role !== 'admin' || profile?.status !== 'active') return fail('Sparks is currently available to Palixia admins only.', 403);
+  }
+
   let body;
   try { body = await request.json(); } catch { return fail('Invalid request body.'); }
   const amountNaira = Number(body.amountNaira);
