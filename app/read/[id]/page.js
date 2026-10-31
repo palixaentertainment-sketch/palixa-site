@@ -22,6 +22,7 @@ export default function Reader() {
   const [book, setBook] = useState(null);
   const [sibs, setSibs] = useState([]);
   const [pages, setPages] = useState([]);
+  const [pagesLoaded, setPagesLoaded] = useState(false);
   const [theme, setTheme] = useState('light');
   const [size, setSize] = useState(1.1);
   const [panel, setPanel] = useState(false);
@@ -57,6 +58,7 @@ export default function Reader() {
     setBook(b);
     setCh(data);
     setPages([]);
+    setPagesLoaded(b.book_type !== 'comic');
 
     const requests = [
       supabase.from('chapters').select('id,chapter_number,title,status')
@@ -70,7 +72,11 @@ export default function Reader() {
       requests.push(
         supabase.from('chapter_pages').select('id,page_number,image_url,alt,width,height')
           .eq('chapter_id', id).order('page_number')
-          .then(({ data: pg }) => setPages(pg || []))
+          .then(({ data: pg, error: pageError }) => {
+            setPages(pg || []);
+            setPagesLoaded(true);
+            if (pageError) setMsg('Some comic pages could not be loaded. Please try refreshing.');
+          })
       );
     }
     await Promise.all(requests);
@@ -259,7 +265,7 @@ export default function Reader() {
             onCut={(e) => e.preventDefault()}
             onContextMenu={(e) => e.preventDefault()}
             onSelectStart={(e) => e.preventDefault()}>
-            {pages.length === 0 && <p className="rtext">This chapter has no pages yet.</p>}
+            {pages.length === 0 && <p className="rtext">{pagesLoaded ? 'This chapter has no pages yet.' : 'Loading pages…'}</p>}
             {pages.map((p, i) => (
               // eslint-disable-next-line @next/next/no-img-element
               <img
