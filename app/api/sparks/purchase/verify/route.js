@@ -104,39 +104,50 @@ export async function POST(request) {
     });
 
     if (recoveryInsertError) {
-      // A concurrent webhook or callback may have inserted the same reference.
-      const { data: racedPurchase, error: racedLookupError } = await admin
-        .from('spark_purchases')
-        .select('id,reader_id,amount_kobo,sparks_amount,currency,status')
-        .eq('paystack_reference', reference)
-        .maybeSingle();
-      if (racedLookupError || !racedPurchase) {
-        // Keep full PostgREST diagnostics in Vercel server logs so database
-        // constraint, schema-cache, and permission failures can be distinguished.
-        // Never return raw database details to the browser.
-        console.error('[Sparks verify] Purchase recovery insert failed', {
-          reference,
-          readerId: userData.user.id,
-          insertError: {
-            code: recoveryInsertError.code || null,
-            message: recoveryInsertError.message || null,
-            details: recoveryInsertError.details || null,
-            hint: recoveryInsertError.hint || null,
-            constraint: recoveryInsertError.constraint || null,
-            table: recoveryInsertError.table || null,
-            column: recoveryInsertError.column || null,
-            schema: recoveryInsertError.schema || null,
-          },
-          rereadError: racedLookupError ? {
-            code: racedLookupError.code || null,
-            message: racedLookupError.message || null,
-            details: racedLookupError.details || null,
-            hint: racedLookupError.hint || null,
-          } : null,
-        });
-        return fail('Payment is confirmed by Paystack, but Palixia could not restore the purchase record. The server has logged diagnostic details. Please contact support with your reference.', 500);
+      // Fallback to a narrowly scoped database function. This avoids depending
+      // on direct PostgREST INSERT grants while preserving strict package checks.
+      const { data: recoveredId, error: recoveryRpcError } = await admin.rpc('restore_missing_spark_purchase', {
+        p_reader_id: userData.user.id,
+        p_reference: reference,
+        p_amount_kobo: pack.amountKobo,
+        p_sparks_amount: pack.sparks,
+      });
+
+      if (recoveryRpcError || !recoveredId) {
+        const { data: racedPurchase, error: racedLookupError } = await admin
+          .from('spark_purchases')
+          .select('id,reader_id,amount_kobo,sparks_amount,currency,status')
+          .eq('paystack_reference', reference)
+          .maybeSingle();
+        if (racedLookupError || !racedPurchase) {
+          console.error('[Sparks verify] Purchase recovery failed', {
+            reference,
+            directInsertCode: recoveryInsertError.code || null,
+            directInsertMessage: recoveryInsertError.message || null,
+            recoveryRpcCode: recoveryRpcError?.code || null,
+            recoveryRpcMessage: recoveryRpcError?.message || null,
+            rereadCode: racedLookupError?.code || null,
+            rereadMessage: racedLookupError?.message || null,
+          });
+          return fail('Payment is confirmed, but Palixia could not restore the Sparks purchase. Please contact support with your reference.', 500);
+        }
+        purchase = racedPurchase;
+      } else {
+        const { data: recoveredPurchase, error: recoveredLookupError } = await admin
+          .from('spark_purchases')
+          .select('id,reader_id,amount_kobo,sparks_amount,currency,status')
+          .eq('id', recoveredId)
+          .maybeSingle();
+        if (recoveredLookupError || !recoveredPurchase) {
+          console.error('[Sparks verify] Recovered purchase could not be loaded', {
+            reference,
+            code: recoveredLookupError?.code || null,
+            message: recoveredLookupError?.message || null,
+          });
+          return fail('Payment is confirmed, but Palixia could not load the restored purchase. Please contact support with your reference.', 500);
+        }
+        purchase = recoveredPurchase;
       }
-      purchase = racedPurchase;
     } else {
       const { data: restoredPurchase, error: restoredLookupError } = await admin
         .from('spark_purchases')
