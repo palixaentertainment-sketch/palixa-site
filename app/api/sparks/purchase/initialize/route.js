@@ -64,7 +64,26 @@ export async function POST(request) {
     currency: 'NGN',
     status: 'pending',
   });
-  if (insertError) return fail('Could not create your Sparks purchase. Please try again.', 500);
+  if (insertError) {
+    // This endpoint is restricted to active admins in Paystack test mode.
+    // Keep the exact database failure in server logs and return a safe diagnostic
+    // so test purchases can be repaired without exposing credentials.
+    console.error('[Sparks purchase] Database insert failed', {
+      code: insertError.code,
+      message: insertError.message,
+      details: insertError.details,
+      hint: insertError.hint,
+    });
+    const diagnostic = [insertError.code, insertError.message, insertError.details]
+      .filter(Boolean)
+      .join(': ');
+    return fail(
+      process.env.PAYSTACK_TEST_MODE === 'true'
+        ? `Sparks database error: ${diagnostic || 'Unknown insert failure'}`
+        : 'Could not create your Sparks purchase. Please try again.',
+      500
+    );
+  }
 
   let paystackResponse;
   try {
