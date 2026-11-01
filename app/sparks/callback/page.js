@@ -60,11 +60,11 @@ export default function SparksCallbackPage() {
           if (data.status === 'success' && data.credited) {
             setState('success');
             setSparks(data.sparks || 0);
-            setMessage('Your Sparks have been added to your balance.');
+            setMessage('Your Sparks have been added to your balance.');\n            try { sessionStorage.removeItem('palixia_sparks_pending_reference'); } catch {}
           } else if (data.status === 'success') {
             setState('success');
             setSparks(data.sparks || 0);
-            setMessage('This purchase was already credited to your account.');
+            setMessage('This purchase was already credited to your account.');\n            try { sessionStorage.removeItem('palixia_sparks_pending_reference'); } catch {}
           } else {
             setState('pending');
             setMessage('Paystack has not confirmed this payment yet. Your Sparks have not been added.');

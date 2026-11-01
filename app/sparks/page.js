@@ -59,7 +59,7 @@ function SparksWallet() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Could not start your purchase.');
-      window.location.assign(data.authorizationUrl);
+      // Preserve the exact server-created reference across Paystack's redirect.\n      // Some callback URLs may contain a stale or alternate query parameter.\n      try { sessionStorage.setItem('palixia_sparks_pending_reference', data.reference); } catch {}\n      window.location.assign(data.authorizationUrl);
     } catch (error) {
       setNotice(error.message || 'Could not start your purchase.');
       setBusy(null);
