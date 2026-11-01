@@ -97,42 +97,31 @@ export async function POST(request) {
     // Use the authenticated, narrowly scoped SECURITY DEFINER RPC rather
     // than a direct service-role table insert. This avoids depending on
     // service-role table grants while keeping recovery admin-only.
-    const { error: recoveryError } = await userClient.rpc('recover_verified_spark_purchase', {
+    const { data: restoredPurchase, error: recoveryError } = await userClient.rpc('recover_verified_spark_purchase', {
       p_reference: reference,
       p_amount_kobo: pack.amountKobo,
       p_sparks_amount: pack.sparks,
     });
 
-    if (recoveryError) {
+    if (recoveryError || !restoredPurchase) {
       console.error('[Sparks verify] Purchase recovery RPC failed', {
         reference,
         readerId: userData.user.id,
-        code: recoveryError.code || null,
-        message: recoveryError.message || null,
-        details: recoveryError.details || null,
-        hint: recoveryError.hint || null,
+        code: recoveryError?.code || null,
+        message: recoveryError?.message || (!restoredPurchase ? 'RPC returned no purchase row' : null),
+        details: recoveryError?.details || null,
+        hint: recoveryError?.hint || null,
       });
       return fail(
-        recoveryError.code === 'PGRST202' || recoveryError.code === '42883'
+        recoveryError?.code === 'PGRST202' || recoveryError?.code === '42883'
           ? 'Sparks recovery database update is required. Please contact support with your reference.'
           : 'Payment is confirmed by Paystack, but Palixia could not restore the purchase record. Please contact support with your reference.',
         500
       );
     }
 
-    const { data: restoredPurchase, error: restoredLookupError } = await admin
-      .from('spark_purchases')
-      .select('id,reader_id,amount_kobo,sparks_amount,currency,status')
-      .eq('paystack_reference', reference)
-      .maybeSingle();
-    if (restoredLookupError || !restoredPurchase) {
-      console.error('[Sparks verify] Recovered purchase lookup failed', {
-        reference,
-        code: restoredLookupError?.code || null,
-        message: restoredLookupError?.message || null,
-      });
-      return fail('Payment is confirmed, but the restored Sparks purchase could not be loaded. Please contact support with your reference.', 500);
-    }
+    // The recovery RPC returns the restored row directly. Avoid a second
+    // PostgREST read that can fail independently after a successful insert.
     purchase = restoredPurchase;
   }
 
