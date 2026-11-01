@@ -14,12 +14,18 @@ export default function SparksCallbackPage() {
     let active = true;
     async function verify() {
       const params = new URLSearchParams(window.location.search);
-      const ref = params.get('reference') || params.get('trxref') || '';
-      setReference(ref);
-      if (!ref) {
+      // Prefer Paystack's reference parameter. If both callback keys exist,
+      // try trxref only when the first has no matching Palixia purchase row.
+      const candidates = [...new Set(
+        [params.get('reference'), params.get('trxref')]
+          .map((value) => (value || '').trim())
+          .filter((value) => /^PLXSPK_[a-f0-9]{32}$/i.test(value))
+      )];
+      if (!candidates.length) {
         if (active) { setState('error'); setMessage('We could not find your payment reference.'); }
         return;
       }
+      setReference(candidates[0]);
 
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
@@ -29,14 +35,28 @@ export default function SparksCallbackPage() {
       }
 
       try {
-        const response = await fetch('/api/sparks/purchase/verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ reference: ref }),
-        });
-        const data = await response.json();
+        let response;
+        let data;
+        let verifiedReference = candidates[0];
+
+        for (let index = 0; index < candidates.length; index += 1) {
+          verifiedReference = candidates[index];
+          response = await fetch('/api/sparks/purchase/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+            body: JSON.stringify({ reference: verifiedReference }),
+            cache: 'no-store',
+          });
+          data = await response.json().catch(() => ({}));
+
+          // Do not bypass ownership, payment, or metadata errors. Fallback is
+          // permitted only when no local purchase exists for this reference.
+          if (response.status !== 404 || index === candidates.length - 1) break;
+        }
+
         if (!response.ok) throw new Error(data.error || 'We could not verify this payment.');
         if (active) {
+          setReference(verifiedReference);
           if (data.status === 'success' && data.credited) {
             setState('success');
             setSparks(data.sparks || 0);
