@@ -111,11 +111,30 @@ export async function POST(request) {
         .eq('paystack_reference', reference)
         .maybeSingle();
       if (racedLookupError || !racedPurchase) {
+        // Keep full PostgREST diagnostics in Vercel server logs so database
+        // constraint, schema-cache, and permission failures can be distinguished.
+        // Never return raw database details to the browser.
         console.error('[Sparks verify] Purchase recovery insert failed', {
-          code: recoveryInsertError.code,
-          message: recoveryInsertError.message,
+          reference,
+          readerId: userData.user.id,
+          insertError: {
+            code: recoveryInsertError.code || null,
+            message: recoveryInsertError.message || null,
+            details: recoveryInsertError.details || null,
+            hint: recoveryInsertError.hint || null,
+            constraint: recoveryInsertError.constraint || null,
+            table: recoveryInsertError.table || null,
+            column: recoveryInsertError.column || null,
+            schema: recoveryInsertError.schema || null,
+          },
+          rereadError: racedLookupError ? {
+            code: racedLookupError.code || null,
+            message: racedLookupError.message || null,
+            details: racedLookupError.details || null,
+            hint: racedLookupError.hint || null,
+          } : null,
         });
-        return fail('Payment is confirmed by Paystack, but the Palixia purchase record could not be restored. Please contact support with your reference.', 500);
+        return fail('Payment is confirmed by Paystack, but Palixia could not restore the purchase record. The server has logged diagnostic details. Please contact support with your reference.', 500);
       }
       purchase = racedPurchase;
     } else {
