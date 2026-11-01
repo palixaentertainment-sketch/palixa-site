@@ -25,7 +25,6 @@ export async function POST(request) {
   if (!supabaseUrl || !anonKey || !serviceKey || !paystackSecret) {
     return fail('Sparks payments are not configured on the server.', 503);
   }
-  // Fail closed: this release is an admin-only test, never a public/live checkout.
   if (process.env.SPARKS_ADMIN_ONLY !== 'true' || process.env.PAYSTACK_TEST_MODE !== 'true' || !paystackSecret.startsWith('sk_test_')) {
     return fail('Sparks testing is not enabled. Admin-only Paystack test mode is required.', 503);
   }
@@ -39,11 +38,9 @@ export async function POST(request) {
     global: { headers: { Authorization: `Bearer ${accessToken}` } },
   });
   const { data: userData, error: authError } = await userClient.auth.getUser(accessToken);
-  if (authError || !userData?.user?.id || !userData.user.email) return fail('Your session has expired. Please sign in again.', 401);
-
-  const gateClient = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
-  const { data: profile, error: profileError } = await gateClient.from('profiles').select('role,status').eq('id', userData.user.id).maybeSingle();
-  if (profileError || profile?.role !== 'admin' || profile?.status !== 'active') return fail('Sparks is currently available to Palixia admins only.', 403);
+  if (authError || !userData?.user?.id || !userData.user.email) {
+    return fail('Your session has expired. Please sign in again.', 401);
+  }
 
   let body;
   try { body = await request.json(); } catch { return fail('Invalid request body.'); }
@@ -51,39 +48,29 @@ export async function POST(request) {
   const pack = PACKAGES.get(amountNaira);
   if (!Number.isInteger(amountNaira) || !pack) return fail('Choose one of the available Sparks packages.');
 
-  const admin = createClient(supabaseUrl, serviceKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
   const reference = `PLXSPK_${randomUUID().replace(/-/g, '')}`;
-
-  const { error: insertError } = await admin.from('spark_purchases').insert({
-    reader_id: userData.user.id,
-    paystack_reference: reference,
-    amount_kobo: pack.amountKobo,
-    sparks_amount: pack.sparks,
-    currency: 'NGN',
-    status: 'pending',
+  const { error: insertError } = await userClient.rpc('create_pending_spark_purchase', {
+    p_reference: reference,
+    p_amount_kobo: pack.amountKobo,
+    p_sparks_amount: pack.sparks,
   });
+
   if (insertError) {
-    // This endpoint is restricted to active admins in Paystack test mode.
-    // Keep the exact database failure in server logs and return a safe diagnostic
-    // so test purchases can be repaired without exposing credentials.
-    console.error('[Sparks purchase] Database insert failed', {
+    console.error('[Sparks purchase] Pending purchase RPC failed', {
       code: insertError.code,
       message: insertError.message,
       details: insertError.details,
       hint: insertError.hint,
+      userId: userData.user.id,
     });
-    const diagnostic = [insertError.code, insertError.message, insertError.details]
-      .filter(Boolean)
-      .join(': ');
-    return fail(
-      process.env.PAYSTACK_TEST_MODE === 'true'
-        ? `Sparks database error: ${diagnostic || 'Unknown insert failure'}`
-        : 'Could not create your Sparks purchase. Please try again.',
-      500
-    );
+    if (insertError.code === '42501') return fail('Sparks testing is currently restricted to an active Palixia admin account.', 403);
+    if (insertError.code === 'PGRST202' || insertError.code === '42883') return fail('Sparks checkout needs its database update. Please contact Palixia support.', 503);
+    return fail('Could not create your Sparks purchase. Please try again.', 500);
   }
+
+  const admin = createClient(supabaseUrl, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 
   let paystackResponse;
   try {
@@ -100,7 +87,7 @@ export async function POST(request) {
           purpose: 'palixia_sparks_purchase',
           reader_id: userData.user.id,
           sparks_amount: pack.sparks,
-          test_mode: paystackSecret.startsWith('sk_test_'),
+          test_mode: true,
         },
       }),
       cache: 'no-store',
