@@ -3,6 +3,14 @@ import { createClient } from '@supabase/supabase-js';
 
 export const runtime = 'nodejs';
 
+const PACKAGES = new Map([
+  [100, { amountKobo: 10000, sparks: 100 }],
+  [200, { amountKobo: 20000, sparks: 200 }],
+  [300, { amountKobo: 30000, sparks: 300 }],
+  [500, { amountKobo: 50000, sparks: 500 }],
+  [1000, { amountKobo: 100000, sparks: 1000 }],
+]);
+
 function fail(message, status = 400) {
   return NextResponse.json({ error: message }, { status });
 }
@@ -29,8 +37,8 @@ export async function POST(request) {
   const { data: userData, error: authError } = await userClient.auth.getUser(accessToken);
   if (authError || !userData?.user?.id) return fail('Your session has expired. Please sign in again.', 401);
 
-  const gateClient = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
-  const { data: profile, error: profileError } = await gateClient.from('profiles').select('role,status').eq('id', userData.user.id).maybeSingle();
+  const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const { data: profile, error: profileError } = await admin.from('profiles').select('role,status').eq('id', userData.user.id).maybeSingle();
   if (profileError || profile?.role !== 'admin' || profile?.status !== 'active') return fail('Sparks is currently available to Palixia admins only.', 403);
 
   let body;
@@ -38,16 +46,7 @@ export async function POST(request) {
   const reference = typeof body.reference === 'string' ? body.reference.trim() : '';
   if (!/^PLXSPK_[a-f0-9]{32}$/i.test(reference)) return fail('Invalid Sparks payment reference.');
 
-  const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
-  const { data: purchase, error: purchaseError } = await admin
-    .from('spark_purchases')
-    .select('id,reader_id,amount_kobo,sparks_amount,currency,status')
-    .eq('paystack_reference', reference)
-    .maybeSingle();
-
-  if (purchaseError || !purchase) return fail('We could not find this Sparks purchase.', 404);
-  if (purchase.reader_id !== userData.user.id) return fail('This purchase does not belong to your account.', 403);
-
+  // Always verify the exact reference with Paystack before attempting recovery.
   let verifyResponse;
   try {
     verifyResponse = await fetch(`https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`, {
@@ -60,21 +59,89 @@ export async function POST(request) {
   const verified = await verifyResponse.json().catch(() => null);
   const transaction = verified?.data;
   if (!verifyResponse.ok || !verified?.status || !transaction) return fail('Paystack could not verify this payment.', 502);
-
+  if (transaction.reference !== reference) return fail('Paystack returned a different payment reference.', 409);
   if (transaction.status !== 'success') {
     return NextResponse.json({ status: transaction.status || 'pending', credited: false });
   }
+
+  const { data: existingPurchase, error: purchaseLookupError } = await admin
+    .from('spark_purchases')
+    .select('id,reader_id,amount_kobo,sparks_amount,currency,status')
+    .eq('paystack_reference', reference)
+    .maybeSingle();
+
+  if (purchaseLookupError) {
+    console.error('[Sparks verify] Purchase lookup failed', { code: purchaseLookupError.code, message: purchaseLookupError.message });
+    return fail('We could not check the Sparks purchase record. Please contact support.', 500);
+  }
+
+  let purchase = existingPurchase;
+
+  // Recovery path: if the original pending row was not saved, reconstruct it
+  // only from a successful Paystack transaction carrying Palixia's exact
+  // purpose, the signed-in buyer's ID, a supported package, and matching NGN amount.
+  if (!purchase) {
+    const metadata = transaction.metadata || {};
+    const sparksAmount = Number(metadata.sparks_amount);
+    const pack = PACKAGES.get(sparksAmount);
+    const recoverable =
+      metadata.purpose === 'palixia_sparks_purchase' &&
+      metadata.reader_id === userData.user.id &&
+      Boolean(metadata.test_mode) === true &&
+      Boolean(pack) &&
+      transaction.currency === 'NGN' &&
+      transaction.amount === pack.amountKobo;
+
+    if (!recoverable) return fail('We could not find a matching Palixia purchase for this Paystack transaction. Please contact support with your reference.', 404);
+
+    const { error: recoveryInsertError } = await admin.from('spark_purchases').insert({
+      reader_id: userData.user.id,
+      paystack_reference: reference,
+      amount_kobo: pack.amountKobo,
+      sparks_amount: pack.sparks,
+      currency: 'NGN',
+      status: 'pending',
+    });
+
+    if (recoveryInsertError) {
+      // A concurrent webhook or callback may have inserted the same reference.
+      const { data: racedPurchase, error: racedLookupError } = await admin
+        .from('spark_purchases')
+        .select('id,reader_id,amount_kobo,sparks_amount,currency,status')
+        .eq('paystack_reference', reference)
+        .maybeSingle();
+      if (racedLookupError || !racedPurchase) {
+        console.error('[Sparks verify] Purchase recovery insert failed', {
+          code: recoveryInsertError.code,
+          message: recoveryInsertError.message,
+        });
+        return fail('Payment is confirmed by Paystack, but the Palixia purchase record could not be restored. Please contact support with your reference.', 500);
+      }
+      purchase = racedPurchase;
+    } else {
+      const { data: restoredPurchase, error: restoredLookupError } = await admin
+        .from('spark_purchases')
+        .select('id,reader_id,amount_kobo,sparks_amount,currency,status')
+        .eq('paystack_reference', reference)
+        .maybeSingle();
+      if (restoredLookupError || !restoredPurchase) {
+        return fail('Payment is confirmed, but the restored Sparks purchase could not be loaded. Please contact support with your reference.', 500);
+      }
+      purchase = restoredPurchase;
+    }
+  }
+
+  if (purchase.reader_id !== userData.user.id) return fail('This purchase does not belong to your account.', 403);
   const configuredTestMode = process.env.PAYSTACK_TEST_MODE === 'true';
   const secretIsTest = paystackSecret.startsWith('sk_test_');
   if (configuredTestMode !== secretIsTest ||
       Boolean(transaction.metadata?.test_mode) !== secretIsTest ||
-      transaction.reference !== reference ||
       transaction.amount !== Number(purchase.amount_kobo) ||
       transaction.currency !== purchase.currency ||
       transaction.metadata?.purpose !== 'palixia_sparks_purchase' ||
       transaction.metadata?.reader_id !== userData.user.id ||
       Number(transaction.metadata?.sparks_amount) !== purchase.sparks_amount) {
-    return fail('Payment details did not match this Sparks purchase. Please contact support.', 409);
+    return fail('Payment details did not match this Sparks purchase. Please contact support with your reference.', 409);
   }
 
   const { data: posted, error: postError } = await admin.rpc('post_verified_spark_purchase', {
@@ -82,7 +149,10 @@ export async function POST(request) {
     p_amount_kobo: transaction.amount,
     p_currency: transaction.currency,
   });
-  if (postError) return fail('Payment was verified, but Sparks could not be credited automatically. Please contact support with your reference.', 500);
+  if (postError) {
+    console.error('[Sparks verify] Credit posting failed', { code: postError.code, message: postError.message, reference });
+    return fail('Payment was verified, but Sparks could not be credited automatically. Please contact support with your reference.', 500);
+  }
 
   return NextResponse.json({
     status: 'success',
