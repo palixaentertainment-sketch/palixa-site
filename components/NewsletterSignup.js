@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { configured, supabase } from '@/lib/supabase';
 
 const STORAGE_KEY = 'palixia-letters-subscription';
@@ -10,6 +10,10 @@ export default function NewsletterSignup() {
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    try { setSaved(Boolean(JSON.parse(window.localStorage.getItem(STORAGE_KEY) || 'null')?.token)); } catch { setSaved(false); }
+  }, []);
 
   async function subscribe(event) {
     event.preventDefault();
