@@ -72,7 +72,7 @@ export default function PalixiaFridaysBanner() {
         <span className="fridays-home-banner-kicker"><span className="fridays-home-banner-mark" aria-hidden="true">✦</span> Palixia Fridays</span>
         <h2>{title}</h2>
         <p>{detail}</p>
-        {!hunt && (
+        {(!hunt || upcoming) && (
           <div className="fridays-countdown-wrap" aria-label="Countdown to the next Friday at 10:04">
             <span className="fridays-countdown-label">Next hunt in</span>
             <div className="fridays-countdown" aria-live="off">
