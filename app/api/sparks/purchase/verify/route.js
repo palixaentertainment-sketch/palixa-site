@@ -144,8 +144,32 @@ export async function POST(request) {
     p_currency: transaction.currency,
   });
   if (postError) {
-    console.error('[Sparks verify] Credit posting failed', { code: postError.code, message: postError.message, reference });
-    return fail('Payment was verified, but Sparks could not be credited automatically. Please contact support with your reference.', 500);
+    // Keep the detailed database error in server logs only. The browser gets a
+    // correlation ID so support can locate the exact failure without exposing
+    // database internals to visitors.
+    const diagnosticId = request.headers.get('x-vercel-id') || `sparks-${Date.now()}`;
+    console.error('[Sparks verify] Credit posting failed', {
+      diagnosticId,
+      stage: 'post_verified_spark_purchase',
+      reference,
+      userId: userData.user.id,
+      rpc: 'post_verified_spark_purchase',
+      code: postError.code || null,
+      message: postError.message || null,
+      details: postError.details || null,
+      hint: postError.hint || null,
+      errorName: postError.name || null,
+      httpStatus: postError.status || null,
+      verifiedAmountKobo: transaction.amount,
+      verifiedCurrency: transaction.currency,
+      purchaseStatus: purchase.status,
+      purchaseSparks: purchase.sparks_amount,
+    });
+    return NextResponse.json({
+      error: 'Payment was verified, but Sparks could not be credited automatically. Please contact support with your reference.',
+      diagnosticId,
+      reference,
+    }, { status: 500 });
   }
 
   return NextResponse.json({
