@@ -1239,3 +1239,17 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 .tip-author-section-copy h2 { color: var(--accent-deep); }
 .tip-author-section .tip-author-wrap { gap: .2rem; }
 .tip-author-section .tip-author-wrap .btn { white-space: nowrap; }
+
+
+/* Palixia Fridays weekly countdown */
+.fridays-countdown-wrap { display:grid; gap:.35rem; margin-top:.7rem; }
+.fridays-countdown-label { color:var(--accent); font:700 .66rem var(--mono); letter-spacing:.08em; text-transform:uppercase; }
+.fridays-countdown { display:flex; flex-wrap:wrap; gap:.4rem; }
+.fridays-countdown-unit { display:grid; justify-items:center; min-width:3.15rem; padding:.35rem .45rem .3rem; border:1px solid var(--line); border-radius:8px; background:rgba(255,255,255,.58); }
+.fridays-countdown-unit b { color:var(--fg); font:800 1.12rem/1.1 var(--display); font-variant-numeric:tabular-nums; }
+.fridays-countdown-unit small { margin-top:.12rem; color:var(--muted); font:600 .58rem var(--mono); text-transform:uppercase; letter-spacing:.04em; }
+.fridays-countdown-loading { color:var(--muted); font-size:.8rem; }
+:root[data-theme="dark"] .fridays-countdown-unit { background:rgba(255,255,255,.035); border-color:var(--line); }
+@media (prefers-reduced-motion: reduce) {
+  .fridays-countdown-unit { transition:none; }
+}
