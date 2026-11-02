@@ -22,6 +22,8 @@ function SignupForm() {
   const [password, setPassword] = useState('');
   const [bio, setBio] = useState('');
   const [country, setCountry] = useState('');
+  const [newsletterOptIn, setNewsletterOptIn] = useState(false);
+  const [newsletterNotice, setNewsletterNotice] = useState('');
   const [err, setErr] = useState('');
   const [done, setDone] = useState(false);
   const justSignedUp = useRef(false);
@@ -53,8 +55,21 @@ function SignupForm() {
       password,
       options: { data: { name: name.trim(), username: u, account: kind, bio: bio.trim(), country: country.trim() } },
     });
+    if (error) { setBusy(false); setErr(friendlyAuth(error)); return; }
+    if (newsletterOptIn) {
+      const { data: token, error: newsletterError } = await supabase.rpc('subscribe_palixia_letters', {
+        p_email: email.trim().toLowerCase(),
+        p_subscriber_type: kind,
+        p_source: 'signup',
+      });
+      if (newsletterError || !token) {
+        setNewsletterNotice('Your account was created, but we could not add you to Palixia Letters. You can subscribe below anytime.');
+      } else {
+        try { window.localStorage.setItem('palixia-letters-subscription', JSON.stringify({ email: email.trim().toLowerCase(), token })); } catch {}
+        setNewsletterNotice('You’re also subscribed to Palixia Letters.');
+      }
+    }
     setBusy(false);
-    if (error) { setErr(friendlyAuth(error)); return; }
     justSignedUp.current = true;
     if (data.session) router.push(safeNext(params.get('next'), kind === 'author' ? '/dashboard' : '/discover'));
     else setDone(true);
@@ -65,6 +80,7 @@ function SignupForm() {
       <div className="stack authcol">
         <h1 className="h1">Check your email</h1>
         <p>We sent a confirmation link to <b>{email}</b>. Open it, then log in to finish setting up your account.</p>
+        {newsletterNotice && <p className="fine" role="status">{newsletterNotice}</p>}
         <div><Link className="btn" href="/login">Log in</Link></div>
       </div>
     );
@@ -100,6 +116,10 @@ function SignupForm() {
           <input id="password" className="in" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" />
           <span className="fine">At least 8 characters.</span>
         </div>
+        <label className="letters-optin">
+          <input type="checkbox" checked={newsletterOptIn} onChange={(event) => setNewsletterOptIn(event.target.checked)} />
+          <span><b>Send me Palixia Letters</b><small>Occasional updates about new stories, authors, community news and features. Optional; you can unsubscribe anytime.</small></span>
+        </label>
         {kind === 'author' && (
           <>
             <div className="field">

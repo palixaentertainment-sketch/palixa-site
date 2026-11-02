@@ -12,12 +12,15 @@ export default function Privacy() {
         <li><b>Account information:</b> information such as your name, username and email address that you provide when creating or managing an account.</li>
         <li><b>Content and activity:</b> books, chapters, covers, profile details, comments, posts, bookmarks, reading progress and other information you choose to submit or generate through site features.</li>
         <li><b>Messages:</b> information you include when contacting us for support or sending a report.</li>
+        <li><b>Newsletter subscriptions:</b> your email address, the reader/author/general category you select, where you subscribed, and records of your consent and unsubscribe status if you choose to receive Palixia Letters.</li>
         <li><b>Technical information:</b> information that may be recorded by the website, hosting, authentication or security services to operate the site, diagnose errors, prevent abuse and protect accounts. This may include device/browser information, log data and IP address.</li>
       </ul>
       <p>We do not ask you to send passwords, authentication codes, or financial account credentials by email. Do not include sensitive information in public posts or book content.</p>
 
       <h2 className="h2">How we use information</h2>
-      <p>We use information to create and manage accounts; publish and display books and profiles; provide reading, library, bookmark and community features; respond to questions and reports; maintain, secure and improve the platform; prevent spam, fraud and misuse; and comply with legal obligations.</p>
+      <p>We use information to create and manage accounts; publish and display books and profiles; provide reading, library, bookmark and community features; respond to questions and reports; maintain, secure and improve the platform; prevent spam, fraud and misuse; manage newsletter subscriptions and, when newsletter delivery is enabled, send requested Palixia Letters updates; and comply with legal obligations.</p>
+
+      <p>Newsletter subscriptions are optional and are not required to create an account. You can unsubscribe using the control provided with the subscription on the device where you signed up. We retain an unsubscribe record so an address is not accidentally re-added without a new opt-in.</p>
 
       <h2 className="h2">Public information</h2>
       <p>Content you choose to publish publicly—such as your username, author profile, books, covers, comments or posts—may be visible to other users and may be copied or shared by them. Do not publish information you want to keep private. Account details such as your login credentials are not intended to be publicly displayed.</p>

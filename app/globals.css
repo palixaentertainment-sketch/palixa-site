@@ -1239,3 +1239,43 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 .tip-author-section-copy h2 { color: var(--accent-deep); }
 .tip-author-section .tip-author-wrap { gap: .2rem; }
 .tip-author-section .tip-author-wrap .btn { white-space: nowrap; }
+
+
+/* Palixia Letters newsletter signup — deliberately isolated from competition UI. */
+.letters-signup {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(16rem, .9fr);
+  align-items:center;
+  gap:1.5rem;
+  max-width:var(--max, 1120px);
+  margin:2rem auto 0;
+  padding:1.35rem 1.5rem;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--surface);
+  color:var(--fg);
+}
+.letters-copy { min-width:0; }
+.letters-eyebrow { color:var(--accent); font:700 .68rem var(--mono); letter-spacing:.12em; }
+.letters-copy h2 { margin:.3rem 0 .35rem; font-size:1.35rem; }
+.letters-copy p { margin:0; color:var(--muted); font-size:.9rem; line-height:1.55; }
+.letters-note { display:block; margin-top:.55rem; color:var(--muted); font-size:.76rem; }
+.letters-form-wrap { min-width:0; }
+.letters-form { display:flex; gap:.55rem; }
+.letters-form .in { min-width:0; flex:1; }
+.letters-form .btn { flex:0 0 auto; white-space:nowrap; }
+.letters-status { min-height:1.1rem; margin:.45rem 0 0; color:var(--muted); font-size:.78rem; }
+.letters-unsubscribe { padding:0; border:0; background:none; color:var(--accent); font:inherit; font-size:.78rem; text-decoration:underline; cursor:pointer; }
+.letters-optin { display:flex; align-items:flex-start; gap:.65rem; margin:.25rem 0 .4rem; padding:.8rem; border:1px solid var(--line); border-radius:9px; cursor:pointer; }
+.letters-optin input { flex:0 0 auto; width:1rem; height:1rem; margin:.15rem 0 0; accent-color:var(--accent); }
+.letters-optin span { display:grid; gap:.2rem; }
+.letters-optin b { font-size:.86rem; }
+.letters-optin small { color:var(--muted); font-size:.76rem; line-height:1.45; }
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+@media (max-width: 42rem) {
+  .letters-signup { grid-template-columns:1fr; gap:1rem; margin-inline:.8rem; padding:1.1rem; }
+}
+@media (max-width: 26rem) {
+  .letters-form { flex-direction:column; }
+  .letters-form .btn { width:100%; }
+}
