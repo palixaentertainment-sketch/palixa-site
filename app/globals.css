@@ -1239,3 +1239,110 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 .tip-author-section-copy h2 { color: var(--accent-deep); }
 .tip-author-section .tip-author-wrap { gap: .2rem; }
 .tip-author-section .tip-author-wrap .btn { white-space: nowrap; }
+
+
+/* Community announcement: subtle entrance, restrained purple detail, and responsive dialog. */
+.community-announcement-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(20, 10, 38, .58);
+  backdrop-filter: blur(3px);
+  animation: community-announcement-fade 180ms ease-out both;
+}
+.community-announcement {
+  width: min(100%, 29rem);
+  max-height: min(85vh, 42rem);
+  overflow-y: auto;
+  padding: clamp(1.2rem, 5vw, 1.8rem);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--bg);
+  color: var(--fg);
+  box-shadow: 0 24px 70px rgba(20, 10, 38, .25);
+  animation: community-announcement-rise 260ms cubic-bezier(.2,.75,.25,1) both;
+}
+.community-announcement-brand {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-bottom: 1.3rem;
+}
+.community-announcement-mark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 2.7rem;
+  height: 2.7rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--soft);
+  color: var(--accent);
+  font-size: 1.25rem;
+  animation: community-announcement-mark 2.8s ease-in-out infinite;
+}
+.community-announcement-eyebrow {
+  color: var(--accent);
+  font: 700 .7rem var(--mono);
+  letter-spacing: .09em;
+}
+.community-announcement-subtitle {
+  margin-top: .15rem;
+  color: var(--muted);
+  font-size: .82rem;
+}
+.community-announcement h2 {
+  margin-bottom: .8rem;
+  font-size: clamp(1.35rem, 5vw, 1.7rem);
+  line-height: 1.15;
+  font-weight: 850;
+}
+.community-announcement-body {
+  color: var(--fg);
+  font-size: .96rem;
+  line-height: 1.75;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.community-announcement-ack {
+  width: 100%;
+  justify-content: center;
+  margin-top: 1.35rem;
+  text-align: center;
+}
+@keyframes community-announcement-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes community-announcement-rise {
+  from { opacity: 0; transform: translateY(12px) scale(.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes community-announcement-mark {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(109,40,217,0); }
+  50% { box-shadow: 0 0 0 5px rgba(109,40,217,.07); }
+}
+:root[data-theme="dark"] .community-announcement { background: var(--surface); border-color: var(--line); }
+@media (prefers-reduced-motion: reduce) {
+  .community-announcement-backdrop,
+  .community-announcement,
+  .community-announcement-mark { animation: none; }
+}
+
+.community-announcement-image {
+  display: block;
+  width: min(100%, 240px);
+  max-height: 150px;
+  object-fit: contain;
+  margin: .85rem auto 1rem;
+  border-radius: 10px;
+}
+.community-announcement-link {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  margin-top: 1rem;
+  text-align: center;
+}
