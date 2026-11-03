@@ -1330,3 +1330,19 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
   .community-announcement,
   .community-announcement-mark { animation: none; }
 }
+
+.community-announcement-image {
+  display: block;
+  width: min(100%, 240px);
+  max-height: 150px;
+  object-fit: contain;
+  margin: .85rem auto 1rem;
+  border-radius: 10px;
+}
+.community-announcement-link {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  margin-top: 1rem;
+  text-align: center;
+}
