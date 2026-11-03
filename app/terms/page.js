@@ -8,7 +8,7 @@ export default function Terms() {
     <div className="stack narrow legal">
       <h1 className="h1">Terms of Service</h1>
       <p className="fine">Last updated 3 November 2026</p>
-      <p>These Terms of Service apply to your access to and use of Palixia, an online platform for discovering, reading and publishing independent stories and for participating in reader and writer community features. By using Palixia or creating an account, you agree to these terms. If you do not agree, do not use the service.</p>
+      <p>These Terms of Service apply to your access to and use of Palixia, an online platform for discovering, reading and publishing independent stories and for participating in reader and writer community features. Palixia is currently an independent project operated by its founder, Paul Osula, and is not yet registered as a company. References in these terms to “Palixia”, “we” or “us” mean the platform and the people operating it. By using Palixia or creating an account, you agree to these terms. If you do not agree, do not use the service.</p>
 
       <h2 className="h2">1. Eligibility and accounts</h2>
       <ul>
