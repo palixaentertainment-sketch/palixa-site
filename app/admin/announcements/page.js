@@ -82,7 +82,7 @@ function AnnouncementManager() {
         imageUrl = supabase.storage.from('covers').getPublicUrl(upload.data.path).data.publicUrl;
       }
       const linkUrl = form.link_url.trim();
-      if (linkUrl && !(/^(https:\/\/|\/)/i.test(linkUrl))) throw new Error('Use a full https:// link or a Palixia path beginning with /.');
+      if (linkUrl && !(/^https:\/\//i.test(linkUrl) || (linkUrl.startsWith('/') && !linkUrl.startsWith('//')))) throw new Error('Use a full https:// link or a Palixia path beginning with a single /.');
       if (linkUrl && !form.link_label.trim()) throw new Error('Add button text for your optional link.');
       const payload = {
         title: form.title.trim(),
