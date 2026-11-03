@@ -8,7 +8,7 @@ export default function Privacy() {
     <div className="stack narrow legal">
       <h1 className="h1">Privacy Policy</h1>
       <p className="fine">Last updated 3 November 2026</p>
-      <p>This Privacy Policy explains how Palixia handles personal information when you visit the website, create an account, read or publish stories, use community features or contact us. Palixia operates from Nigeria and welcomes users from different countries. Privacy laws may give you additional rights depending on where you live.</p>
+      <p>This Privacy Policy explains how Palixia handles personal information when you visit the website, create an account, read or publish stories, use community features or contact us. Palixia operates from Nigeria and welcomes users from different countries. It is currently an independent project operated by its founder, Paul Osula, and has not yet been registered as a company. Privacy laws may give you additional rights depending on where you live.</p>
 
       <h2 className="h2">1. Information we handle</h2>
       <ul>
