@@ -6,10 +6,18 @@ create table if not exists public.community_announcements (
   title text not null check (char_length(btrim(title)) between 1 and 120),
   body text not null check (char_length(btrim(body)) between 1 and 4000),
   button_label text not null default 'I''ve read this' check (char_length(btrim(button_label)) between 1 and 40),
+  image_url text,
+  link_label text,
+  link_url text,
   is_active boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+-- Add optional media and destination fields for existing installations too.
+alter table public.community_announcements add column if not exists image_url text;
+alter table public.community_announcements add column if not exists link_label text;
+alter table public.community_announcements add column if not exists link_url text;
 
 -- The public pop-up presents one current message at a time.
 create unique index if not exists community_announcements_one_active_idx
