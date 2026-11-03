@@ -15,7 +15,7 @@ export default function About() {
         <h2>Stories deserve to find their readers</h2>
         <p>Palixia is an independent reading and publishing platform built around a simple idea: a good story should have the chance to find its audience, wherever it comes from.</p>
         <p>Palixia was started by Paul Osula, a writer from Benin City, Nigeria. Like many independent writers, he understood that writing a story is only part of the journey. Finding readers, sharing your work and building an audience can be just as challenging.</p>
-        <p>Palixia grew from that experience into a place where writers can share their work and readers can discover stories beyond the familiar.</p>
+        <p>Palixia grew from that experience into a place where writers can share their work and readers can discover stories beyond the familiar. It is currently an independent project and has not yet been registered as a company.</p>
       </section>
 
       <section className="stack">
