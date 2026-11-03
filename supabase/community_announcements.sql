@@ -56,3 +56,15 @@ create policy "readers acknowledge announcements"
 grant select on public.community_announcements to anon, authenticated;
 grant insert, update, delete on public.community_announcements to authenticated;
 grant select, insert on public.announcement_reads to authenticated;
+
+
+-- Start with the Palixia Friday welcome message. Admins can edit or deactivate it.
+insert into public.community_announcements (title, body, button_label, is_active)
+select
+  'PALIXIA FRIDAY IS COMING!',
+  E'Fridays on Palixia are about more than just reading. They\'re a chance to explore stories, take part in fun activities and connect with other readers.\n\nWhat should you prepare?\n\n📖 Explore books on Palixia.\n🔍 Pay attention to story details. You never know what might become a clue!\n👀 Watch out for announcements about each Friday\'s activity.\n\nGet your reading started, and be ready to join the fun!',
+  'I''ve read this',
+  true
+where not exists (
+  select 1 from public.community_announcements where is_active = true
+);
