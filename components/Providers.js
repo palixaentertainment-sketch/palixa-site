@@ -8,6 +8,7 @@ import AuthHeader from '@/components/AuthHeader';
 import Logo from '@/components/Logo';
 import SocialLinks from '@/components/SocialLinks';
 import InstallAppPrompt from '@/components/InstallAppPrompt';
+import CommunityAnnouncement from '@/components/CommunityAnnouncement';
 import MobileNav from '@/components/MobileNav';
 
 export default function Providers({ children }) {
@@ -17,6 +18,7 @@ export default function Providers({ children }) {
   return (
     <AuthProvider>
       <InstallAppPrompt />
+      <CommunityAnnouncement />
       {reading ? (
         children
       ) : (
