@@ -1,29 +1,35 @@
-export const metadata = { title: 'Community Guidelines' };
+export const metadata = {
+  title: 'Community Guidelines',
+  description: 'Standards for respectful reading, publishing and participation in the Palixia community.',
+};
 
 export default function CommunityGuidelines() {
   return (
     <article className="stack narrow legal">
       <p className="mono">PALIXIA COMMUNITY</p>
       <h1 className="h1">Community Guidelines</h1>
-      <p className="fine">Last updated 11 October 2026</p>
-      <p>Palixia is a place for readers and writers to discover stories, publish books and comics, and connect with people who share their interests. These guidelines help keep the community welcoming and useful.</p>
+      <p className="fine">Last updated 3 November 2026</p>
+      <p>Palixia is a place for readers and writers to discover independent stories, publish books and connect with people who share an interest in reading. These guidelines apply to books, chapters, profiles, comments, replies, community posts, polls and other community features.</p>
 
       <h2 className="h2">Treat people with respect</h2>
-      <p>Do not use Palixia to threaten, bully, harass, stalk, or target people with hateful abuse. Disagreement is okay; intimidation and repeated unwanted abuse are not.</p>
+      <p>Do not threaten, bully, harass, stalk, intimidate or target people with hateful abuse. Disagreement and criticism are welcome when expressed respectfully. Repeated unwanted contact, personal attacks and attempts to drive people away from the community are not.</p>
 
-      <h2 className="h2">Share content you have the right to use</h2>
-      <p>Only publish books, comics, images, covers, and other material that you created or are permitted to share. Do not copy another creator's work and present it as your own. See our Copyright Policy to raise a concern.</p>
+      <h2 className="h2">Respect creators and their rights</h2>
+      <p>Publish only stories, text, artwork, covers and other material that you created or are permitted to share. Do not plagiarise, impersonate another creator or repost someone else's work as your own. See our <a href="/copyright">Copyright Policy</a> to report a concern.</p>
 
-      <h2 className="h2">Keep the platform safe</h2>
-      <p>Do not post unlawful content, scams, malicious links, spam, threats, or content that sexually exploits or endangers minors. Do not share another person's private information without permission.</p>
+      <h2 className="h2">Keep people safe</h2>
+      <p>Do not post unlawful content, scams, phishing links, malicious files, threats or content that sexually exploits or endangers minors. Do not publish another person's private or identifying information without permission. Do not use Palixia to facilitate violence, fraud or other serious wrongdoing.</p>
+
+      <h2 className="h2">Publish responsibly</h2>
+      <p>Use accurate titles, descriptions, author information and covers. Do not mislead readers about the content or authorship of a story. If a feature provides a content label or maturity setting, use it honestly. Do not upload material that you do not have the right to use.</p>
 
       <h2 className="h2">Use community features honestly</h2>
-      <p>Keep posts, comments, and reading-club discussions relevant and constructive. Do not impersonate another person, manipulate engagement, or use community features for repeated unsolicited promotion.</p>
+      <p>Keep posts, comments, replies and discussions relevant and constructive. Do not impersonate others, create fake engagement, manipulate reads, likes, follows, polls or other activity, or use community features for spam and repeated unsolicited promotion. Respect other users' boundaries and the purpose of each feature.</p>
 
       <h2 className="h2">Reporting and enforcement</h2>
-      <p>If you see content or behaviour that may break these guidelines, contact us at <a href="mailto:info@palixia.com">info@palixia.com</a> and include the relevant username, book, post, or link if available. We may review reports and remove content, restrict features, or suspend accounts where appropriate.</p>
+      <p>If you see content or behaviour that may break these guidelines, email <a href="mailto:info@palixia.com?subject=Community%20Report">info@palixia.com</a>. Include the relevant username, book, chapter, post or link and explain the concern. We may review reports and take action proportionate to the issue, including removing content, restricting features or suspending accounts. Where reasonably practical, users affected by an enforcement decision may contact us to request a review.</p>
 
-      <p className="fine">These guidelines describe Palixia's intended community standards and may be updated as features develop. They work alongside our Terms of Service and applicable law.</p>
+      <p>These guidelines work alongside our <a href="/terms">Terms of Service</a>, <a href="/copyright">Copyright Policy</a> and applicable law. We may update them as Palixia and its features develop.</p>
     </article>
   );
 }

@@ -1,10 +1,9 @@
 import Link from 'next/link';
 import PublishLink from '@/components/PublishLink';
 
-
 export const metadata = {
   title: 'About Palixia',
-  description: 'Palixia brings independent writers and readers together to discover, share and enjoy original stories.',
+  description: 'Meet Palixia, a free reading and publishing platform for independent stories and the people who love them.',
 };
 
 export default function About() {
@@ -13,29 +12,33 @@ export default function About() {
       <h1 className="h1">About Palixia</h1>
 
       <section className="stack">
-        <h2>Where stories meet readers</h2>
-        <p>My name is Paul Osula. I’m a writer from Benin City, Nigeria, and the person behind Palixia.</p>
-        <p>Writing a book takes imagination, patience, and a lot of work. But finding readers can be just as difficult, especially for writers building their audience independently.</p>
-        <p>I started Palixia to make that journey a little easier: a place where writers can share their work and readers can discover stories beyond the familiar.</p>
+        <h2>Stories deserve to find their readers</h2>
+        <p>Palixia is an independent reading and publishing platform built around a simple idea: a good story should have the chance to find its audience, wherever it comes from.</p>
+        <p>Palixia was started by Paul Osula, a writer from Benin City, Nigeria. Like many independent writers, he understood that writing a story is only part of the journey. Finding readers, sharing your work and building an audience can be just as challenging.</p>
+        <p>Palixia grew from that experience into a place where writers can share their work and readers can discover stories beyond the familiar. It is currently an independent project and has not yet been registered as a company.</p>
       </section>
 
       <section className="stack">
-        <h2>What Palixia is about</h2>
-        <p>Palixia is an independent reading and publishing platform built to bring authors and readers closer together.</p>
-        <p>We welcome stories from around the world, including voices from Africa and its diaspora. A great story should have the chance to find its audience wherever it comes from.</p>
-        <p>Readers can explore books, follow authors, join conversations and connect through a shared love of reading. Writers can publish their work for free and build an audience of their own.</p>
+        <h2>A place for independent storytelling</h2>
+        <p>We welcome authors and readers from around the world, including voices from Africa and its diaspora. Palixia is not limited to one region, language of origin or type of perspective. We want independent stories to be discovered across borders.</p>
+        <p>Readers can discover books, read chapters, save stories, follow authors and take part in community conversations. Writers can publish their work for free, create an author presence and connect with readers.</p>
       </section>
 
       <section className="stack">
-        <h2>What we are building</h2>
-        <p>We want Palixia to be a welcoming home for independent storytelling: open to new voices, different perspectives and readers with curious minds.</p>
-        <p>From discovering your next favourite book to sharing your own work, our aim is to make reading and publishing feel connected rather than separate.</p>
-        <p>Palixia is still growing, and the community will help shape what it becomes.</p>
+        <h2>What matters to us</h2>
+        <ul>
+          <li><strong>Access:</strong> Reading on Palixia is free.</li>
+          <li><strong>Opportunity:</strong> Publishing a story on Palixia is free.</li>
+          <li><strong>Creator rights:</strong> Authors retain ownership of their original work.</li>
+          <li><strong>Discovery:</strong> We want readers to encounter fresh voices and stories from different places.</li>
+          <li><strong>Community:</strong> Reading is better when people can share recommendations and thoughtful conversations.</li>
+        </ul>
       </section>
 
       <section className="stack">
-        <h2>There is a place for you here</h2>
-        <p>Come to discover a new author, find your next read, meet fellow book lovers, or publish a story of your own. Reading is free, and publishing is free too.</p>
+        <h2>Still growing, with readers and writers</h2>
+        <p>Palixia is an evolving platform. Features may change as we learn from the people who use it, but our aim remains the same: make it easier to share independent stories and find something worth reading.</p>
+        <p>Whether you are here to discover a new author, find your next read, join a conversation or publish a story of your own, you are welcome.</p>
         <p><strong>Every story deserves a reader. Yours included.</strong></p>
         <div className="row">
           <Link className="btn" href="/discover">Explore stories</Link>

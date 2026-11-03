@@ -27,7 +27,7 @@ export default function Providers({ children }) {
             <div className="foot-inner">
               <div className="foot-brand">
                 <Logo size="footer" />
-                <p>Books, stories, and a community for readers and writers.</p>
+                <p>Discover independent stories. Read for free and publish your own for free.</p>
                 <div className="foot-social">
                   <span className="foot-heading">Connect with us</span>
                   <SocialLinks compact />
