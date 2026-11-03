@@ -21,12 +21,15 @@ function EarningsWallet() {
   const [accepting, setAccepting] = useState(false);
   const [agreementError, setAgreementError] = useState('');
   const [agreementConfirmed, setAgreementConfirmed] = useState(false);
+  const [stories, setStories] = useState([]);
+  const [selectedStoryId, setSelectedStoryId] = useState('');
+  const [copyMessage, setCopyMessage] = useState('');
 
   const load = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     setError('');
-    const [ledger, withdrawals, agreement] = await Promise.all([
+    const [ledger, withdrawals, agreement, storiesResult] = await Promise.all([
       supabase.from('author_wallet_ledger')
         .select('id,entry_type,status,amount_kobo,currency,description,created_at,reference')
         .eq('author_id', user.id).order('created_at', { ascending: false }).limit(50),
@@ -34,9 +37,15 @@ function EarningsWallet() {
         .select('id,amount_kobo,currency,status,requested_at,reviewed_at,paid_at,admin_note')
         .eq('author_id', user.id).order('requested_at', { ascending: false }).limit(20),
       supabase.from('author_earnings_agreements').select('id').eq('author_id', user.id).eq('agreement_version', 'sparks-v1').maybeSingle(),
+      supabase.from('books').select('id,title').eq('author_id', user.id).eq('status', 'published').order('updated_at', { ascending: false }),
     ]);
     setAgreementLoading(false);
     if (!agreement.error) setAgreementAccepted(Boolean(agreement.data));
+    if (!storiesResult.error) {
+      const publishedStories = storiesResult.data || [];
+      setStories(publishedStories);
+      setSelectedStoryId((current) => current && publishedStories.some((story) => story.id === current) ? current : (publishedStories[0]?.id || ''));
+    }
     if (ledger.error || withdrawals.error) {
       console.error('Author wallet could not load:', ledger.error || withdrawals.error);
       setError('Your wallet information could not be loaded. Please try again later.');
@@ -48,6 +57,18 @@ function EarningsWallet() {
   }, [user]);
 
   useEffect(() => { load(); }, [load]);
+
+  async function copyStoryInviteLink() {
+    if (!selectedStoryId) return;
+    const url = window.location.origin + '/book/' + selectedStoryId;
+    setCopyMessage('');
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopyMessage('Your story link has been copied. Share it with your readers.');
+    } catch {
+      setCopyMessage('Copying is unavailable in this browser. You can copy the story link shown above.');
+    }
+  }
 
   async function acceptAgreement() {
     if (!user || !agreementConfirmed) return;
@@ -82,6 +103,44 @@ function EarningsWallet() {
         <div className="stat"><span className="mono">Pending</span><b>{naira(pending)}</b></div>
         <div className="stat"><span className="mono">Available</span><b>{naira(available)}</b></div>
         <div className="stat"><span className="mono">Paid</span><b>{naira(paid)}</b></div>
+      </section>
+      <section className="card stack" style={{ borderColor: 'var(--accent, #7042a5)', background: 'var(--soft, #f7f2ff)' }}>
+        <div className="sechead">
+          <h2 className="h2">Sparks are in pre-launch</h2>
+          <span className="badge">Coming soon</span>
+        </div>
+        <p className="muted" style={{ margin: 0, lineHeight: 1.65 }}>
+          We are currently onboarding authors and building our active reader community. Payout policies and supported payout methods will be announced before launch. We are preparing Paystack support first; any additional provider, including Flutterwave, will be confirmed before it is offered. No automated payouts or withdrawals are available yet.
+        </p>
+      </section>
+      <section className="card stack" style={{ borderColor: 'var(--accent, #7042a5)' }}>
+        <div>
+          <h2 className="h2" style={{ marginBottom: '.35rem' }}>Get Ready for Sparks!</h2>
+          <p className="muted" style={{ margin: 0, lineHeight: 1.6 }}>
+            Copy your unique story invite link to share on WhatsApp, Twitter, and Instagram so your fans can find your story and be ready to support you when Sparks launches.
+          </p>
+        </div>
+        {stories.length === 0 ? (
+          <p className="fine" style={{ margin: 0 }}>Publish a story to create its shareable invite link.</p>
+        ) : (
+          <>
+            <label className="stack" style={{ gap: '.35rem' }}>
+              <span className="fine">Choose a published story</span>
+              <select className="in" value={selectedStoryId} onChange={(event) => { setSelectedStoryId(event.target.value); setCopyMessage(''); }}>
+                {stories.map((story) => <option key={story.id} value={story.id}>{story.title}</option>)}
+              </select>
+            </label>
+            {selectedStoryId && (
+              <p className="fine" style={{ margin: 0, overflowWrap: 'anywhere' }}>
+                {typeof window !== 'undefined' ? window.location.origin : 'https://www.palixia.com'}/book/{selectedStoryId}
+              </p>
+            )}
+            <div className="row">
+              <button className="btn" type="button" disabled={!selectedStoryId} onClick={copyStoryInviteLink}>Copy story invite link</button>
+            </div>
+            {copyMessage && <p className="fine" role="status" aria-live="polite" style={{ margin: 0 }}>{copyMessage}</p>}
+          </>
+        )}
       </section>
       {!agreementLoading && !agreementAccepted && (
         <section className="card stack">

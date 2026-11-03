@@ -304,6 +304,34 @@ export default function Reader() {
           {prev ? <Link className="btn ghost" href={'/read/' + prev.id}>&larr; Previous</Link> : <span />}
           {next ? <Link className="btn" href={'/read/' + next.id}>Next chapter &rarr;</Link> : <Link className="btn ghost" href={'/book/' + book.id}>Back to book</Link>}
         </nav>
+        {ch.status === 'published' && book.status === 'published' && (
+          <section
+            className="spark-prelaunch-cta"
+            aria-labelledby="spark-prelaunch-title"
+            style={{
+              marginTop: '1.5rem',
+              padding: '1.15rem',
+              border: '1px solid var(--line, #ded3f2)',
+              borderRadius: '14px',
+              background: 'linear-gradient(135deg, var(--surface, #fff), var(--soft, #f5efff))',
+              color: 'var(--fg, #21182e)',
+              textAlign: 'center',
+            }}
+          >
+            <p className="mono" style={{ margin: '0 0 .4rem', color: 'var(--accent, #7042a5)' }}>SUPPORT INDEPENDENT STORIES</p>
+            <h2 id="spark-prelaunch-title" style={{ margin: '0 0 .5rem', fontSize: '1.15rem' }}>Want to give this author a Spark? ⚡</h2>
+            <p style={{ margin: '0 auto .9rem', maxWidth: '38rem', color: 'var(--muted, #6d6478)', lineHeight: 1.6 }}>
+              Monetization is launching soon! Sign up for a free Palixia account today to get early access to Spark bundles and be the first to support your favorite writers.
+            </p>
+            <Link
+              className="btn"
+              href={user ? '/discover' : '/signup?next=' + encodeURIComponent('/book/' + book.id)}
+              style={{ display: 'inline-flex', justifyContent: 'center' }}
+            >
+              {user ? 'Discover more stories' : 'Create a free account'}
+            </Link>
+          </section>
+        )}
       </main>
     </div>
   );
