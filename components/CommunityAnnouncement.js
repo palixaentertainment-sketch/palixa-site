@@ -24,7 +24,7 @@ export default function CommunityAnnouncement() {
 
       const { data, error: fetchError } = await supabase
         .from('community_announcements')
-        .select('id,title,body,button_label')
+        .select('id,title,body,button_label,image_url,link_label,link_url')
         .eq('is_active', true)
         .order('updated_at', { ascending: false })
         .limit(1)
@@ -118,7 +118,9 @@ export default function CommunityAnnouncement() {
           </div>
         </div>
         <h2 id="community-announcement-title">{announcement.title}</h2>
+        {announcement.image_url && <img className="community-announcement-image" src={announcement.image_url} alt="" />}
         <div id="community-announcement-body" className="community-announcement-body">{announcement.body}</div>
+        {announcement.link_url && announcement.link_label && <a className="btn ghost community-announcement-link" href={announcement.link_url} target={/^https:\/\//i.test(announcement.link_url) ? '_blank' : undefined} rel={/^https:\/\//i.test(announcement.link_url) ? 'noopener noreferrer' : undefined}>{announcement.link_label}</a>}
         {error && <p className="msg-err" role="alert">{error}</p>}
         <button className="btn community-announcement-ack" type="button" onClick={acknowledge} disabled={saving}>
           {saving ? 'Saving…' : (announcement.button_label || "I've read this")}
