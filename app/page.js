@@ -75,7 +75,9 @@ export default function Home() {
         setData({ featured, trending, fresh });
         setOriginals(o.error ? [] : (o.data || []));
         // Keep the Comics genre hidden until Palixia has comics ready to feature.
-        setGenres((g.data || []).filter((genre) => genre.slug !== 'comics'));
+        // Keep the original homepage genres; newly added genres are shown in Discover only.
+        const homepageGenreSlugs = new Set(['romance', 'thriller', 'crime', 'mystery', 'fantasy', 'horror', 'drama', 'sci-fi', 'short-stories']);
+        setGenres((g.data || []).filter((genre) => homepageGenreSlugs.has(genre.slug)));
         setAuthors(a.data || []);
         // Creator of the Week is selected manually by an admin. Never fall back to the newest book.
         setCreatorBook(null);
