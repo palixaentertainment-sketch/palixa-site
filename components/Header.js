@@ -94,6 +94,7 @@ export default function Header() {
                   {isAuthor ? <Link href="/dashboard">Author dashboard</Link> : <Link href="/profile#author">Become an author</Link>}
                   {isAdmin && <Link href="/admin">Admin dashboard</Link>}
                   {isAdmin && <Link href="/admin/fridays">Manage Palixia Fridays</Link>}
+                  {isAdmin && <Link href="/admin/newsletter">Palixia Newsletter</Link>}
                   <button type="button" onClick={signOut}>Sign out</button>
                 </div>
               </details>
