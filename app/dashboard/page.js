@@ -20,7 +20,7 @@ function Dashboard() {
     if (!user) return;
     (async () => {
       const [b, s, sv] = await Promise.all([
-        supabase.from('books').select('id,title,cover_url,book_type,status,story_status,reads,is_sample,like_count,chapters(id,status,like_count)').eq('author_id', user.id).order('updated_at', { ascending: false }),
+        supabase.from('books').select('id,title,cover_url,book_type,status,story_status,reads,read_adjustment,is_sample,like_count,chapters(id,status,like_count)').eq('author_id', user.id).order('updated_at', { ascending: false }),
         supabase.rpc('author_stats', { p_author: user.id }),
         supabase.rpc('book_saves'),
       ]);
@@ -40,7 +40,7 @@ function Dashboard() {
   }, [user]);
 
   const all = books || [];
-  const totalReads = all.reduce((a, b) => a + (b.reads || 0), 0);
+  const totalReads = all.reduce((a, b) => a + Math.max(0, Number(b.reads || 0) + Number(b.read_adjustment || 0)), 0);
   const published = all.filter((b) => b.status === 'published').length;
   const totalBookLikes = all.reduce((sum, book) => sum + (Number(book.like_count) || 0), 0);
   const totalChapterLikes = all.reduce((sum, book) => sum + (book.chapters || []).reduce((chapterSum, chapter) => chapterSum + (Number(chapter.like_count) || 0), 0), 0);
@@ -108,7 +108,7 @@ function Dashboard() {
                       <td><span className={'badge ' + (b.status === 'published' ? 'live' : 'draft')}>{b.status === 'published' ? 'Published' : b.status === 'draft' ? 'Draft' : 'Unpublished'}</span></td>
                       <td><span className="badge">{b.story_status === 'completed' ? 'Completed' : b.story_status === 'hiatus' ? 'On hiatus' : 'Ongoing'}</span></td>
                       <td className="num">{live} / {(b.chapters || []).length}</td>
-                      <td className="num">{fmtNum(b.reads)}</td>
+                      <td className="num">{fmtNum(Math.max(0, Number(b.reads || 0) + Number(b.read_adjustment || 0)))}</td>
                       <td className="num">{fmtNum(b.like_count || 0)}</td>
                       <td className="num">{saves[b.id] || 0}</td>
                       <td><Link className="btn ghost small" href={'/dashboard/books/' + b.id}>Manage</Link></td>
