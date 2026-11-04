@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import PublishLink from '@/components/PublishLink';
 import { supabase, configured } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
@@ -191,7 +192,19 @@ export default function Home() {
             {comingSoonBooks.map((b) => (
               <article key={b.id} className="bcard">
                 <div style={{ position: 'relative', aspectRatio: '3 / 4', overflow: 'hidden', borderRadius: '.5rem', background: 'var(--soft)' }}>
-                  <img src={b.cover_url} alt={b.title + ' cover'} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
+                  {/^https:\/\/[^/]+\.supabase\.co\/storage\/v1\//i.test(b.cover_url || '') ? (
+                    <Image
+                      src={b.cover_url}
+                      alt={b.title + ' cover'}
+                      fill
+                      sizes="(max-width: 640px) 42vw, (max-width: 1024px) 22vw, 180px"
+                      quality={72}
+                      style={{ objectFit: 'contain' }}
+                    />
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={b.cover_url} alt={b.title + ' cover'} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
+                  )}
                   <span style={{ position: 'absolute', top: '.5rem', left: '.5rem', background: 'var(--accent)', color: 'white', borderRadius: '999px', padding: '.25rem .5rem', fontSize: '.68rem', fontWeight: 700 }}>COMING SOON</span>
                 </div>
                 <div><h3>{b.title}</h3><span className="sub">{b.author_name}</span>{b.release_date && <p className="sub">Expected {new Date(b.release_date + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}</p>}</div>
