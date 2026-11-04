@@ -57,9 +57,10 @@ export default function NotificationsPage() {
       {!busy && !error && items.length === 0 && <div className="empty"><b>You’re all caught up.</b><p className="muted">Likes, comments, new followers, new books from authors you follow, and new chapters from followed or saved books will show up here.</p></div>}
       {items.map((item) => {
         const actor = item.profiles;
+        const senderName = item.kind === 'palixia_news' ? 'Official Palixia' : (actor?.name || 'A Palixia member');
         return <button key={item.id} type="button" onClick={() => openNotification(item)} className="notification-item" style={{ background: item.read_at ? 'var(--bg)' : 'var(--surface)' }}>
           <span className="notification-dot" aria-hidden="true" style={{ opacity: item.read_at ? 0 : 1 }} />
-          <span className="notification-copy"><b>{actor?.name || 'A Palixia member'}</b> {item.message}<small>{timeLabel(item.created_at)}</small></span>
+          <span className="notification-copy"><b>{senderName}</b> {item.message}<small>{timeLabel(item.created_at)}</small></span>
         </button>;
       })}
     </section>
