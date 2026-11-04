@@ -7,6 +7,59 @@ import Guard from '@/components/Guard';
 import ProfileBadge from '@/components/ProfileBadge';
 import { friendly } from '@/lib/errors';
 
+
+function ReaderActivitySection() {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [view, setView] = useState('readers');
+  const load = useCallback(async () => {
+    setLoading(true); setError('');
+    const { data, error: queryError } = await supabase.rpc('admin_reader_activity', { p_limit: 1000 });
+    if (queryError) { setError('Reader Activity needs its database setup. Run supabase/admin_reader_activity.sql in Supabase SQL Editor, then refresh. Details: ' + queryError.message); setRows([]); }
+    else setRows(data || []);
+    setLoading(false);
+  }, []);
+  useEffect(() => { load(); }, [load]);
+  const q = search.trim().toLowerCase();
+  const filtered = rows.filter(r => [r.reader_name,r.reader_username,r.book_title,r.author_name].some(v => String(v||'').toLowerCase().includes(q)));
+  const activeRows = filtered.filter(r => Number(r.progress||0)<100);
+  const completedRows = filtered.filter(r => Number(r.progress||0)>=100);
+  const bookStats = Object.values(rows.reduce((acc,r) => {
+    if (!acc[r.book_id]) acc[r.book_id]={id:r.book_id,title:r.book_title,cover:r.book_cover,author:r.author_name,readers:0,active:0,completed:0,latest:r.updated_at};
+    const b=acc[r.book_id]; b.readers++; if(Number(r.progress||0)>=100)b.completed++;else b.active++;
+    if(r.updated_at&&(!b.latest||r.updated_at>b.latest))b.latest=r.updated_at; return acc;
+  },{})).sort((a,b)=>b.active-a.active||b.readers-a.readers);
+  const fmt=v=>v?new Date(v).toLocaleString():'—';
+  const list=view==='readers'?filtered:view==='currently'?activeRows:view==='completed'?completedRows:bookStats;
+  return <section className="stack">
+    <div className="sechead"><h2 className="h2">Reader Activity</h2><button className="btn ghost small" type="button" onClick={load} disabled={loading}>{loading?'Loading…':'Refresh activity'}</button></div>
+    <p className="fine">Private admin view of reading progress recorded in reader libraries. This activity is not visible to authors or other readers.</p>
+    {error&&<p className="msg-err" role="alert">{error}</p>}
+    <div className="stats">
+      <div className="stat"><span className="mono">Readers with progress</span><b>{new Set(rows.map(r=>r.user_id)).size}</b></div>
+      <div className="stat"><span className="mono">Books being read</span><b>{new Set(rows.filter(r=>Number(r.progress||0)<100).map(r=>r.book_id)).size}</b></div>
+      <div className="stat"><span className="mono">Reading records</span><b>{rows.length}</b></div>
+      <div className="stat"><span className="mono">Completed records</span><b>{rows.filter(r=>Number(r.progress||0)>=100).length}</b></div>
+    </div>
+    <div className="field"><label htmlFor="reader-activity-search">Search readers or books</label><input id="reader-activity-search" className="in" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Reader, username, book or author"/></div>
+    <div className="chips" role="tablist" aria-label="Reader activity views">{[['readers','All reading'],['currently','Currently reading'],['completed','Completed'],['books','Book momentum']].map(([key,label])=><button key={key} type="button" role="tab" aria-selected={view===key} aria-pressed={view===key} className="chip" onClick={()=>setView(key)}>{label}</button>)}</div>
+    {loading?<p className="muted">Loading reader activity…</p>:view==='books'?<div className="tablewrap"><table><thead><tr><th>Book</th><th>Currently reading</th><th>Completed</th><th>Latest activity</th></tr></thead><tbody>
+      {list.map(b=><tr key={b.id}><td><div className="row" style={{gap:'.6rem',alignItems:'center'}}>{b.cover&&<img src={b.cover} alt="" loading="lazy" style={{width:38,height:54,objectFit:'cover',borderRadius:'.25rem'}}/>}<span><b>{b.title}</b><br/><span className="fine">{b.author}</span></span></div></td><td>{b.active}</td><td>{b.completed}</td><td>{fmt(b.latest)}</td></tr>)}
+      {!list.length&&<tr><td colSpan="4">No reading records yet.</td></tr>}
+    </tbody></table></div>:<div className="stack">
+      {list.map(r=><article key={r.user_id+'-'+r.book_id} className="panel" style={{padding:'.85rem 1rem',border:'1px solid var(--border, #ddd)',borderRadius:'.75rem'}}><div className="row" style={{alignItems:'center',gap:'.75rem'}}>
+        {r.reader_avatar?<img src={r.reader_avatar} alt="" loading="lazy" style={{width:40,height:40,borderRadius:'50%',objectFit:'cover'}}/>:<span className="avatar">{(r.reader_name||'R').slice(0,1).toUpperCase()}</span>}
+        {r.book_cover&&<img src={r.book_cover} alt="" loading="lazy" style={{width:42,height:58,objectFit:'cover',borderRadius:'.25rem'}}/>}
+        <div className="stack" style={{gap:'.15rem',minWidth:0,flex:1}}><b>{r.reader_name} <span className="fine">@{r.reader_username}</span></b><Link href={'/book/'+r.book_id}>{r.book_title}</Link><span className="fine">{r.author_name} · {Number(r.progress||0)}% complete{r.chapter_number?' · Chapter '+r.chapter_number:''}{r.chapter_title?' — '+r.chapter_title:''}</span><span className="fine">Last active: {fmt(r.updated_at)}</span></div>
+        <span className="badge">{Number(r.progress||0)>=100?'Completed':'Reading'}</span>
+      </div></article>)}
+      {!list.length&&<p className="fine">No matching reading activity found.</p>}
+    </div>}
+  </section>;
+}
+
 function AdminPanel() {
   const { user } = useAuth();
   const [stats, setStats] = useState(null);
@@ -248,6 +301,8 @@ function AdminPanel() {
             : <p className="fine">No page views recorded yet. Visit a few pages on Palixia after the database setup is complete.</p>}
         </>}
       </section>
+
+      <ReaderActivitySection />
 
       <section className="stack">
         <div className="sechead"><h2 className="h2">User management</h2><button className="btn ghost small" type="button" onClick={load} disabled={loading}>{loading ? 'Loading…' : 'Refresh'}</button></div>
