@@ -1,0 +1,12 @@
+.feed { display:grid; gap:.75rem; }
+.card { width:100%; display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:.8rem; align-items:start; padding:1rem; text-align:left; border:1px solid var(--line); border-radius:12px; background:var(--surface); color:var(--fg); cursor:pointer; transition:border-color .15s, background .15s; }
+.card:hover { border-color:var(--lav); }
+.cardUnread { background:var(--soft); border-color:var(--lav); }
+.avatarWrap { padding-top:.05rem; }
+.copy { min-width:0; display:grid; gap:.35rem; line-height:1.45; }
+.copy p { margin:0; overflow-wrap:anywhere; }
+.copy small { color:var(--muted); font-size:.78rem; }
+.actor { color:var(--fg); font-weight:700; }
+.kind { width:max-content; max-width:100%; color:var(--accent); background:var(--soft); border-radius:99px; padding:.12rem .5rem; font-size:.68rem; font-weight:800; letter-spacing:.04em; text-transform:uppercase; }
+.unread { width:.55rem; height:.55rem; border-radius:50%; background:var(--accent); margin-top:.45rem; }
+.header { display:flex; align-items:center; justify-content:space-between; gap:.75rem; flex-wrap:wrap; }
