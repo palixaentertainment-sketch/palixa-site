@@ -33,7 +33,7 @@ export default function NotificationsPage() {
     if (!user || !configured) { setItems([]); setBusy(false); return; }
     setBusy(true);
     const { data, error: queryError } = await supabase.from('notifications')
-      .select('id,kind,message,link_url,read_at,created_at,profiles!notifications_actor_id_fkey(name,username,avatar_url)')
+      .select('id,kind,message,link_url,read_at,created_at,newsletter_title,newsletter_body,newsletter_image_url,newsletter_button_label,profiles!notifications_actor_id_fkey(name,username,avatar_url)')
       .eq('recipient_id', user.id).order('created_at', { ascending: false }).limit(60);
     if (queryError) {
       setError('Notifications could not be loaded. Please try again.');
@@ -87,6 +87,9 @@ export default function NotificationsPage() {
               <span className={styles.copy}>
                 <span className={styles.kind}>{kindLabel(item.kind)}</span>
                 <p><span className={styles.actor}>{official ? 'Palixia' : actor?.name || 'A Palixia member'}</span>{' '}{item.message}</p>
+                {official && item.newsletter_body && <p style={{ whiteSpace: 'pre-wrap' }}>{item.newsletter_body}</p>}
+                {official && item.newsletter_image_url && <img src={item.newsletter_image_url} alt="" loading="lazy" style={{ width: 'min(100%, 260px)', maxHeight: '220px', objectFit: 'contain', borderRadius: '9px', marginTop: '.25rem' }} />}
+                {official && item.newsletter_button_label && item.link_url && <small style={{ color: 'var(--accent)', fontWeight: 700 }}>{item.newsletter_button_label} →</small>}
                 <small>{timeLabel(item.created_at)}{actor?.username && !official ? ` · @${actor.username}` : ''}</small>
               </span>
               {!item.read_at && <span className={styles.unread} aria-label="Unread" />}
