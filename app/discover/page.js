@@ -43,8 +43,19 @@ function Discover() {
 
   useEffect(() => {
     if (!configured) return;
-    supabase.from('genres').select('*').order('sort')
-      .then(({ data }) => setGenres((data || []).filter((genre) => genre.slug !== 'comics')));
+    let alive = true;
+    async function loadAvailableGenres() {
+      // book_cards contains published books only, so categories without a published book stay hidden.
+      const { data: books, error: booksError } = await supabase
+        .from('book_cards').select('genre_id').eq('book_type', 'text').not('genre_id', 'is', null);
+      if (booksError || !alive) return;
+      const genreIds = [...new Set((books || []).map((book) => book.genre_id).filter(Boolean))];
+      if (!genreIds.length) { setGenres([]); return; }
+      const { data } = await supabase.from('genres').select('*').in('id', genreIds).order('sort');
+      if (alive) setGenres((data || []).filter((item) => item.slug !== 'comics'));
+    }
+    loadAvailableGenres();
+    return () => { alive = false; };
   }, []);
 
   function build(from) {
