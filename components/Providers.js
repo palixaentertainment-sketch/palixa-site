@@ -10,6 +10,7 @@ import SocialLinks from '@/components/SocialLinks';
 import InstallAppPrompt from '@/components/InstallAppPrompt';
 import CommunityAnnouncement from '@/components/CommunityAnnouncement';
 import MobileNav from '@/components/MobileNav';
+import NewsletterSignup from '@/components/NewsletterSignup';
 
 export default function Providers({ children }) {
   const pathname = usePathname() || '/';
@@ -26,6 +27,7 @@ export default function Providers({ children }) {
           {signingIn ? <AuthHeader /> : <Header />}
           <main className="wrap page">{children}</main>
           <footer className="foot">
+            {!signingIn && <NewsletterSignup />}
             <div className="foot-inner">
               <div className="foot-brand">
                 <Logo size="footer" />
