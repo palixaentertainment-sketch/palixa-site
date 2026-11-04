@@ -2,6 +2,7 @@
 -- Additive migration: preserves existing notification recipient rules and triggers.
 
 alter table public.notifications
+  add column if not exists newsletter_id uuid,
   add column if not exists newsletter_title text,
   add column if not exists newsletter_body text,
   add column if not exists newsletter_image_url text,
@@ -72,11 +73,11 @@ begin
 
   insert into public.notifications(
     recipient_id, actor_id, kind, message, link_url,
-    newsletter_title, newsletter_body, newsletter_image_url, newsletter_button_label
+    newsletter_id, newsletter_title, newsletter_body, newsletter_image_url, newsletter_button_label
   )
   select p.id, null, 'palixia_news', trim(p_title),
          coalesce(nullif(trim(p_link_url), ''), '/notifications'),
-         v_newsletter_id, trim(p_body), nullif(trim(p_image_url), ''),
+         v_newsletter_id, trim(p_title), trim(p_body), nullif(trim(p_image_url), ''),
          nullif(trim(p_button_label), '')
   from public.profiles p
   where p.status = 'active';
