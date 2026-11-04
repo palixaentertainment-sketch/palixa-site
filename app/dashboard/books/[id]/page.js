@@ -23,7 +23,7 @@ function Manage() {
   const load = useCallback(async () => {
     const { data } = await supabase
       .from('books')
-      .select('id,author_id,title,description,cover_url,genre_id,tags,book_type,status,story_status,reads,is_sample')
+      .select('id,author_id,title,description,cover_url,genre_id,tags,book_type,status,story_status,reads,read_adjustment,is_sample')
       .eq('id', id).maybeSingle();
     if (!data || data.author_id !== user.id) { setBook(null); return; }
     setBook(data);
@@ -78,7 +78,7 @@ function Manage() {
           <span className={'badge ' + (book.status === 'published' ? 'live' : 'draft')}>{book.status === 'published' ? 'Published' : book.status === 'draft' ? 'Draft' : 'Unpublished'}</span>
         </div>
         <dl className="facts">
-          <div><dt>Reads</dt><dd>{fmtNum(book.reads)}</dd></div>
+          <div><dt>Reads</dt><dd>{fmtNum(Math.max(0, Number(book.reads || 0) + Number(book.read_adjustment || 0)))}</dd></div>
           <div><dt>Chapters</dt><dd>{live} live of {chapters.length}</dd></div>
           <div><dt>Format</dt><dd>{book.book_type === 'comic' ? 'Comic' : 'Text book'}</dd></div>
           <div><dt>Story</dt><dd>{book.story_status === 'completed' ? 'Completed' : book.story_status === 'hiatus' ? 'On hiatus' : 'Ongoing'}</dd></div>
