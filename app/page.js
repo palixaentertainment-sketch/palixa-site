@@ -5,6 +5,7 @@ import PublishLink from '@/components/PublishLink';
 import { supabase, configured } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 import { fmtNum } from '@/lib/format';
+import { genreStyle } from '@/lib/genres';
 import Cover from '@/components/Cover';
 import BookCard from '@/components/BookCard';
 import Avatar from '@/components/Avatar';
@@ -14,6 +15,7 @@ export default function Home() {
   const { user } = useAuth();
   const [data, setData] = useState(null);
   const [originals, setOriginals] = useState([]);
+  const [genres, setGenres] = useState([]);
   const [authors, setAuthors] = useState([]);
   const [continueReading, setContinueReading] = useState([]);
   const [recommended, setRecommended] = useState([]);
@@ -55,10 +57,11 @@ export default function Home() {
 
     (async () => {
       try {
-        const [f, t, n, a, creatorSelection, o] = await Promise.all([
+        const [f, t, n, g, a, creatorSelection, o] = await Promise.all([
           supabase.from('book_cards').select('*').eq('featured', true).order('reads', { ascending: false }).limit(6),
           supabase.from('book_cards').select('*').order('reads', { ascending: false }).limit(12),
           supabase.from('book_cards').select('*').order('created_at', { ascending: false }).limit(12),
+          supabase.from('genres').select('*').order('sort'),
           supabase.rpc('popular_authors', { lim: 8 }),
           supabase.from('creator_of_week').select('book_id').eq('id', true).maybeSingle(),
           supabase.from('palixia_originals_home_cards_v2').select('*').order('created_at', { ascending: false }).limit(12),
@@ -71,6 +74,10 @@ export default function Home() {
         const fresh = n.data || [];
         setData({ featured, trending, fresh });
         setOriginals(o.error ? [] : (o.data || []));
+        // Keep the Comics genre hidden until Palixia has comics ready to feature.
+        // Keep the original homepage genres; newly added genres are shown in Discover only.
+        const homepageGenreSlugs = new Set(['romance', 'thriller', 'crime', 'mystery', 'fantasy', 'horror', 'drama', 'sci-fi', 'short-stories']);
+        setGenres((g.data || []).filter((genre) => homepageGenreSlugs.has(genre.slug)));
         setAuthors(a.data || []);
         // Creator of the Week is selected manually by an admin. Never fall back to the newest book.
         setCreatorBook(null);
@@ -301,6 +308,10 @@ export default function Home() {
 
       {data && data.fresh.length > 0 && (
         <section><div className="sechead"><div><h2 className="h2">Just released</h2><p className="fine">Fresh stories and new chapters to discover.</p></div><Link href="/discover?sort=newest">See all</Link></div><div className="shelf">{data.fresh.map((b) => <BookCard key={b.id} b={b} />)}</div></section>
+      )}
+
+      {genres.length > 0 && (
+        <section><div className="sechead"><div><h2 className="h2">Find your kind of story</h2><p className="fine">Browse by the mood or genre you love.</p></div><Link href="/categories">All genres</Link></div><div className="genres">{genres.map((g) => <Link key={g.id} href={'/discover?genre=' + g.slug} className="gcard" style={genreStyle(g.slug)}>{g.name}</Link>)}</div></section>
       )}
 
       {authors.length > 0 && (
