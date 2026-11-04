@@ -21,7 +21,7 @@ export default function BookForm({ userId, book, locked, onSaved }) {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    supabase.from('genres').select('*').order('sort').then(({ data }) => setGenres(data || []));
+    supabase.from('genres').select('*').order('sort').then(({ data }) => setGenres((data || []).filter((genre) => genre.slug !== 'comics')));
   }, []);
 
   useEffect(() => {
