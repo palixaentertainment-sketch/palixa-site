@@ -1346,3 +1346,52 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
   margin-top: 1rem;
   text-align: center;
 }
+
+
+/* Palixia newsletter signup */
+.newsletter-signup {
+  width: 100%;
+  max-width: 76rem;
+  margin: 0 auto 2.25rem;
+  padding: clamp(1.25rem, 4vw, 2rem);
+  display: grid;
+  gap: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: linear-gradient(120deg, var(--soft), var(--surface) 68%);
+}
+.newsletter-copy { display: grid; gap: .4rem; }
+.newsletter-eyebrow { color: var(--accent); font: 700 .7rem var(--mono); letter-spacing: .1em; }
+.newsletter-copy h2 { color: var(--fg); font-size: clamp(1.35rem, 4vw, 1.8rem); line-height: 1.15; }
+.newsletter-copy p { max-width: 34rem; color: var(--muted); line-height: 1.6; }
+.newsletter-form { display: grid; gap: .7rem; min-width: 0; }
+.newsletter-input-row { display: flex; gap: .55rem; min-width: 0; }
+.newsletter-input-row input {
+  flex: 1;
+  min-width: 0;
+  min-height: 2.8rem;
+  padding: .65rem .85rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--fg);
+}
+.newsletter-input-row .btn { flex: 0 0 auto; white-space: nowrap; }
+.newsletter-consent { display: flex; align-items: flex-start; gap: .5rem; color: var(--muted); font-size: .78rem; line-height: 1.5; }
+.newsletter-consent input { flex: 0 0 auto; width: 1rem; height: 1rem; margin: .15rem 0 0; accent-color: var(--accent); }
+.newsletter-message { min-height: 1.2em; font-size: .85rem; }
+.newsletter-message:empty { display: none; }
+.newsletter-message.success { color: var(--ok); }
+.newsletter-message.error { color: var(--danger); }
+.newsletter-input-row button:disabled { opacity: .65; cursor: wait; }
+.newsletter-honeypot { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+:root[data-theme="dark"] .newsletter-signup { border-color: var(--line); background: linear-gradient(120deg, #251b35, #191323 68%); }
+:root[data-theme="dark"] .newsletter-copy h2 { color: var(--fg); }
+:root[data-theme="dark"] .newsletter-input-row input { border-color: var(--line); background: var(--bg); color: var(--fg); }
+@media (min-width: 48rem) {
+  .newsletter-signup { grid-template-columns: minmax(0, 1fr) minmax(19rem, .9fr); align-items: center; gap: 2rem; }
+}
+@media (max-width: 27rem) {
+  .newsletter-input-row { flex-direction: column; }
+  .newsletter-input-row .btn { width: 100%; }
+}
