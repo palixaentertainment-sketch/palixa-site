@@ -27,7 +27,7 @@ function Manage() {
       .eq('id', id).maybeSingle();
     if (!data || data.author_id !== user.id) { setBook(null); return; }
     setBook(data);
-    const { data: chs } = await supabase.from('chapters').select('id,chapter_number,title,status,reads').eq('book_id', id).order('chapter_number');
+    const { data: chs } = await supabase.from('chapters').select('id,chapter_number,title,status').eq('book_id', id).order('chapter_number');
     setChapters(chs || []);
   }, [id, user]);
 
@@ -105,14 +105,13 @@ function Manage() {
         ) : (
           <div className="tablewrap">
             <table>
-              <thead><tr><th className="num">No.</th><th>Title</th><th>Status</th><th className="num">Reads</th><th /></tr></thead>
+              <thead><tr><th className="num">No.</th><th>Title</th><th>Status</th><th /></tr></thead>
               <tbody>
                 {chapters.map((c) => (
                   <tr key={c.id}>
                     <td className="num">{c.chapter_number}</td>
                     <td style={{ overflowWrap: 'anywhere', minWidth: '9rem' }}>{c.title}</td>
                     <td><span className={'badge ' + (c.status === 'published' ? 'live' : 'draft')}>{c.status === 'published' ? 'Published' : 'Draft'}</span></td>
-                    <td className="num">{fmtNum(c.reads)}</td>
                     <td>
                       {confirm === c.id ? (
                         <div className="row" style={{ flexWrap: 'nowrap' }}>
