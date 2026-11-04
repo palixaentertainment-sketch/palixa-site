@@ -2,11 +2,12 @@
 -- All genres remain available in the author book form. Discover only displays genres
 -- that have at least one published text book (queried from the book_cards view).
 
+update public.genres set name = 'Science Fiction' where slug = 'sci-fi';
+
 insert into public.genres (name, slug, sort) values
   ('Paranormal', 'paranormal', 11),
   ('Contemporary', 'contemporary', 12),
   ('Historical Fiction', 'historical-fiction', 13),
-  ('Science Fiction', 'science-fiction', 14),
   ('Adventure', 'adventure', 15),
   ('Action', 'action', 16),
   ('Literary Fiction', 'literary-fiction', 17),
