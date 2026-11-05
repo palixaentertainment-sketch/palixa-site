@@ -22,11 +22,16 @@ function FinancePanel() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [withdrawalRows, setWithdrawalRows] = useState([]);
+  const [actionId, setActionId] = useState('');
+  const [actionError, setActionError] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
     setError('');
-    const { data: result, error: rpcError } = await supabase.rpc('admin_finance_overview');
+    const [{ data: result, error: rpcError }, { data: rows, error: rowsError }] = await Promise.all([supabase.rpc('admin_finance_overview'), supabase.rpc('admin_list_withdrawal_requests')]);
+    if (rowsError) setActionError('Withdrawal requests could not be loaded. Apply the withdrawal-management migration first.');
+    else setWithdrawalRows(Array.isArray(rows) ? rows : []);
     if (rpcError) {
       setData(null);
       setError(rpcError.message?.includes('admin_finance_overview')
@@ -39,6 +44,29 @@ function FinancePanel() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  async function manageWithdrawal(row, action) {
+    let adminNote = '';
+    let payoutReference = '';
+    if (action === 'reject') {
+      adminNote = window.prompt('Reason for rejecting this request:') || '';
+      if (!adminNote.trim()) return;
+    }
+    if (action === 'mark_paid') {
+      payoutReference = window.prompt('Bank transfer reference (only after sending the transfer):') || '';
+      if (!payoutReference.trim()) return;
+    }
+    if (action === 'approve') adminNote = window.prompt('Optional admin note:') || '';
+    setActionId(row.id);
+    setActionError('');
+    const result = await supabase.rpc('admin_manage_withdrawal', {
+      p_request_id: row.id, p_action: action,
+      p_admin_note: adminNote || null, p_payout_reference: payoutReference || null,
+    });
+    setActionId('');
+    if (result.error) { setActionError(result.error.message || 'The withdrawal action failed.'); return; }
+    await load();
+  }
 
   const purchases = data?.purchases || {};
   const wallets = data?.reader_wallets || {};
@@ -80,7 +108,7 @@ function FinancePanel() {
 
         <section className="stack">
           <h2 className="h2">Author earnings ledger</h2>
-          <p className="fine">These are ledger totals by entry type and status. Pending credits are not withdrawable. The proposed 90/10 split is not applied by the current tip function.</p>
+          <p className="fine">These are ledger totals by entry type and status. Pending credits are not withdrawable. The 90/10 split applies to new tips. Pending credits are not withdrawable.</p>
           <div className="tablewrap"><table><thead><tr><th>Entry type</th><th>Status</th><th>Entries</th><th>Amount</th></tr></thead><tbody>
             {earnings.map((row, index) => <tr key={row.entry_type + '-' + row.status + '-' + index}><td>{String(row.entry_type).replaceAll('_', ' ')}</td><td>{String(row.status).replaceAll('_', ' ')}</td><td>{number(row.entry_count)}</td><td>{naira(row.amount_kobo)}</td></tr>)}
             {earnings.length === 0 && <tr><td colSpan="4">No author ledger entries yet.</td></tr>}
@@ -116,13 +144,31 @@ function FinancePanel() {
         </section>
 
         <section className="stack">
+          <h2 className="h2">Manage withdrawal requests</h2>
+          <p className="fine">Review, approve or reject requests. Mark a request paid only after you have manually sent the bank transfer. Approval checks and reserves available author earnings.</p>
+          {actionError && <p className="msg-err" role="alert">{actionError}</p>}
+          <div className="tablewrap"><table><thead><tr><th>Date</th><th>Author ID</th><th>Amount</th><th>Status</th><th>Note / transfer ref</th><th>Actions</th></tr></thead><tbody>
+            {withdrawalRows.map(row => <tr key={row.id}>
+              <td>{date(row.requested_at)}</td><td><code>{row.author_id}</code></td><td>{naira(row.amount_kobo)}</td><td>{row.status}</td><td>{row.admin_note || row.payout_reference || "—"}</td>
+              <td><div className="row" style={{flexWrap:"wrap",gap:".35rem"}}>
+                {row.status === "requested" && <button className="btn ghost small" disabled={actionId === row.id} onClick={() => manageWithdrawal(row,"start_review")}>Review</button>}
+                {["requested","under_review"].includes(row.status) && <button className="btn small" disabled={actionId === row.id} onClick={() => manageWithdrawal(row,"approve")}>Approve</button>}
+                {["requested","under_review","approved"].includes(row.status) && <button className="btn ghost small" disabled={actionId === row.id} onClick={() => manageWithdrawal(row,"reject")}>Reject</button>}
+                {row.status === "approved" && <button className="btn small" disabled={actionId === row.id} onClick={() => manageWithdrawal(row,"mark_paid")}>Mark paid</button>}
+                {actionId === row.id && <span className="fine">Saving…</span>}
+              </div></td>
+            </tr>)}
+            {!withdrawalRows.length && <tr><td colSpan="6">No withdrawal requests yet.</td></tr>}
+          </tbody></table></div>
+        </section>
+        <section className="stack">
           <h2 className="h2">Recent withdrawal requests</h2>
           <div className="tablewrap"><table><thead><tr><th>Requested</th><th>Author ID</th><th>Amount</th><th>Status</th><th>Paid</th></tr></thead><tbody>
             {(data.recent_withdrawals || []).map(row => <tr key={row.id}><td>{date(row.requested_at)}</td><td><code>{row.author_id}</code></td><td>{naira(row.amount_kobo)}</td><td>{row.status}</td><td>{date(row.paid_at)}</td></tr>)}
             {!data.recent_withdrawals?.length && <tr><td colSpan="5">No withdrawal requests recorded.</td></tr>}
           </tbody></table></div>
         </section>
-        <p className="fine">Snapshot generated {date(data.generated_at)}. This page does not approve withdrawals, alter balances or initiate payments.</p>
+        <p className="fine">Snapshot generated {date(data.generated_at)}. This page records admin decisions and manual payouts; it does not initiate bank transfers.</p>
       </>}
     </main>
   );
