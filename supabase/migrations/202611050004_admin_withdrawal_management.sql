@@ -52,7 +52,7 @@ begin
     raise exception 'Active administrator access required' using errcode = '42501';
   end if;
 
-  if p_action not in ('start_review','approve','reject','mark_paid') then
+  if p_action is null or p_action not in ('start_review','approve','reject','mark_paid') then
     raise exception 'Invalid withdrawal action';
   end if;
 
