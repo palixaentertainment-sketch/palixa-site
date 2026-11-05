@@ -9,6 +9,7 @@ export default function SparksCallbackPage() {
   const [message, setMessage] = useState('Confirming your payment directly with Paystack…');
   const [sparks, setSparks] = useState(0);
   const [reference, setReference] = useState('');
+  const [diagnostic, setDiagnostic] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -54,7 +55,13 @@ export default function SparksCallbackPage() {
           if (response.status !== 404 || index === candidates.length - 1) break;
         }
 
-        if (!response.ok) throw new Error(data.error || 'We could not verify this payment.');
+        if (!response.ok) {
+          if (active) setDiagnostic({
+            ...(data.diagnostic || {}),
+            diagnosticId: data.diagnosticId || null,
+          });
+          throw new Error(data.error || 'We could not verify this payment.');
+        }
         if (active) {
           setReference(verifiedReference);
           if (data.status === 'success' && data.credited) {
@@ -86,6 +93,17 @@ export default function SparksCallbackPage() {
         <p>{message}</p>
         {state === 'success' ? <strong style={{ fontSize: '1.8rem' }}>+{sparks.toLocaleString('en-NG')} ✨</strong> : null}
         {reference ? <p className="fine">Reference: {reference}</p> : null}
+        {diagnostic ? (
+          <section className="card stack" aria-live="polite">
+            <strong>Technical details (admin)</strong>
+            {diagnostic.stage ? <p className="fine">Stage: {diagnostic.stage}</p> : null}
+            {diagnostic.code ? <p className="fine">Error code: {diagnostic.code}</p> : null}
+            {diagnostic.message ? <p className="fine">Database message: {diagnostic.message}</p> : null}
+            {diagnostic.details ? <p className="fine">Details: {diagnostic.details}</p> : null}
+            {diagnostic.hint ? <p className="fine">Hint: {diagnostic.hint}</p> : null}
+            {diagnostic.diagnosticId ? <p className="fine">Diagnostic ID: {diagnostic.diagnosticId}</p> : null}
+          </section>
+        ) : null}
         <div className="row">
           <Link className="btn" href="/sparks">View Sparks wallet</Link>
           <Link className="btn ghost" href="/">Return home</Link>
