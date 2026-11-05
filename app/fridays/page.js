@@ -137,6 +137,7 @@ export default function PalixiaFridaysPage() {
             </div>
           </div>
           <div className="fridays-dates"><span>Starts: {formatDate(hunt.starts_at)}</span><span>Ends: {formatDate(hunt.ends_at)}</span></div>
+          <div className="fridays-callout">{hunt.prize_type === 'recognition' ? 'Winner reward: a Palixia Fridays winner badge and a dedicated social media spotlight. Free to enter.' : `Winner reward: ${hunt.prize_type} worth ₦${Number(hunt.prize_value).toLocaleString()}.`}</div>
 
           {notStarted && <div className="fridays-callout">This hunt has been announced. Come back when it starts to unlock the first clue.</div>}
           {!notStarted && !closed && !user && <div className="fridays-callout">You need a Palixia account to submit answers and track your progress. <Link className="linkbtn" href="/login?next=%2Ffridays">Log in</Link> or <Link className="linkbtn" href="/signup">sign up</Link>.</div>}
