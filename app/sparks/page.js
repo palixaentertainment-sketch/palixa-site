@@ -15,7 +15,7 @@ function SparksWallet() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(null);
   const [notice, setNotice] = useState('');
-  const [access, setAccess] = useState('checking');
+  const [adminTesting, setAdminTesting] = useState(false);
 
   const loadWallet = useCallback(async () => {
     if (!user) return;
@@ -34,13 +34,16 @@ function SparksWallet() {
     (async () => {
       const { data } = await supabase.auth.getSession();
       const token = data?.session?.access_token;
-      if (!token) { if (active) setAccess('denied'); return; }
-      const response = await fetch('/api/sparks/access', { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' });
-      if (!active) return;
-      if (!response.ok) { setAccess('denied'); return; }
-      const result = await response.json();
-      setAccess(result.enabled ? 'allowed' : 'denied');
-      if (result.enabled) loadWallet();
+      if (token) {
+        try {
+          const response = await fetch('/api/sparks/access', { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' });
+          if (response.ok) {
+            const result = await response.json();
+            if (active) setAdminTesting(Boolean(result.enabled));
+          }
+        } catch {}
+      }
+      if (active) loadWallet();
     })();
     return () => { active = false; };
   }, [loadWallet]);
@@ -66,45 +69,53 @@ function SparksWallet() {
     }
   }
 
-  if (access === 'checking') return <main className="wrap page"><p className="muted">Checking Sparks access…</p></main>;
-  if (access !== 'allowed') return <main className="wrap page"><h1 className="h1">Sparks testing is restricted</h1><p className="muted">This feature is currently available to Palixia administrators only.</p></main>;
-
   return (
     <main className="wrap page stack" style={{ maxWidth: 760 }}>
       <div className="stack">
-        <Link href="/" className="fine">← Back to Palixia</Link>
-        <h1 className="h1">Your Sparks</h1>
-        <p className="muted">Buy Sparks to support the authors and stories you enjoy.</p>
+        <Link href="/profile" className="fine">← Back to profile</Link>
+        <h1 className="h1">My Sparks Wallet</h1>
+        <p className="muted">Keep track of your Sparks and use them to support the authors you enjoy.</p>
       </div>
       <section className="card stack">
-        <span className="mono">Available Sparks</span>
-        <strong style={{ fontSize: '2.4rem' }}>{loading ? '…' : balance.toLocaleString('en-NG')} ✨</strong>
-        <p className="fine">Your balance updates after Paystack confirms your payment.</p>
+        <span className="mono">AVAILABLE SPARKS</span>
+        <strong style={{ fontSize: '2.5rem' }}>{loading ? '…' : balance.toLocaleString('en-NG')} ✨</strong>
+        <p className="fine">Your Sparks balance and activity are private to your account.</p>
       </section>
-      <section className="stack">
-        <h2 className="h2">Choose a package</h2>
-        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: 12 }}>
-          {PACKAGES.map((amount) => (
-            <div className="card stack" key={amount}>
-              <strong>{amount.toLocaleString('en-NG')} Sparks</strong>
-              <span className="fine">₦{amount.toLocaleString('en-NG')}</span>
-              <button className="btn" disabled={busy !== null} onClick={() => buy(amount)}>
-                {busy === amount ? 'Opening…' : 'Buy'}
-              </button>
-            </div>
-          ))}
+      <section className="card stack">
+        <div>
+          <h2 className="h2">Top up your wallet</h2>
+          <p className="muted">Add Sparks to your balance so you can support authors and their stories.</p>
         </div>
-        <p className="fine">₦1 = 1 Spark. Minimum purchase: ₦100. Payments are processed securely by Paystack.</p>
+        {adminTesting ? (
+          <>
+            <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: 12 }}>
+              {PACKAGES.map((amount) => (
+                <div className="card stack" key={amount}>
+                  <strong>{amount.toLocaleString('en-NG')} Sparks</strong>
+                  <span className="fine">₦{amount.toLocaleString('en-NG')}</span>
+                  <button className="btn" disabled={busy !== null} onClick={() => buy(amount)}>
+                    {busy === amount ? 'Opening…' : 'Buy'}
+                  </button>
+                </div>
+              ))}
+            </div>
+            <p className="fine">Admin testing only. ₦1 = 1 Spark.</p>
+          </>
+        ) : (
+          <button className="btn" type="button" disabled>Buy Sparks — Coming soon</button>
+        )}
         {notice ? <p role="alert" className="notice">{notice}</p> : null}
       </section>
       <section className="stack">
-        <h2 className="h2">Sparks activity</h2>
-        {loading ? <p className="muted">Loading activity…</p> : history.length === 0 ? <p className="muted">Your Sparks activity will appear here.</p> : (
+        <h2 className="h2">Transaction history</h2>
+        {loading ? <p className="muted">Loading activity…</p> : history.length === 0 ? (
+          <div className="card"><p className="muted">No transactions yet. Your Sparks activity will appear here.</p></div>
+        ) : (
           <div className="card stack">
             {history.map((entry) => (
-              <div className="row" key={entry.id} style={{ justifyContent: 'space-between', borderBottom: '1px solid var(--line, #eee)', padding: '0.55rem 0' }}>
+              <div className="row" key={entry.id} style={{ justifyContent: 'space-between', borderBottom: '1px solid var(--line, #eee)', padding: '0.65rem 0' }}>
                 <div>
-                  <strong>{entry.description || (entry.entry_type === 'purchase_credit' ? 'Sparks purchase' : 'Sparks activity')}</strong>
+                  <strong>{entry.description || (entry.entry_type === 'purchase_credit' ? 'Sparks top-up' : entry.entry_type === 'tip_debit' ? 'Author support' : 'Sparks activity')}</strong>
                   <div className="fine">{new Date(entry.created_at).toLocaleString()}</div>
                 </div>
                 <strong>{entry.entry_type === 'tip_debit' ? '−' : '+'}{entry.sparks_amount} ✨</strong>
@@ -112,6 +123,10 @@ function SparksWallet() {
             ))}
           </div>
         )}
+      </section>
+      <section className="card">
+        <h2 className="h2">What are Sparks?</h2>
+        <p className="muted">Sparks are Palixia credits readers can use to show support for authors. You can check your balance and transaction history here.</p>
       </section>
     </main>
   );
