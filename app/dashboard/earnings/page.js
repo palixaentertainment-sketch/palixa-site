@@ -80,7 +80,7 @@ function EarningsWallet() {
 
   async function verifyAndSaveBank() {
     const bank = banks.find((item) => item.code === bankCode);
-    if (!bank || !/^\\d{10}$/.test(accountNumber)) { setBankError('Choose a bank and enter a valid 10-digit account number.'); return; }
+    if (!bank || !/^\d{10}$/.test(accountNumber)) { setBankError('Choose a bank and enter a valid 10-digit account number.'); return; }
     setBankSaving(true); setBankError(''); setVerifiedBank(null);
     const sessionResult = await supabase.auth.getSession();
     const token = sessionResult.data && sessionResult.data.session && sessionResult.data.session.access_token;
@@ -149,7 +149,7 @@ function EarningsWallet() {
           </select>
         </label>
         <label className="stack" style={{ gap: '.35rem' }}><span className="fine">10-digit account number</span>
-          <input className="in" inputMode="numeric" autoComplete="off" maxLength={10} value={accountNumber} onChange={(event) => { setAccountNumber(event.target.value.replace(/\\D/g, '').slice(0, 10)); setVerifiedBank(null); }} placeholder="Enter account number" />
+          <input className="in" inputMode="numeric" autoComplete="off" maxLength={10} value={accountNumber} onChange={(event) => { setAccountNumber(event.target.value.replace(/\D/g, '').slice(0, 10)); setVerifiedBank(null); }} placeholder="Enter account number" />
         </label>
         {bankError && <p className="msg-err" role="alert">{bankError}</p>}
         {verifiedBank && <div className="card" style={{ background: 'var(--soft, #f7f2ff)' }}><b>✓ Account verified</b><p style={{ margin: '.35rem 0 0' }}>{verifiedBank.accountName}</p><span className="fine">{verifiedBank.bankName} · •••• {verifiedBank.accountLast4}</span></div>}
