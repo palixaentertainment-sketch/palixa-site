@@ -103,6 +103,12 @@ function ProfileForm() {
         </dl>
       </div>
 
+      <section className="card">
+        <h2 className="h2">My Sparks Wallet</h2>
+        <p className="muted">Check your Sparks balance, top up when available and view your transaction history.</p>
+        <Link className="btn" href="/sparks">Open Sparks Wallet</Link>
+      </section>
+
       <form className="card" onSubmit={save} noValidate>
         <div className="field">
           <label htmlFor="avatar">Profile picture</label>
