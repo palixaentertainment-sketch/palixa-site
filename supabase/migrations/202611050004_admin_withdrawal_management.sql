@@ -76,9 +76,12 @@ begin
   elsif p_action = 'approve' then
     if v_request.status not in ('requested','under_review') then raise exception 'Only requested or under-review withdrawals can be approved'; end if;
 
-    select coalesce(sum(amount_kobo),0) into v_available
+    select
+      coalesce(sum(amount_kobo) filter (where entry_type = 'tip_credit' and status = 'available'),0)
+      - coalesce(sum(amount_kobo) filter (where entry_type = 'payout' and status = 'paid'),0)
+      into v_available
     from public.author_wallet_ledger
-    where author_id = v_request.author_id and entry_type = 'tip_credit' and status = 'available';
+    where author_id = v_request.author_id;
 
     select coalesce(sum(amount_kobo),0) into v_reserved
     from public.author_withdrawal_requests
@@ -108,9 +111,12 @@ begin
       raise exception 'Enter the manual transfer reference before marking paid';
     end if;
 
-    select coalesce(sum(amount_kobo),0) into v_available
+    select
+      coalesce(sum(amount_kobo) filter (where entry_type = 'tip_credit' and status = 'available'),0)
+      - coalesce(sum(amount_kobo) filter (where entry_type = 'payout' and status = 'paid'),0)
+      into v_available
     from public.author_wallet_ledger
-    where author_id = v_request.author_id and entry_type = 'tip_credit' and status = 'available';
+    where author_id = v_request.author_id;
 
     select coalesce(sum(amount_kobo),0) into v_reserved
     from public.author_withdrawal_requests
