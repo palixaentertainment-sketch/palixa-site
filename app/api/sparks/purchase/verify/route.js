@@ -144,9 +144,8 @@ export async function POST(request) {
     p_currency: transaction.currency,
   });
   if (postError) {
-    // Keep the detailed database error in server logs only. The browser gets a
-    // correlation ID so support can locate the exact failure without exposing
-    // database internals to visitors.
+    // This route is admin-only. Return the database diagnostic to the verified
+    // admin so the failure can be investigated without exposing it publicly.
     const diagnosticId = request.headers.get('x-vercel-id') || `sparks-${Date.now()}`;
     console.error('[Sparks verify] Credit posting failed', {
       diagnosticId,
@@ -169,6 +168,13 @@ export async function POST(request) {
       error: 'Payment was verified, but Sparks could not be credited automatically. Please contact support with your reference.',
       diagnosticId,
       reference,
+      diagnostic: {
+        stage: 'post_verified_spark_purchase',
+        code: postError.code || null,
+        message: postError.message || 'Unknown database error',
+        details: postError.details || null,
+        hint: postError.hint || null,
+      },
     }, { status: 500 });
   }
 
