@@ -24,6 +24,13 @@ function EarningsWallet() {
   const [stories, setStories] = useState([]);
   const [selectedStoryId, setSelectedStoryId] = useState('');
   const [copyMessage, setCopyMessage] = useState('');
+  const [banks, setBanks] = useState([]);
+  const [bankCode, setBankCode] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [bankLoading, setBankLoading] = useState(true);
+  const [bankSaving, setBankSaving] = useState(false);
+  const [bankError, setBankError] = useState('');
+  const [verifiedBank, setVerifiedBank] = useState(null);
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -57,6 +64,35 @@ function EarningsWallet() {
   }, [user]);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    let active = true;
+    fetch('/api/payout/banks', { cache: 'no-store' })
+      .then(async (response) => {
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || 'Could not load banks.');
+        if (active) setBanks(payload.banks || []);
+      })
+      .catch((err) => { if (active) setBankError(err.message); })
+      .finally(() => { if (active) setBankLoading(false); });
+    return () => { active = false; };
+  }, []);
+
+  async function verifyAndSaveBank() {
+    const bank = banks.find((item) => item.code === bankCode);
+    if (!bank || !/^\d{10}$/.test(accountNumber)) { setBankError('Choose a bank and enter a valid 10-digit account number.'); return; }
+    setBankSaving(true); setBankError(''); setVerifiedBank(null);
+    const sessionResult = await supabase.auth.getSession();
+    const token = sessionResult.data && sessionResult.data.session && sessionResult.data.session.access_token;
+    if (!token) { setBankError('Your session has expired. Please sign in again.'); setBankSaving(false); return; }
+    try {
+      const response = await fetch('/api/payout/verify-account', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ bankCode, bankName: bank.name, accountNumber }) });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'Could not verify this account.');
+      setVerifiedBank(payload); setAccountNumber('');
+    } catch (err) { setBankError(err.message); }
+    finally { setBankSaving(false); }
+  }
 
   async function copyStoryInviteLink() {
     if (!selectedStoryId) return;
@@ -103,6 +139,21 @@ function EarningsWallet() {
         <div className="stat"><span className="mono">Pending</span><b>{naira(pending)}</b></div>
         <div className="stat"><span className="mono">Available</span><b>{naira(available)}</b></div>
         <div className="stat"><span className="mono">Paid</span><b>{naira(paid)}</b></div>
+      </section>
+      <section className="card stack">
+        <div><h2 className="h2">Payout bank account</h2><p className="muted" style={{ margin: 0 }}>Choose your bank and verify your account name. Your account number is encrypted before storage. This does not enable withdrawals or transfers.</p></div>
+        <label className="stack" style={{ gap: '.35rem' }}><span className="fine">Bank</span>
+          <select className="in" value={bankCode} onChange={(event) => { setBankCode(event.target.value); setVerifiedBank(null); }} disabled={bankLoading}>
+            <option value="">{bankLoading ? 'Loading banks…' : 'Select your bank'}</option>
+            {banks.map((bank) => <option key={bank.code} value={bank.code}>{bank.name}</option>)}
+          </select>
+        </label>
+        <label className="stack" style={{ gap: '.35rem' }}><span className="fine">10-digit account number</span>
+          <input className="in" inputMode="numeric" autoComplete="off" maxLength={10} value={accountNumber} onChange={(event) => { setAccountNumber(event.target.value.replace(/\D/g, '').slice(0, 10)); setVerifiedBank(null); }} placeholder="Enter account number" />
+        </label>
+        {bankError && <p className="msg-err" role="alert">{bankError}</p>}
+        {verifiedBank && <div className="card" style={{ background: 'var(--soft, #f7f2ff)' }}><b>✓ Account verified</b><p style={{ margin: '.35rem 0 0' }}>{verifiedBank.accountName}</p><span className="fine">{verifiedBank.bankName} · •••• {verifiedBank.accountLast4}</span></div>}
+        <button className="btn" type="button" disabled={bankLoading || bankSaving || !bankCode || accountNumber.length !== 10} onClick={verifyAndSaveBank}>{bankSaving ? 'Verifying…' : 'Verify and save bank account'}</button>
       </section>
       <section className="card stack" style={{ borderColor: 'var(--accent, #7042a5)', background: 'var(--soft, #f7f2ff)' }}>
         <div className="sechead">
