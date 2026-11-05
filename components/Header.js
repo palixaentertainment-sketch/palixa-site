@@ -89,6 +89,7 @@ export default function Header() {
                 <div className="pop">
                   <div className="who"><b>{profile ? profile.name : 'Your account'}</b><span className="fine">{profile ? '@' + profile.username : ''}</span></div>
                   <Link href="/profile">Profile</Link>
+                  <Link href="/sparks">My Sparks Wallet</Link>
                   <Link href="/library">Library</Link>
                   <Link href="/offline">My Books · Offline</Link>
                   {isAuthor ? <Link href="/dashboard">Author dashboard</Link> : <Link href="/profile#author">Become an author</Link>}
