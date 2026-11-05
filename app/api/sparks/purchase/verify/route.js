@@ -138,7 +138,7 @@ export async function POST(request) {
     return fail('Payment details did not match this Sparks purchase. Please contact support with your reference.', 409);
   }
 
-  const { data: posted, error: postError } = await admin.rpc('post_verified_spark_purchase', {
+  const { data: posted, error: postError } = await userClient.rpc('post_verified_spark_purchase', {
     p_reference: reference,
     p_amount_kobo: transaction.amount,
     p_currency: transaction.currency,
