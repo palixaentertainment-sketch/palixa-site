@@ -127,12 +127,6 @@ begin
        'PLXPAYOUT_' || replace(p_request_id::text,'-',''),
        'Manual withdrawal payout recorded by Palixia admin');
 
-    update public.author_wallet_ledger
-      set status = 'paid'
-      where author_id = v_request.author_id
-        and entry_type = 'tip_credit'
-        and status = 'available'
-        and created_at <= v_request.requested_at;
 
     update public.author_withdrawal_requests
       set status = 'paid', paid_at = now(), reviewed_at = coalesce(reviewed_at, now()),
