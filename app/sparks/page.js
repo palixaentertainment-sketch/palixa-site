@@ -70,64 +70,73 @@ function SparksWallet() {
   }
 
   return (
-    <main className="wrap page stack" style={{ maxWidth: 760 }}>
-      <div className="stack">
-        <Link href="/profile" className="fine">← Back to profile</Link>
-        <h1 className="h1">My Sparks Wallet</h1>
-        <p className="muted">Keep track of your Sparks and use them to support the authors you enjoy.</p>
+    <main className="wrap page sparks-page">
+      <div className="sparks-heading">
+        <Link href="/profile" className="sparks-back">← Profile</Link>
+        <span className="sparks-eyebrow">THE PALIXIA EXPERIENCE</span>
+        <h1 className="h1">Your Sparks</h1>
+        <p className="muted">A little appreciation can keep a great story going.</p>
       </div>
-      <section className="card stack">
-        <span className="mono">AVAILABLE SPARKS</span>
-        <strong style={{ fontSize: '2.5rem' }}>{loading ? '…' : balance.toLocaleString('en-NG')} ✨</strong>
-        <p className="fine">Your Sparks balance and activity are private to your account.</p>
-      </section>
-      <section className="card stack">
-        <div>
-          <h2 className="h2">Top up your wallet</h2>
-          <p className="muted">Add Sparks to your balance so you can support authors and their stories.</p>
+
+      <section className="sparks-balance">
+        <div className="sparks-balance-top">
+          <span className="sparks-label">YOUR AVAILABLE BALANCE</span>
+          <span className="sparks-private">PRIVATE WALLET</span>
         </div>
+        <div className="sparks-total">{loading ? '…' : balance.toLocaleString('en-NG')} <span>✦</span></div>
+        <p>Sparks ready for the stories and authors you love.</p>
+        <div className="sparks-balance-foot"><span>✦</span> Your balance is only visible to you.</div>
+        <span className="sparks-orbit sparks-orbit-one" aria-hidden="true" />
+        <span className="sparks-orbit sparks-orbit-two" aria-hidden="true" />
+      </section>
+
+      <section className="sparks-topup">
+        <div className="sparks-section-head">
+          <div><span className="sparks-eyebrow">ADD TO YOUR WALLET</span><h2 className="h2">Get more Sparks</h2></div>
+          <span className="sparks-topup-icon">✧</span>
+        </div>
+        <p className="muted">Top up your balance and use your Sparks to support authors on Palixia.</p>
         {adminTesting ? (
           <>
-            <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: 12 }}>
+            <div className="sparks-packages">
               {PACKAGES.map((amount) => (
-                <div className="card stack" key={amount}>
-                  <strong>{amount.toLocaleString('en-NG')} Sparks</strong>
-                  <span className="fine">₦{amount.toLocaleString('en-NG')}</span>
+                <div className="sparks-package" key={amount}>
+                  <span className="sparks-package-amount">{amount.toLocaleString('en-NG')}</span>
+                  <span className="sparks-package-unit">SPARKS</span>
+                  <span className="sparks-package-price">₦{amount.toLocaleString('en-NG')}</span>
                   <button className="btn" disabled={busy !== null} onClick={() => buy(amount)}>
-                    {busy === amount ? 'Opening…' : 'Buy'}
+                    {busy === amount ? 'Opening…' : 'Choose pack'}
                   </button>
                 </div>
               ))}
             </div>
-            <p className="fine">Admin testing only. ₦1 = 1 Spark.</p>
+            <p className="fine">Admin testing only · ₦1 = 1 Spark</p>
           </>
         ) : (
-          <button className="btn" type="button" disabled>Buy Sparks — Coming soon</button>
+          <div className="sparks-coming"><span>✦</span><div><b>Top-ups are on their way</b><small>You'll be able to add Sparks to your wallet soon.</small></div><span className="badge">Coming soon</span></div>
         )}
         {notice ? <p role="alert" className="notice">{notice}</p> : null}
       </section>
-      <section className="stack">
-        <h2 className="h2">Transaction history</h2>
-        {loading ? <p className="muted">Loading activity…</p> : history.length === 0 ? (
-          <div className="card"><p className="muted">No transactions yet. Your Sparks activity will appear here.</p></div>
+
+      <section className="sparks-history">
+        <div className="sparks-section-head"><div><span className="sparks-eyebrow">YOUR WALLET ACTIVITY</span><h2 className="h2">Transaction history</h2></div><span className="sparks-history-count">{history.length} recent</span></div>
+        {loading ? <div className="sparks-empty">Loading your activity…</div> : history.length === 0 ? (
+          <div className="sparks-empty"><span className="sparks-empty-icon">✧</span><b>Your story starts here</b><p>Your Sparks transactions will appear here once you top up or support an author.</p></div>
         ) : (
-          <div className="card stack">
-            {history.map((entry) => (
-              <div className="row" key={entry.id} style={{ justifyContent: 'space-between', borderBottom: '1px solid var(--line, #eee)', padding: '0.65rem 0' }}>
-                <div>
-                  <strong>{entry.description || (entry.entry_type === 'purchase_credit' ? 'Sparks top-up' : entry.entry_type === 'tip_debit' ? 'Author support' : 'Sparks activity')}</strong>
-                  <div className="fine">{new Date(entry.created_at).toLocaleString()}</div>
-                </div>
-                <strong>{entry.entry_type === 'tip_debit' ? '−' : '+'}{entry.sparks_amount} ✨</strong>
-              </div>
-            ))}
+          <div className="sparks-transactions">
+            {history.map((entry) => {
+              const debit = entry.entry_type === 'tip_debit';
+              return <div className="sparks-transaction" key={entry.id}>
+                <span className={`sparks-transaction-icon ${debit ? 'debit' : 'credit'}`}>{debit ? '↗' : '✦'}</span>
+                <div className="sparks-transaction-info"><b>{entry.description || (entry.entry_type === 'purchase_credit' ? 'Sparks top-up' : debit ? 'Author support' : 'Sparks activity')}</b><small>{new Date(entry.created_at).toLocaleString()}</small></div>
+                <strong className={debit ? 'debit-text' : 'credit-text'}>{debit ? '−' : '+'}{Number(entry.sparks_amount).toLocaleString('en-NG')} ✦</strong>
+              </div>;
+            })}
           </div>
         )}
       </section>
-      <section className="card">
-        <h2 className="h2">What are Sparks?</h2>
-        <p className="muted">Sparks are Palixia credits readers can use to show support for authors. You can check your balance and transaction history here.</p>
-      </section>
+
+      <section className="sparks-explainer"><span className="sparks-explainer-mark">✦</span><div><b>What are Sparks?</b><p>Sparks are Palixia credits that let readers show appreciation for authors and their stories. Your balance and transaction history stay private to your account.</p></div></section>
     </main>
   );
 }
