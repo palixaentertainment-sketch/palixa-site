@@ -50,7 +50,9 @@ export async function POST(request) {
     const response = await fetch(verifyUrl, { headers: { Authorization: `Bearer ${secret}` }, cache: 'no-store' });
     const result = await response.json();
     if (!response.ok || !result?.status || !result?.data?.account_name) {
-      return fail(result?.message || 'We could not verify this account. Check the bank and account number.', 422);
+      // Keep provider diagnostics private; never expose Paystack limits or API messages to users.
+      console.warn('[Payout account] Paystack verification was unsuccessful', { status: response.status });
+      return fail('We could not verify this account right now. Please check the details or try again later.', 422);
     }
 
     const iv = randomBytes(12);
