@@ -15,8 +15,15 @@ export async function GET() {
     }
     const banks = payload.data
       .filter((bank) => bank?.name && bank?.code && bank?.active !== false)
-      .map(({ name, code }) => ({ name, code }))
-      .sort((a, b) => a.name.localeCompare(b.name));
+      .map(({ name, code }) => ({ name, code }));
+
+    // Paystack's sandbox provides a dedicated test bank code for account
+    // resolution. Keep it out of the live bank selector.
+    if (process.env.PAYSTACK_TEST_MODE === 'true') {
+      banks.push({ name: 'Paystack Test Bank (Sandbox)', code: '001' });
+    }
+
+    banks.sort((a, b) => a.name.localeCompare(b.name));
     return NextResponse.json({ banks }, { headers: { 'Cache-Control': 'private, max-age=3600' } });
   } catch {
     return NextResponse.json({ error: 'Bank service is temporarily unavailable.' }, { status: 502 });
