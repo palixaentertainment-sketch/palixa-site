@@ -12,6 +12,44 @@ function encryptionKey() {
   return key?.length === 32 ? key : null;
 }
 
+async function getAuthorizedUser(request) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !anonKey) return { error: fail('Payout account service is unavailable.', 503) };
+  const authHeader = request.headers.get('authorization') || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+  if (!token) return { error: fail('Please sign in again.', 401) };
+  const userClient = createClient(supabaseUrl, anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  });
+  const { data: auth, error: authError } = await userClient.auth.getUser(token);
+  if (authError || !auth?.user?.id) return { error: fail('Your session has expired. Please sign in again.', 401) };
+  const { data: profile } = await userClient.from('profiles').select('role,status').eq('id', auth.user.id).maybeSingle();
+  if (!profile || !['author','admin'].includes(profile.role) || profile.status !== 'active') return { error: fail('Active author access is required.', 403) };
+  return { user: auth.user };
+}
+
+export async function GET(request) {
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!serviceKey) return fail('Payout account service is unavailable.', 503);
+  const auth = await getAuthorizedUser(request);
+  if (auth.error) return auth.error;
+  try {
+    const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+    const { data, error } = await admin.from('author_payout_accounts')
+      .select('bank_code,bank_name,account_name,account_last4,verified_at,updated_at')
+      .eq('author_id', auth.user.id).maybeSingle();
+    if (error) {
+      console.error('[Payout account] Saved account lookup failed', { code: error.code });
+      return fail('Saved bank details could not be loaded. Please try again.', 500);
+    }
+    return NextResponse.json({ account: data || null });
+  } catch {
+    return fail('Saved bank details could not be loaded. Please try again.', 500);
+  }
+}
+
 export async function POST(request) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -22,17 +60,8 @@ export async function POST(request) {
     return fail('Payout account setup is not configured on the server.', 503);
   }
 
-  const authHeader = request.headers.get('authorization') || '';
-  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
-  if (!token) return fail('Please sign in again.', 401);
-  const userClient = createClient(supabaseUrl, anonKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: { headers: { Authorization: `Bearer ${token}` } },
-  });
-  const { data: auth, error: authError } = await userClient.auth.getUser(token);
-  if (authError || !auth?.user?.id) return fail('Your session has expired. Please sign in again.', 401);
-  const { data: profile } = await userClient.from('profiles').select('role,status').eq('id', auth.user.id).maybeSingle();
-  if (!profile || !['author','admin'].includes(profile.role) || profile.status !== 'active') return fail('Active author access is required.', 403);
+  const auth = await getAuthorizedUser(request);
+  if (auth.error) return auth.error;
 
   let body;
   try { body = await request.json(); } catch { return fail('Invalid request.'); }

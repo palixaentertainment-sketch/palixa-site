@@ -31,6 +31,8 @@ function EarningsWallet() {
   const [bankSaving, setBankSaving] = useState(false);
   const [bankError, setBankError] = useState('');
   const [verifiedBank, setVerifiedBank] = useState(null);
+  const [savedBank, setSavedBank] = useState(null);
+  const [savedBankLoading, setSavedBankLoading] = useState(true);
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -78,6 +80,31 @@ function EarningsWallet() {
     return () => { active = false; };
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    async function loadSavedBank() {
+      if (!user) { setSavedBankLoading(false); return; }
+      try {
+        const sessionResult = await supabase.auth.getSession();
+        const token = sessionResult.data?.session?.access_token;
+        if (!token) throw new Error('Your session has expired. Please sign in again.');
+        const response = await fetch('/api/payout/verify-account', {
+          headers: { Authorization: 'Bearer ' + token },
+          cache: 'no-store',
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || 'Could not load saved bank details.');
+        if (active) setSavedBank(payload.account || null);
+      } catch (err) {
+        if (active) setBankError(err.message);
+      } finally {
+        if (active) setSavedBankLoading(false);
+      }
+    }
+    loadSavedBank();
+    return () => { active = false; };
+  }, [user]);
+
   async function verifyAndSaveBank() {
     const bank = banks.find((item) => item.code === bankCode);
     if (!bank || !/^\d{10}$/.test(accountNumber)) { setBankError('Choose a bank and enter a valid 10-digit account number.'); return; }
@@ -89,7 +116,7 @@ function EarningsWallet() {
       const response = await fetch('/api/payout/verify-account', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ bankCode, bankName: bank.name, accountNumber }) });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || 'Could not verify this account.');
-      setVerifiedBank(payload); setAccountNumber('');
+      setVerifiedBank(payload); setSavedBank({ bankName: payload.bankName, account_name: payload.accountName, account_last4: payload.accountLast4, verified_at: new Date().toISOString() }); setAccountNumber('');
     } catch (err) { setBankError(err.message); }
     finally { setBankSaving(false); }
   }
@@ -142,7 +169,15 @@ function EarningsWallet() {
       </section>
       <section className="card stack">
         <div><h2 className="h2">Payout bank account</h2><p className="muted" style={{ margin: 0 }}>Choose your bank and verify your account name. Your account number is encrypted before storage. This does not enable withdrawals or transfers.</p></div>
-        <label className="stack" style={{ gap: '.35rem' }}><span className="fine">Bank</span>
+        {savedBankLoading ? <p className="fine">Checking for a saved bank account…</p> : savedBank && (
+          <div className="card" style={{ background: 'var(--soft, #f7f2ff)' }}>
+            <b>✓ Verified bank account on file</b>
+            <p style={{ margin: '.35rem 0 0' }}>{savedBank.account_name || savedBank.accountName}</p>
+            <span className="fine">{savedBank.bank_name || savedBank.bankName} · •••• {savedBank.account_last4 || savedBank.accountLast4}</span>
+            <p className="fine" style={{ margin: '.35rem 0 0' }}>Verified {new Date(savedBank.verified_at || new Date()).toLocaleDateString()}</p>
+          </div>
+        )}
+        <label className="stack" style={{ gap: '.35rem' }}><span className="fine">{savedBank ? 'Replace bank account' : 'Bank'}</span>
           <select className="in" value={bankCode} onChange={(event) => { setBankCode(event.target.value); setVerifiedBank(null); }} disabled={bankLoading}>
             <option value="">{bankLoading ? 'Loading banks…' : 'Select your bank'}</option>
             {banks.map((bank) => <option key={bank.code} value={bank.code}>{bank.name}</option>)}
