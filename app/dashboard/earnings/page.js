@@ -114,7 +114,7 @@ function EarningsWallet() {
     const amount = Number(withdrawalAmount);
     if (!Number.isSafeInteger(amount) || amount < 1000) { setWithdrawalError('Enter at least ₦1,000.'); return; }
     setRequestingWithdrawal(true); setWithdrawalError(''); setWithdrawalSuccess('');
-    const result = await supabase.rpc('request_author_withdrawal', { p_amount_kobo: amount * 100 });
+    const result = await supabase.rpc('author_request_withdrawal', { p_amount_kobo: amount * 100 });
     setRequestingWithdrawal(false);
     if (result.error) { setWithdrawalError(result.error.message || 'Your request could not be submitted.'); return; }
     setWithdrawalAmount('');
