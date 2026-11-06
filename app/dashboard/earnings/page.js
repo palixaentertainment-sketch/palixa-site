@@ -46,7 +46,7 @@ function EarningsWallet() {
       supabase.from('author_withdrawal_requests')
         .select('id,amount_kobo,currency,status,requested_at,reviewed_at,paid_at,admin_note')
         .eq('author_id', user.id).order('requested_at', { ascending: false }).limit(20),
-      supabase.from('author_earnings_agreements').select('id').eq('author_id', user.id).eq('agreement_version', 'sparks-v2-90-10').maybeSingle(),
+      supabase.from('author_earnings_agreements').select('id').eq('author_id', user.id).eq('agreement_version', 'sparks-v3-monthly-payout').maybeSingle(),
       supabase.from('books').select('id,title').eq('author_id', user.id).eq('status', 'published').order('updated_at', { ascending: false }),
     ]);
     setAgreementLoading(false);
@@ -143,7 +143,7 @@ function EarningsWallet() {
     if (!user || !agreementConfirmed) return;
     setAccepting(true);
     setAgreementError('');
-    const { error: insertError } = await supabase.from('author_earnings_agreements').insert({ author_id: user.id, agreement_version: 'sparks-v2-90-10' });
+    const { error: insertError } = await supabase.from('author_earnings_agreements').insert({ author_id: user.id, agreement_version: 'sparks-v3-monthly-payout' });
     setAccepting(false);
     if (insertError && insertError.code !== '23505') {
       setAgreementError('We could not save your acceptance. Please try again.');
@@ -234,24 +234,26 @@ function EarningsWallet() {
       {!agreementLoading && !agreementAccepted && (
         <section className="card stack">
           <h2 className="h2">Set up Sparks earnings</h2>
-          <p>Before readers can send you Sparks, please review and accept the updated earnings split:</p>
+          <p>Before you participate in Sparks, review and accept the current author earnings and planned payout terms:</p>
           <ul className="fine" style={{ paddingLeft: '1.25rem' }}>
-            <li>You receive 90% of the value of each new Spark tip.</li>
-            <li>Palixia retains 10% to support platform operations.</li>
-            <li>Your 90% author share is recorded as pending until Palixia publishes and enables its payout policy.</li>
-            <li>Pending credits cannot be withdrawn, transferred or treated as a guaranteed payment.</li>
-            <li>Any future withdrawal will be subject to published payout rules, verification and applicable fees.</li>
-            <li>This updated agreement applies to new tips after acceptance. Earlier ledger entries are not changed.</li>
+            <li>You receive 90% of the eligible value of each Spark tip; Palixia retains 10%.</li>
+            <li>Author earnings are recorded in your Palixia earnings ledger. Earnings remain pending until they are marked available under the payout process.</li>
+            <li>The planned payout cycle is monthly, during the first week of each month.</li>
+            <li>The planned minimum withdrawal is ₦1,000. A verified Nigerian bank account in your name is required.</li>
+            <li>Payouts are planned to be made initially by manual bank transfer. Saving or verifying bank details does not initiate a transfer.</li>
+            <li>Sparks withdrawals are not currently open. These are planned terms only; no payout date is promised until Palixia formally announces that withdrawals are open.</li>
+            <li>Pending earnings cannot be withdrawn or transferred. Existing ledger entries are not changed by accepting this agreement.</li>
+            <li>Palixia may need to verify earnings and account details before approving a payout. Any applicable fees or final operational conditions will be disclosed before withdrawals open.</li>
           </ul>
           <label className="row" style={{ alignItems: 'flex-start', gap: '0.55rem' }}>
             <input type="checkbox" checked={agreementConfirmed} onChange={(event) => setAgreementConfirmed(event.target.checked)} />
-            <span className="fine">I have read and agree to the updated 90/10 Sparks earnings terms.</span>
+            <span className="fine">I have read and agree to the Sparks earnings split and planned monthly payout terms.</span>
           </label>
           {agreementError && <p className="msg-err" role="alert">{agreementError}</p>}
-          <button className="btn" type="button" disabled={!agreementConfirmed || accepting} onClick={acceptAgreement}>{accepting ? 'Saving…' : 'Accept and enable author support'}</button>
+          <button className="btn" type="button" disabled={!agreementConfirmed || accepting} onClick={acceptAgreement}>{accepting ? 'Saving…' : 'Accept Sparks terms'}</button>
         </section>
       )}
-      {agreementAccepted && <p className="fine">Updated 90/10 Sparks terms accepted. You receive 90% of new tip value; Palixia retains 10%. Author credits remain pending until the payout policy is enabled.</p>}
+      {agreementAccepted && <p className="fine">Sparks author terms accepted. You receive 90% of eligible tip value; Palixia retains 10%. Withdrawals and public tipping remain closed until Palixia announces their launch.</p>}
       {error && <p className="msg-err" role="alert">{error}</p>}
       <section className="card stack">
         <div className="sechead"><h2 className="h2">Earnings activity</h2><button className="btn ghost small" type="button" onClick={load}>Refresh</button></div>
