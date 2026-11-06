@@ -199,7 +199,7 @@ function EarningsWallet() {
           <span className="badge">Coming soon</span>
         </div>
         <p className="muted" style={{ margin: 0, lineHeight: 1.65 }}>
-          We are currently onboarding authors and building our active reader community. Payout policies and supported payout methods will be announced before launch. We are preparing Paystack support first; any additional provider, including Flutterwave, will be confirmed before it is offered. No automated payouts or withdrawals are available yet.
+          Sparks are still in pre-launch, so withdrawals are not open yet. Our planned author payout policy is monthly processing during the first week of each month, with a ₦1,000 minimum withdrawal and a verified bank account required. Authors receive 90% of eligible tip value, while Palixia retains 10%. Payouts will initially be made by manual bank transfer. These rules are a launch plan, not a promise that withdrawals are currently available; final terms and the opening date will be announced before payouts begin.
         </p>
       </section>
       <section className="card stack" style={{ borderColor: 'var(--accent, #7042a5)' }}>
