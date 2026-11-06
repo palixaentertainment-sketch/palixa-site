@@ -15,10 +15,9 @@ function encryptionKey() {
 export async function POST(request) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const secret = process.env.PAYSTACK_SECRET_KEY;
   const key = encryptionKey();
-  if (!supabaseUrl || !anonKey || !serviceKey || !secret || !key) {
+  if (!supabaseUrl || !anonKey || !secret || !key) {
     return fail('Payout account setup is not configured on the server.', 503);
   }
 
@@ -50,7 +49,6 @@ export async function POST(request) {
     const response = await fetch(verifyUrl, { headers: { Authorization: `Bearer ${secret}` }, cache: 'no-store' });
     const result = await response.json();
     if (!response.ok || !result?.status || !result?.data?.account_name) {
-      // Keep provider diagnostics private; never expose Paystack limits or API messages to users.
       console.warn('[Payout account] Paystack verification was unsuccessful', { status: response.status });
       return fail('We could not verify this account right now. Please check the details or try again later.', 422);
     }
@@ -59,21 +57,17 @@ export async function POST(request) {
     const cipher = createCipheriv('aes-256-gcm', key, iv);
     const ciphertext = Buffer.concat([cipher.update(accountNumber, 'utf8'), cipher.final()]);
     const tag = cipher.getAuthTag();
-    const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
-    const { error: saveError } = await admin.from('author_payout_accounts').upsert({
-      author_id: auth.user.id,
-      bank_code: bankCode,
-      bank_name: bankName,
-      account_name: String(result.data.account_name).slice(0, 160),
-      account_number_ciphertext: ciphertext.toString('base64'),
-      account_number_iv: iv.toString('base64'),
-      account_number_tag: tag.toString('base64'),
-      account_last4: accountNumber.slice(-4),
-      verified_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }, { onConflict: 'author_id' });
+    const { error: saveError } = await userClient.rpc('save_author_payout_account', {
+      p_bank_code: bankCode,
+      p_bank_name: bankName,
+      p_account_name: String(result.data.account_name).slice(0, 160),
+      p_account_number_ciphertext: ciphertext.toString('base64'),
+      p_account_number_iv: iv.toString('base64'),
+      p_account_number_tag: tag.toString('base64'),
+      p_account_last4: accountNumber.slice(-4),
+    });
     if (saveError) {
-      console.error('[Payout account] Save failed', { code: saveError.code, message: saveError.message });
+      console.error('[Payout account] Secure save RPC failed', { code: saveError.code, message: saveError.message });
       return fail('The account was verified, but we could not save it. Please try again.', 500);
     }
     return NextResponse.json({
@@ -82,7 +76,8 @@ export async function POST(request) {
       bankName,
       accountLast4: accountNumber.slice(-4),
     });
-  } catch {
+  } catch (error) {
+    console.error('[Payout account] Verification/save request failed', { message: error?.message || 'Unknown error' });
     return fail('Account verification is temporarily unavailable.', 502);
   }
 }
