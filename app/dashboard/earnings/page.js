@@ -34,10 +34,6 @@ function EarningsWallet() {
   const [savedBank, setSavedBank] = useState(null);
   const [savedBankLoading, setSavedBankLoading] = useState(true);
   const [savedBankError, setSavedBankError] = useState('');
-  const [withdrawalAmount, setWithdrawalAmount] = useState('');
-  const [requestingWithdrawal, setRequestingWithdrawal] = useState(false);
-  const [withdrawalError, setWithdrawalError] = useState('');
-  const [withdrawalSuccess, setWithdrawalSuccess] = useState('');
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -131,18 +127,6 @@ function EarningsWallet() {
     finally { setBankSaving(false); }
   }
 
-  async function requestWithdrawal() {
-    const amount = Number(withdrawalAmount);
-    if (!Number.isSafeInteger(amount) || amount < 1000) { setWithdrawalError('Enter at least ₦1,000.'); return; }
-    setRequestingWithdrawal(true); setWithdrawalError(''); setWithdrawalSuccess('');
-    const result = await supabase.rpc('author_request_withdrawal', { p_amount_kobo: amount * 100 });
-    setRequestingWithdrawal(false);
-    if (result.error) { setWithdrawalError(result.error.message || 'Your request could not be submitted.'); return; }
-    setWithdrawalAmount('');
-    setWithdrawalSuccess('Your withdrawal request has been submitted. You can track its status below.');
-    await load();
-  }
-
   async function copyStoryInviteLink() {
     if (!selectedStoryId) return;
     const url = window.location.origin + '/book/' + selectedStoryId;
@@ -184,7 +168,7 @@ function EarningsWallet() {
       <div>
         <Link href="/dashboard" className="fine">← Back to dashboard</Link>
         <h1 className="h1">Author earnings</h1>
-        <p className="muted">Track reader support and withdrawal request updates.</p>
+        <p className="muted">Track reader support and your author earnings.</p>
       </div>
       <section className="stats">
         <div className="stat"><span className="mono">Pending</span><b>{naira(pending)}</b></div>
@@ -287,14 +271,9 @@ function EarningsWallet() {
           </div>
         )}
       </section>
-      <section className="card stack">
-        <h2 className="h2">Request a withdrawal</h2>
-        <p className="muted" style={{ margin: 0 }}>Minimum request: ₦1,000. Requests are reviewed by Palixia. Approved withdrawals are paid manually; submitting a request does not trigger a transfer.</p>
-        <label className="stack" style={{ gap: '.35rem' }}><span className="fine">Amount (NGN)</span><input className="in" type="number" min="1000" step="1" inputMode="numeric" value={withdrawalAmount} onChange={(event) => setWithdrawalAmount(event.target.value)} placeholder="e.g. 1000" /></label>
-        {!savedBank && !savedBankLoading && <p className="fine">Verify and save a bank account above before requesting a withdrawal.</p>}{requests.some((request) => ['requested','under_review','approved'].includes(request.status)) && <p className="fine">You already have an open withdrawal request. Wait for it to be resolved before submitting another.</p>}
-        {withdrawalError && <p className="msg-err" role="alert">{withdrawalError}</p>}
-        {withdrawalSuccess && <p className="fine" role="status">{withdrawalSuccess}</p>}
-        <button className="btn" type="button" disabled={!savedBank || savedBankLoading || requests.some((request) => ['requested','under_review','approved'].includes(request.status)) || requestingWithdrawal || !withdrawalAmount} onClick={requestWithdrawal}>{requestingWithdrawal ? 'Submitting…' : 'Submit withdrawal request'}</button>
+      <section className="card stack" style={{ borderColor: 'var(--border, #ddd)' }}>
+        <div className="sechead"><h2 className="h2">Withdrawals are not open yet</h2><span className="badge">Coming soon</span></div>
+        <p className="muted" style={{ margin: 0, lineHeight: 1.65 }}>Your author share is safely recorded as pending while Palixia finalises its payout policy. You can view your earnings activity below, but withdrawal requests are currently disabled. We will announce the payout rules and open requests when the system is ready. Saving a bank account now only prepares your details; it does not trigger a transfer.</p>
       </section>
       <section className="card stack">
         <h2 className="h2">Withdrawal requests</h2>
