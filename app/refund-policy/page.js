@@ -7,8 +7,8 @@ export default function RefundPolicy() {
   return (
     <article className="stack narrow legal">
       <h1 className="h1">Reader Payment &amp; Refund Policy</h1>
-      <p className="fine">Draft for review · Last updated 7 November 2026</p>
-      <p>This policy explains how Palixia intends to handle reader payments if and when Sparks purchases and author-support features become available to the public. At present, these features are in pre-launch testing and are not generally available. This policy does not mean that public payments or refunds are currently open.</p>
+      <p className="fine">Last updated 7 November 2026</p>
+      <p>This policy explains how Palixia handles payment and refund questions in preparation for the launch of Sparks purchases and author-support features. Public Sparks purchases, author tips and withdrawals are not currently available. Do not send payment to anyone claiming to accept payment on Palixia's behalf outside an official Palixia payment flow.</p>
 
       <h2 className="h2">1. Sparks purchases</h2>
       <p>Sparks are platform credits intended for eligible support features, including tipping authors. Before a purchase is made, Palixia will display the applicable price, amount of Sparks and important purchase conditions. Once a payment is confirmed by the payment provider, Sparks should be credited to the reader's Palixia account, subject to server-side verification.</p>
