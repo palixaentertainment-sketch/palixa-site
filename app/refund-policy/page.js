@@ -37,7 +37,6 @@ export default function RefundPolicy() {
 
       <h2 className="h2">8. Contact</h2>
       <p>For payment questions or refund requests, email <a href="mailto:info@palixia.com">info@palixia.com</a>.</p>
-      <p className="fine">This is a working draft, not legal advice. A qualified lawyer must review it and it must be aligned with Paystack's approved platform and refund procedures before public payments are enabled.</p>
     </article>
   );
 }
