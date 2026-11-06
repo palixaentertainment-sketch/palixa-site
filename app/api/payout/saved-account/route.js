@@ -14,15 +14,19 @@ export async function GET(request) {
   const token = header.startsWith('Bearer ') ? header.slice(7) : '';
   if (!token) return NextResponse.json({ error: 'Please sign in again.' }, { status: 401 });
 
-  const userClient = createClient(url, anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  // Attach the user's JWT to every PostgREST request. Passing headers as an
+  // rpc() option is not supported by supabase-js and leaves the call as anon.
+  const userClient = createClient(url, anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { headers: { Authorization: 'Bearer ' + token } },
+  });
+
   const { data: auth, error: authError } = await userClient.auth.getUser(token);
   if (authError || !auth?.user?.id) {
     return NextResponse.json({ error: 'Your session has expired. Please sign in again.' }, { status: 401 });
   }
 
-  const { data, error } = await userClient.rpc('get_my_author_payout_account', {}, {
-    headers: { Authorization: 'Bearer ' + token },
-  });
+  const { data, error } = await userClient.rpc('get_my_author_payout_account');
 
   if (error) {
     console.error('[Payout account] Saved account lookup failed', { code: error.code, message: error.message });
