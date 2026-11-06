@@ -9,7 +9,7 @@ export default function CopyrightPolicy() {
       <p className="mono">CREATOR RIGHTS</p>
       <h1 className="h1">Copyright Policy</h1>
       <p className="fine">Last updated 3 November 2026</p>
-      <p>Palixia supports independent writers and creators sharing their work. It is currently an independent project operated by its founder, Paul Osula, and has not yet been registered as a company. Authors retain ownership of their original stories, books, text, artwork and covers. Publishing on Palixia does not, by itself, transfer ownership to Palixia. When content is published, the author grants Palixia only the limited platform licence described in the <a href="/terms">Terms of Service</a>.</p>
+      <p>Palixia supports independent writers and creators sharing their work. It is operated as a registered private limited company in Nigeria. Authors retain ownership of their original stories, books, text, artwork and covers. Publishing on Palixia does not, by itself, transfer ownership to Palixia. When content is published, the author grants Palixia only the limited platform licence described in the <a href="/terms">Terms of Service</a>.</p>
 
       <h2 className="h2">Before publishing</h2>
       <p>Publish only work you created or have permission and the necessary rights to use. This applies to written work, translations, illustrations, photographs, covers, excerpts and promotional material. Do not upload another person's work and present it as your own, or use copyrighted material in a way that infringes the rights holder's rights.</p>
