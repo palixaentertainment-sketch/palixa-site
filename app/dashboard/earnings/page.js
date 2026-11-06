@@ -31,6 +31,11 @@ function EarningsWallet() {
   const [bankSaving, setBankSaving] = useState(false);
   const [bankError, setBankError] = useState('');
   const [verifiedBank, setVerifiedBank] = useState(null);
+  const [savedBank, setSavedBank] = useState(null);
+  const [withdrawalAmount, setWithdrawalAmount] = useState('');
+  const [requestingWithdrawal, setRequestingWithdrawal] = useState(false);
+  const [withdrawalError, setWithdrawalError] = useState('');
+  const [withdrawalSuccess, setWithdrawalSuccess] = useState('');
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -67,6 +72,17 @@ function EarningsWallet() {
 
   useEffect(() => {
     let active = true;
+    async function loadSavedBank() {
+      const { data } = await supabase.auth.getSession();
+      const token = data?.session?.access_token;
+      if (!token) return;
+      try {
+        const response = await fetch('/api/payout/saved-account', { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' });
+        const payload = await response.json();
+        if (active && response.ok) setSavedBank(payload.account || null);
+      } catch {}
+    }
+    loadSavedBank();
     fetch('/api/payout/banks', { cache: 'no-store' })
       .then(async (response) => {
         const payload = await response.json();
@@ -89,9 +105,21 @@ function EarningsWallet() {
       const response = await fetch('/api/payout/verify-account', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ bankCode, bankName: bank.name, accountNumber }) });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || 'Could not verify this account.');
-      setVerifiedBank(payload); setAccountNumber('');
+      setVerifiedBank(payload); setSavedBank({ accountName: payload.accountName, bankName: payload.bankName, accountLast4: payload.accountLast4, verifiedAt: new Date().toISOString() }); setAccountNumber('');
     } catch (err) { setBankError(err.message); }
     finally { setBankSaving(false); }
+  }
+
+  async function requestWithdrawal() {
+    const amount = Number(withdrawalAmount);
+    if (!Number.isSafeInteger(amount) || amount < 1000) { setWithdrawalError('Enter at least ₦1,000.'); return; }
+    setRequestingWithdrawal(true); setWithdrawalError(''); setWithdrawalSuccess('');
+    const result = await supabase.rpc('author_request_withdrawal', { p_amount_kobo: amount * 100 });
+    setRequestingWithdrawal(false);
+    if (result.error) { setWithdrawalError(result.error.message || 'Your request could not be submitted.'); return; }
+    setWithdrawalAmount('');
+    setWithdrawalSuccess('Your withdrawal request has been submitted. You can track its status below.');
+    await load();
   }
 
   async function copyStoryInviteLink() {
@@ -124,7 +152,9 @@ function EarningsWallet() {
     .filter((entry) => entry.status === status && entry.entry_type === 'tip_credit')
     .reduce((sum, entry) => sum + Number(entry.amount_kobo || 0), 0);
   const pending = total('pending');
-  const available = Math.max(0, total('available') - entries.filter((entry) => entry.entry_type === 'payout' && entry.status === 'paid').reduce((sum, entry) => sum + Number(entry.amount_kobo || 0), 0));
+  const paidOut = entries.filter((entry) => entry.entry_type === 'payout' && entry.status === 'paid').reduce((sum, entry) => sum + Number(entry.amount_kobo || 0), 0);
+  const reserved = requests.filter((request) => ['requested','under_review','approved'].includes(request.status)).reduce((sum, request) => sum + Number(request.amount_kobo || 0), 0);
+  const available = Math.max(0, total('available') - paidOut - reserved);
   const paid = entries.filter((entry) => entry.status === 'paid' && entry.entry_type === 'payout')
     .reduce((sum, entry) => sum + Number(entry.amount_kobo || 0), 0);
 
@@ -153,6 +183,7 @@ function EarningsWallet() {
         </label>
         {bankError && <p className="msg-err" role="alert">{bankError}</p>}
         {verifiedBank && <div className="card" style={{ background: 'var(--soft, #f7f2ff)' }}><b>✓ Account verified</b><p style={{ margin: '.35rem 0 0' }}>{verifiedBank.accountName}</p><span className="fine">{verifiedBank.bankName} · •••• {verifiedBank.accountLast4}</span></div>}
+        {savedBank && !verifiedBank && <div className="card" style={{ background: 'var(--soft, #f7f2ff)' }}><b>✓ Verified payout account saved</b><p style={{ margin: '.35rem 0 0' }}>{savedBank.accountName}</p><span className="fine">{savedBank.bankName} · •••• {savedBank.accountLast4}</span><p className="fine" style={{ marginBottom: 0 }}>Verified {new Date(savedBank.verifiedAt).toLocaleDateString()}</p></div>}
         <button className="btn" type="button" disabled={bankLoading || bankSaving || !bankCode || accountNumber.length !== 10} onClick={verifyAndSaveBank}>{bankSaving ? 'Verifying…' : 'Verify and save bank account'}</button>
       </section>
       <section className="card stack" style={{ borderColor: 'var(--accent, #7042a5)', background: 'var(--soft, #f7f2ff)' }}>
@@ -234,9 +265,18 @@ function EarningsWallet() {
         )}
       </section>
       <section className="card stack">
+        <h2 className="h2">Request a withdrawal</h2>
+        <p className="muted" style={{ margin: 0 }}>Minimum request: ₦1,000. Requests are reviewed by Palixia. Approved withdrawals are paid manually; submitting a request does not trigger a transfer.</p>
+        <label className="stack" style={{ gap: '.35rem' }}><span className="fine">Amount (NGN)</span><input className="in" type="number" min="1000" step="1" inputMode="numeric" value={withdrawalAmount} onChange={(event) => setWithdrawalAmount(event.target.value)} placeholder="e.g. 1000" /></label>
+        {!savedBank && <p className="fine">Verify and save a bank account above before requesting a withdrawal.</p>}{requests.some((request) => ['requested','under_review','approved'].includes(request.status)) && <p className="fine">You already have an open withdrawal request. Wait for it to be resolved before submitting another.</p>}
+        {withdrawalError && <p className="msg-err" role="alert">{withdrawalError}</p>}
+        {withdrawalSuccess && <p className="fine" role="status">{withdrawalSuccess}</p>}
+        <button className="btn" type="button" disabled={!savedBank || requests.some((request) => ['requested','under_review','approved'].includes(request.status)) || requestingWithdrawal || !withdrawalAmount} onClick={requestWithdrawal}>{requestingWithdrawal ? 'Submitting…' : 'Submit withdrawal request'}</button>
+      </section>
+      <section className="card stack">
         <h2 className="h2">Withdrawal requests</h2>
         {loading ? <p className="muted">Loading requests…</p> : requests.length === 0 ? (
-          <p className="empty">No withdrawal requests yet. Withdrawal requests will open when the payout process is ready.</p>
+          <p className="empty">No withdrawal requests yet.</p>
         ) : requests.map((request) => (
           <div className="row" key={request.id} style={{ justifyContent: 'space-between', borderBottom: '1px solid var(--border, #ddd)', padding: '0.65rem 0' }}>
             <div className="stack" style={{ gap: '0.2rem' }}>
@@ -247,7 +287,7 @@ function EarningsWallet() {
           </div>
         ))}
       </section>
-      <p className="fine">This wallet is currently a read-only preview. No withdrawal or payout can be initiated here.</p>
+
     </div>
   );
 }
