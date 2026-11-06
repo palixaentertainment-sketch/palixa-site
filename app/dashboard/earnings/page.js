@@ -32,6 +32,8 @@ function EarningsWallet() {
   const [bankError, setBankError] = useState('');
   const [verifiedBank, setVerifiedBank] = useState(null);
   const [savedBank, setSavedBank] = useState(null);
+  const [savedBankLoading, setSavedBankLoading] = useState(true);
+  const [savedBankError, setSavedBankError] = useState('');
   const [withdrawalAmount, setWithdrawalAmount] = useState('');
   const [requestingWithdrawal, setRequestingWithdrawal] = useState(false);
   const [withdrawalError, setWithdrawalError] = useState('');
@@ -70,18 +72,37 @@ function EarningsWallet() {
 
   useEffect(() => { load(); }, [load]);
 
+  const loadSavedBank = useCallback(async () => {
+    if (!user) {
+      setSavedBankLoading(false);
+      return;
+    }
+    setSavedBankLoading(true);
+    setSavedBankError('');
+    try {
+      const { data, error: sessionError } = await supabase.auth.getSession();
+      const token = data?.session?.access_token;
+      if (sessionError || !token) {
+        setSavedBankError('Your sign-in session is not ready. Please refresh or sign in again.');
+        return;
+      }
+      const response = await fetch('/api/payout/saved-account', {
+        headers: { Authorization: 'Bearer ' + token },
+        cache: 'no-store',
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'Saved bank details could not be loaded.');
+      setSavedBank(payload.account || null);
+    } catch (err) {
+      console.error('[Payout account] Could not load saved account:', err);
+      setSavedBankError(err.message || 'Saved bank details could not be loaded. Please try again.');
+    } finally {
+      setSavedBankLoading(false);
+    }
+  }, [user]);
+
   useEffect(() => {
     let active = true;
-    async function loadSavedBank() {
-      const { data } = await supabase.auth.getSession();
-      const token = data?.session?.access_token;
-      if (!token) return;
-      try {
-        const response = await fetch('/api/payout/saved-account', { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' });
-        const payload = await response.json();
-        if (active && response.ok) setSavedBank(payload.account || null);
-      } catch {}
-    }
     loadSavedBank();
     fetch('/api/payout/banks', { cache: 'no-store' })
       .then(async (response) => {
@@ -92,7 +113,7 @@ function EarningsWallet() {
       .catch((err) => { if (active) setBankError(err.message); })
       .finally(() => { if (active) setBankLoading(false); });
     return () => { active = false; };
-  }, []);
+  }, [loadSavedBank]);
 
   async function verifyAndSaveBank() {
     const bank = banks.find((item) => item.code === bankCode);
@@ -182,6 +203,8 @@ function EarningsWallet() {
           <input className="in" inputMode="numeric" autoComplete="off" maxLength={10} value={accountNumber} onChange={(event) => { setAccountNumber(event.target.value.replace(/\D/g, '').slice(0, 10)); setVerifiedBank(null); }} placeholder="Enter account number" />
         </label>
         {bankError && <p className="msg-err" role="alert">{bankError}</p>}
+        {savedBankLoading && <p className="fine" role="status">Checking for your saved bank account…</p>}
+        {savedBankError && <div className="stack" style={{ gap: '.35rem' }}><p className="msg-err" role="alert">{savedBankError}</p><button className="btn ghost small" type="button" onClick={loadSavedBank}>Try loading bank details again</button></div>}
         {verifiedBank && <div className="card" style={{ background: 'var(--soft, #f7f2ff)' }}><b>✓ Account verified</b><p style={{ margin: '.35rem 0 0' }}>{verifiedBank.accountName}</p><span className="fine">{verifiedBank.bankName} · •••• {verifiedBank.accountLast4}</span></div>}
         {savedBank && !verifiedBank && <div className="card" style={{ background: 'var(--soft, #f7f2ff)' }}><b>✓ Verified payout account saved</b><p style={{ margin: '.35rem 0 0' }}>{savedBank.accountName}</p><span className="fine">{savedBank.bankName} · •••• {savedBank.accountLast4}</span><p className="fine" style={{ marginBottom: 0 }}>Verified {new Date(savedBank.verifiedAt).toLocaleDateString()}</p></div>}
         <button className="btn" type="button" disabled={bankLoading || bankSaving || !bankCode || accountNumber.length !== 10} onClick={verifyAndSaveBank}>{bankSaving ? 'Verifying…' : 'Verify and save bank account'}</button>
@@ -268,10 +291,10 @@ function EarningsWallet() {
         <h2 className="h2">Request a withdrawal</h2>
         <p className="muted" style={{ margin: 0 }}>Minimum request: ₦1,000. Requests are reviewed by Palixia. Approved withdrawals are paid manually; submitting a request does not trigger a transfer.</p>
         <label className="stack" style={{ gap: '.35rem' }}><span className="fine">Amount (NGN)</span><input className="in" type="number" min="1000" step="1" inputMode="numeric" value={withdrawalAmount} onChange={(event) => setWithdrawalAmount(event.target.value)} placeholder="e.g. 1000" /></label>
-        {!savedBank && <p className="fine">Verify and save a bank account above before requesting a withdrawal.</p>}{requests.some((request) => ['requested','under_review','approved'].includes(request.status)) && <p className="fine">You already have an open withdrawal request. Wait for it to be resolved before submitting another.</p>}
+        {!savedBank && !savedBankLoading && <p className="fine">Verify and save a bank account above before requesting a withdrawal.</p>}{requests.some((request) => ['requested','under_review','approved'].includes(request.status)) && <p className="fine">You already have an open withdrawal request. Wait for it to be resolved before submitting another.</p>}
         {withdrawalError && <p className="msg-err" role="alert">{withdrawalError}</p>}
         {withdrawalSuccess && <p className="fine" role="status">{withdrawalSuccess}</p>}
-        <button className="btn" type="button" disabled={!savedBank || requests.some((request) => ['requested','under_review','approved'].includes(request.status)) || requestingWithdrawal || !withdrawalAmount} onClick={requestWithdrawal}>{requestingWithdrawal ? 'Submitting…' : 'Submit withdrawal request'}</button>
+        <button className="btn" type="button" disabled={!savedBank || savedBankLoading || requests.some((request) => ['requested','under_review','approved'].includes(request.status)) || requestingWithdrawal || !withdrawalAmount} onClick={requestWithdrawal}>{requestingWithdrawal ? 'Submitting…' : 'Submit withdrawal request'}</button>
       </section>
       <section className="card stack">
         <h2 className="h2">Withdrawal requests</h2>
