@@ -105,7 +105,7 @@ function EarningsWallet() {
       const response = await fetch('/api/payout/verify-account', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ bankCode, bankName: bank.name, accountNumber }) });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || 'Could not verify this account.');
-      setVerifiedBank(payload); setAccountNumber('');
+      setVerifiedBank(payload); setSavedBank({ accountName: payload.accountName, bankName: payload.bankName, accountLast4: payload.accountLast4, verifiedAt: new Date().toISOString() }); setAccountNumber('');
     } catch (err) { setBankError(err.message); }
     finally { setBankSaving(false); }
   }
@@ -114,7 +114,7 @@ function EarningsWallet() {
     const amount = Number(withdrawalAmount);
     if (!Number.isSafeInteger(amount) || amount < 1000) { setWithdrawalError('Enter at least ₦1,000.'); return; }
     setRequestingWithdrawal(true); setWithdrawalError(''); setWithdrawalSuccess('');
-    const result = await supabase.rpc('author_request_withdrawal', { p_amount_kobo: amount * 100 });
+    const result = await supabase.rpc('request_author_withdrawal', { p_amount_kobo: amount * 100 });
     setRequestingWithdrawal(false);
     if (result.error) { setWithdrawalError(result.error.message || 'Your request could not be submitted.'); return; }
     setWithdrawalAmount('');
@@ -268,15 +268,15 @@ function EarningsWallet() {
         <h2 className="h2">Request a withdrawal</h2>
         <p className="muted" style={{ margin: 0 }}>Minimum request: ₦1,000. Requests are reviewed by Palixia. Approved withdrawals are paid manually; submitting a request does not trigger a transfer.</p>
         <label className="stack" style={{ gap: '.35rem' }}><span className="fine">Amount (NGN)</span><input className="in" type="number" min="1000" step="1" inputMode="numeric" value={withdrawalAmount} onChange={(event) => setWithdrawalAmount(event.target.value)} placeholder="e.g. 1000" /></label>
-        {!savedBank && <p className="fine">Verify and save a bank account above before requesting a withdrawal.</p>}
+        {!savedBank && <p className="fine">Verify and save a bank account above before requesting a withdrawal.</p>}{requests.some((request) => ['requested','under_review','approved'].includes(request.status)) && <p className="fine">You already have an open withdrawal request. Wait for it to be resolved before submitting another.</p>}
         {withdrawalError && <p className="msg-err" role="alert">{withdrawalError}</p>}
         {withdrawalSuccess && <p className="fine" role="status">{withdrawalSuccess}</p>}
-        <button className="btn" type="button" disabled={!savedBank || requestingWithdrawal || !withdrawalAmount} onClick={requestWithdrawal}>{requestingWithdrawal ? 'Submitting…' : 'Submit withdrawal request'}</button>
+        <button className="btn" type="button" disabled={!savedBank || requests.some((request) => ['requested','under_review','approved'].includes(request.status)) || requestingWithdrawal || !withdrawalAmount} onClick={requestWithdrawal}>{requestingWithdrawal ? 'Submitting…' : 'Submit withdrawal request'}</button>
       </section>
       <section className="card stack">
         <h2 className="h2">Withdrawal requests</h2>
         {loading ? <p className="muted">Loading requests…</p> : requests.length === 0 ? (
-          <p className="empty">No withdrawal requests yet. Withdrawal requests will open when the payout process is ready.</p>
+          <p className="empty">No withdrawal requests yet.</p>
         ) : requests.map((request) => (
           <div className="row" key={request.id} style={{ justifyContent: 'space-between', borderBottom: '1px solid var(--border, #ddd)', padding: '0.65rem 0' }}>
             <div className="stack" style={{ gap: '0.2rem' }}>
