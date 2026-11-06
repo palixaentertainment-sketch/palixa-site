@@ -31,13 +31,13 @@ begin
     raise exception 'Active author access is required' using errcode = '42501';
   end if;
 
-  if coalesce(p_bank_code, '') !~ '^\\d{2,10}$'
+  if coalesce(p_bank_code, '') !~ '^[0-9]{2,10}$'
      or length(coalesce(p_bank_name, '')) not between 1 and 100
      or length(coalesce(p_account_name, '')) not between 1 and 160
      or length(coalesce(p_account_number_ciphertext, '')) = 0
      or length(coalesce(p_account_number_iv, '')) = 0
      or length(coalesce(p_account_number_tag, '')) = 0
-     or coalesce(p_account_last4, '') !~ '^\\d{4}$' then
+     or coalesce(p_account_last4, '') !~ '^[0-9]{4}$' then
     raise exception 'Invalid verified payout account details';
   end if;
 
