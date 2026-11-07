@@ -164,18 +164,10 @@ export async function POST(request) {
       purchaseStatus: purchase.status,
       purchaseSparks: purchase.sparks_amount,
     });
-    return NextResponse.json({
-      error: 'Payment was verified, but Sparks could not be credited automatically. Please contact support with your reference.',
-      diagnosticId,
-      reference,
-      diagnostic: {
-        stage: 'post_verified_spark_purchase',
-        code: postError.code || null,
-        message: postError.message || 'Unknown database error',
-        details: postError.details || null,
-        hint: postError.hint || null,
-      },
-    }, { status: 500 });
+    return fail(
+      'Payment was verified, but Sparks could not be credited automatically. Please contact support with your reference.',
+      500
+    );
   }
 
   return NextResponse.json({
