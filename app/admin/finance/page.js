@@ -25,6 +25,8 @@ function FinancePanel() {
   const [withdrawalRows, setWithdrawalRows] = useState([]);
   const [actionId, setActionId] = useState('');
   const [actionError, setActionError] = useState('');
+  const [releaseBusy, setReleaseBusy] = useState(false);
+  const [releaseMessage, setReleaseMessage] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -44,6 +46,22 @@ function FinancePanel() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  async function releasePendingEarnings() {
+    const confirmed = window.confirm('Release all pending author tip credits recorded up to now? This makes those earnings available for withdrawal.');
+    if (!confirmed) return;
+    setReleaseBusy(true);
+    setReleaseMessage('');
+    setActionError('');
+    const { data: result, error: releaseError } = await supabase.rpc('admin_release_pending_author_earnings', { p_through: new Date().toISOString() });
+    setReleaseBusy(false);
+    if (releaseError) {
+      setActionError('Pending earnings could not be released. Apply the Sparks webhook and monthly release migration, then try again.');
+      return;
+    }
+    setReleaseMessage(`${number(result?.released_entries)} entries released · ${naira(result?.released_amount_kobo)} now available.`);
+    await load();
+  }
 
   async function manageWithdrawal(row, action) {
     let adminNote = '';
@@ -81,7 +99,7 @@ function FinancePanel() {
           <div><span className="fine">PALIXIA · PRIVATE ADMIN</span><h1 className="h1">Financial overview</h1></div>
           <button className="btn ghost small" type="button" onClick={load} disabled={loading}>{loading ? 'Refreshing…' : 'Refresh'}</button>
         </div>
-        <p className="muted">Read-only view of Sparks purchases, wallet balances, author ledger entries and withdrawal requests. All money values are stored and displayed in NGN.</p>
+        <p className="muted">Private admin view of Sparks purchases, author earnings and withdrawal requests. All money values are stored and displayed in NGN.</p>
       </div>
 
       {error && <p className="msg-err" role="alert">{error}</p>}
@@ -108,7 +126,7 @@ function FinancePanel() {
 
         <section className="stack">
           <h2 className="h2">Author earnings ledger</h2>
-          <p className="fine">These are ledger totals by entry type and status. Pending credits are not withdrawable. The 90/10 split applies to new tips. Pending credits are not withdrawable.</p>
+          <p className="fine">Pending author tip credits are not withdrawable until you release them. Use the monthly release action after reviewing the ledger. The 90/10 split applies to new tips.</p>\n          <div className="row" style={{flexWrap:"wrap",alignItems:"center",gap:".75rem"}}><button className="btn small" type="button" onClick={releasePendingEarnings} disabled={releaseBusy}>{releaseBusy ? "Releasing…" : "Release pending author earnings"}</button><span className="fine">Releases all pending author tip credits up to now.</span></div>\n          {releaseMessage && <p className="msg-ok" role="status">{releaseMessage}</p>}
           <div className="tablewrap"><table><thead><tr><th>Entry type</th><th>Status</th><th>Entries</th><th>Amount</th></tr></thead><tbody>
             {earnings.map((row, index) => <tr key={row.entry_type + '-' + row.status + '-' + index}><td>{String(row.entry_type).replaceAll('_', ' ')}</td><td>{String(row.status).replaceAll('_', ' ')}</td><td>{number(row.entry_count)}</td><td>{naira(row.amount_kobo)}</td></tr>)}
             {earnings.length === 0 && <tr><td colSpan="4">No author ledger entries yet.</td></tr>}
