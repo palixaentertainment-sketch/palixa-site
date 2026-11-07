@@ -8,7 +8,7 @@ export default function Terms() {
     <div className="stack narrow legal">
       <h1 className="h1">Terms of Service</h1>
       <p className="fine">Last updated 3 November 2026</p>
-      <p>These Terms of Service apply to your access to and use of Palixia, an online platform for discovering, reading and publishing independent stories and for participating in reader and writer community features. Palixia is currently an independent project operated by its founder, Paul Osula, and is not yet registered as a company. References in these terms to “Palixia”, “we” or “us” mean the platform and the people operating it. By using Palixia or creating an account, you agree to these terms. If you do not agree, do not use the service.</p>
+      <p>These Terms of Service apply to your access to and use of Palixia, an online platform for discovering, reading and publishing independent stories and for participating in reader and writer community features. Palixia is operated as a registered private limited company in Nigeria. References in these terms to “Palixia”, “we” or “us” mean the platform and the people operating it. By using Palixia or creating an account, you agree to these terms. If you do not agree, do not use the service.</p>
 
       <h2 className="h2">1. Eligibility and accounts</h2>
       <ul>
@@ -61,7 +61,6 @@ export default function Terms() {
 
       <h2 className="h2">11. Governing law and contact</h2>
       <p>These terms are subject to the laws of the Federal Republic of Nigeria, without removing any mandatory consumer or other legal protections that apply to you in your place of residence. If you have a question or complaint about these terms, contact info@palixia.com or use our Contact Us page.</p>
-      <p className="fine">These terms describe the service as currently understood and should be reviewed by a qualified lawyer before being relied on as final legal advice.</p>
     </div>
   );
 }

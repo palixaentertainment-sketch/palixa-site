@@ -8,7 +8,7 @@ export default function Privacy() {
     <div className="stack narrow legal">
       <h1 className="h1">Privacy Policy</h1>
       <p className="fine">Last updated 3 November 2026</p>
-      <p>This Privacy Policy explains how Palixia handles personal information when you visit the website, create an account, read or publish stories, use community features or contact us. Palixia operates from Nigeria and welcomes users from different countries. It is currently an independent project operated by its founder, Paul Osula, and has not yet been registered as a company. Privacy laws may give you additional rights depending on where you live.</p>
+      <p>This Privacy Policy explains how Palixia handles personal information when you visit the website, create an account, read or publish stories, use community features or contact us. Palixia operates from Nigeria and welcomes users from different countries. It is operated as a registered private limited company in Nigeria. Privacy laws may give you additional rights depending on where you live.</p>
 
       <h2 className="h2">1. Information we handle</h2>
       <ul>
@@ -30,9 +30,8 @@ export default function Privacy() {
       <h2 className="h2">4. Public content</h2>
       <p>Information you choose to make public—such as your username, author profile, published stories, covers, comments and community posts—can be viewed, copied, indexed or shared by other people. Do not publish information you want to keep private. Your account email and authentication credentials are not intended to be displayed publicly.</p>
 
-      <h2 className="h2">5. Service providers and advertising</h2>
-      <p>Palixia uses third-party providers to operate the website. The current implementation uses Supabase for database, authentication and related storage services, and Vercel for hosting and deployment. Google services are used for Google sign-in and a Google advertising script is included in the website. If advertising is served, Google and its advertising partners may use cookies, web beacons, IP addresses or similar identifiers to deliver ads, measure performance, limit repeated ads or personalise advertising according to the settings and rules that apply. The presence of the advertising script does not mean that an ad is shown on every page or that an advertising request succeeds.</p>
-      <p>Google explains how it uses data on partner sites and provides advertising controls through <a href="https://myadcenter.google.com/" target="_blank" rel="noreferrer">Google My Ad Center</a> and <a href="https://adssettings.google.com/" target="_blank" rel="noreferrer">Ads Settings</a>. You can also learn about Google's advertising cookies in its <a href="https://support.google.com/adsense/answer/7549925" target="_blank" rel="noreferrer">AdSense cookie information</a>.</p>
+      <h2 className="h2">5. Service providers</h2>
+      <p>Palixia uses third-party providers to operate the website. The current implementation uses Supabase for database, authentication and related storage services, and Vercel for hosting and deployment. Google services may be used for Google sign-in. Palixia does not currently load Google advertising scripts or serve advertising through the website.</p>
       <p>Payment processing is not currently offered as a general public feature on Palixia. Payment-related code is being prepared and restricted to administrative testing. If payment features are enabled for users in the future, the relevant payment provider will process the information needed for the transaction under its own privacy terms, and this policy will be updated before the feature is made available.</p>
       <p>We do not sell personal information as a product. Providers may process information on our behalf or for their own limited purposes under their applicable terms. We may disclose information where reasonably necessary to comply with law, respond to lawful requests, protect users or rights, investigate abuse, or handle a business transfer.</p>
 
@@ -54,7 +53,6 @@ export default function Privacy() {
 
       <h2 className="h2">11. Changes and contact</h2>
       <p>We may update this policy when the platform, its providers or applicable requirements change. We will update the date at the top of this page. For privacy questions or requests, email info@palixia.com or use our <a href="/contact">Contact Us</a> page.</p>
-      <p className="fine">This notice is based on the website implementation reviewed on 3 November 2026. Provider settings, data-transfer arrangements, retention periods and legal compliance should be periodically verified. This policy is not legal advice.</p>
     </div>
   );
 }
