@@ -139,38 +139,10 @@ function EarningsWallet() {
     }
   }
 
-  const [withdrawalAmount, setWithdrawalAmount] = useState('');
-  const [withdrawalSubmitting, setWithdrawalSubmitting] = useState(false);
-  const [withdrawalMessage, setWithdrawalMessage] = useState('');
-
   async function requestWithdrawal() {
     const amount = Math.round(Number(withdrawalAmount) * 100);
     if (!Number.isSafeInteger(amount) || amount < 100000) {
-      setWithdrawalMessage('Enter an amount of at least ₦1,000.');
-      return;
-    }
-    if (amount > available) {
-      setWithdrawalMessage('The request cannot exceed your available earnings.');
-      return;
-    }
-    setWithdrawalSubmitting(true);
-    setWithdrawalMessage('');
-    const { data, error: requestError } = await supabase.rpc('author_request_withdrawal', { p_amount_kobo: amount });
-    setWithdrawalSubmitting(false);
-    if (requestError) {
-      setWithdrawalMessage(requestError.message || 'Your withdrawal request could not be submitted.');
-      return;
-    }
-    setWithdrawalAmount('');
-    setWithdrawalMessage('Your withdrawal request has been submitted for admin review. No bank transfer has been made.');
-    await load();
-  }
-
-  async function acceptAgreement() {
-    if (!user || !agreementConfirmed) return;
-    setAccepting(true);
-    setAgreementError('');
-    const { error: insertError } = await supabase.from('author_earnings_agreements').insert({ author_id: user.id, agreement_version: 'sparks-v3-monthly-payouts' });
+      setWithdrawalMessage('Enter an amount agreements').insert({ author_id: user.id, agreement_version: 'sparks-v3-monthly-payouts' });
     setAccepting(false);
     if (insertError && insertError.code !== '23505') {
       setAgreementError('We could not save your acceptance. Please try again.');
@@ -307,29 +279,4 @@ function EarningsWallet() {
           <input className="in" type="number" min="1000" step="1" inputMode="numeric" value={withdrawalAmount} onChange={(event) => setWithdrawalAmount(event.target.value)} placeholder="e.g. 1000" />
         </label>
         {withdrawalMessage && <p className="fine" role="status" aria-live="polite">{withdrawalMessage}</p>}
-        <button className="btn" type="button" disabled={withdrawalSubmitting || !savedBank || available < 100000} onClick={requestWithdrawal}>{withdrawalSubmitting ? 'Submitting…' : 'Submit test withdrawal request'}</button>
-        {!savedBank && <p className="fine">A verified payout bank account must be saved before requesting a withdrawal.</p>}
-        {available < 100000 && <p className="fine">At least ₦1,000 in unreserved available earnings is required.</p>}
-      </section>
-      <section className="card stack">
-        <h2 className="h2">Withdrawal requests</h2>
-        {loading ? <p className="muted">Loading requests…</p> : requests.length === 0 ? (
-          <p className="empty">No withdrawal requests yet.</p>
-        ) : requests.map((request) => (
-          <div className="row" key={request.id} style={{ justifyContent: 'space-between', borderBottom: '1px solid var(--border, #ddd)', padding: '0.65rem 0' }}>
-            <div className="stack" style={{ gap: '0.2rem' }}>
-              <b>{naira(request.amount_kobo)}</b>
-              <span className="fine">{new Date(request.requested_at).toLocaleDateString()} · {request.status.replaceAll('_', ' ')}</span>
-              {request.admin_note && <span className="fine">{request.admin_note}</span>}
-            </div>
-          </div>
-        ))}
-      </section>
-
-    </div>
-  );
-}
-
-export default function AuthorWalletPage() {
-  return <Guard roles={['author','admin']}><EarningsWallet /></Guard>;
-}
+        <button className="btn" type="button" disabled={withdrawalSubmitting || !savedBank || available < 100000} onClick={requestWithdrawal}>{withdrawalSubmitting ? 'Submitting…'
