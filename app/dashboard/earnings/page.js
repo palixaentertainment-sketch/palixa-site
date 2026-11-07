@@ -139,10 +139,11 @@ function EarningsWallet() {
     }
   }
 
-  async function requestWithdrawal() {
-    const amount = Math.round(Number(withdrawalAmount) * 100);
-    if (!Number.isSafeInteger(amount) || amount < 100000) {
-      setWithdrawalMessage('Enter an amount agreements').insert({ author_id: user.id, agreement_version: 'sparks-v3-monthly-payouts' });
+  async function acceptAgreement() {
+    if (!user || !agreementConfirmed) return;
+    setAccepting(true);
+    setAgreementError('');
+    const { error: insertError } = await supabase.from('author_earnings_agreements').insert({ author_id: user.id, agreement_version: 'sparks-v3-monthly-payouts' });
     setAccepting(false);
     if (insertError && insertError.code !== '23505') {
       setAgreementError('We could not save your acceptance. Please try again.');
@@ -198,7 +199,7 @@ function EarningsWallet() {
           <span className="badge">Coming soon</span>
         </div>
         <p className="muted" style={{ margin: 0, lineHeight: 1.65 }}>
-          Sparks are still in pre-launch, so withdrawals are not open yet. Our planned author payout policy is monthly processing during the first week of each month, with a ₦1,000 minimum withdrawal and a verified bank account required. Authors receive 90% of eligible tip value, while Palixia retains 10%. Payouts will initially be made by manual bank transfer. These rules are a launch plan, not a promise that withdrawals are currently available; final terms and the opening date will be announced before payouts begin.
+          We are currently onboarding authors and building our active reader community. Payout policies and supported payout methods will be announced before launch. We are preparing Paystack support first; any additional provider, including Flutterwave, will be confirmed before it is offered. No automated payouts or withdrawals are available yet.
         </p>
       </section>
       <section className="card stack" style={{ borderColor: 'var(--accent, #7042a5)' }}>
@@ -233,25 +234,24 @@ function EarningsWallet() {
       {!agreementLoading && !agreementAccepted && (
         <section className="card stack">
           <h2 className="h2">Set up Sparks earnings</h2>
-          <p>Before readers can send you Sparks, please review and accept the earnings split and planned payout rules:</p>
+          <p>Before readers can send you Sparks, please review and accept the updated earnings split:</p>
           <ul className="fine" style={{ paddingLeft: '1.25rem' }}>
             <li>You receive 90% of the value of each new Spark tip.</li>
             <li>Palixia retains 10% to support platform operations.</li>
-            <li>Your 90% author share is recorded as pending. Withdrawals are not currently open, and pending credits are not a guaranteed or immediately payable amount.</li>
-            <li>The planned payout schedule is monthly, during the first week of each month, with a minimum withdrawal of ₦1,000.</li>
-            <li>A verified bank account in your name will be required. Payouts are planned to begin by manual bank transfer.</li>
-            <li>Any payout will remain subject to the final published payout rules, identity and bank verification, applicable fees, and legal requirements. The planned schedule and threshold may be revised before launch.</li>
-            <li>This agreement applies to new tips after acceptance. Earlier ledger entries are not changed.</li>
+            <li>Your 90% author share is recorded as pending until Palixia publishes and enables its payout policy.</li>
+            <li>Pending credits cannot be withdrawn, transferred or treated as a guaranteed payment.</li>
+            <li>Any future withdrawal will be subject to published payout rules, verification and applicable fees.</li>
+            <li>This updated agreement applies to new tips after acceptance. Earlier ledger entries are not changed.</li>
           </ul>
           <label className="row" style={{ alignItems: 'flex-start', gap: '0.55rem' }}>
             <input type="checkbox" checked={agreementConfirmed} onChange={(event) => setAgreementConfirmed(event.target.checked)} />
-            <span className="fine">I have read and agree to the 90/10 split and the planned Sparks payout terms.</span>
+            <span className="fine">I have read and agree to the updated 90/10 Sparks earnings terms.</span>
           </label>
           {agreementError && <p className="msg-err" role="alert">{agreementError}</p>}
           <button className="btn" type="button" disabled={!agreementConfirmed || accepting} onClick={acceptAgreement}>{accepting ? 'Saving…' : 'Accept and enable author support'}</button>
         </section>
       )}
-      {agreementAccepted && <p className="fine">Updated Sparks terms accepted. You receive 90% of new eligible tip value; Palixia retains 10%. Credits remain pending, and withdrawals are not yet open.</p>}
+      {agreementAccepted && <p className="fine">Updated 90/10 Sparks terms accepted. You receive 90% of new tip value; Palixia retains 10%. Author credits remain pending until the payout policy is enabled.</p>}
       {error && <p className="msg-err" role="alert">{error}</p>}
       <section className="card stack">
         <div className="sechead"><h2 className="h2">Earnings activity</h2><button className="btn ghost small" type="button" onClick={load}>Refresh</button></div>
@@ -271,12 +271,29 @@ function EarningsWallet() {
           </div>
         )}
       </section>
-      <section className="card stack" style={{ borderColor: 'var(--accent, #7042a5)' }}>
-        <div className="sechead"><h2 className="h2">Request a withdrawal · TEST</h2><span className="badge">Temporary test</span></div>
-        <p className="muted" style={{ margin: 0, lineHeight: 1.65 }}>This temporary test form submits a request for admin review. The minimum is ₦1,000, your verified bank account is required, and submitting does not send money. Please use the designated test author account only.</p>
-        <label className="stack" style={{ gap: '.35rem' }}>
-          <span className="fine">Amount (NGN)</span>
-          <input className="in" type="number" min="1000" step="1" inputMode="numeric" value={withdrawalAmount} onChange={(event) => setWithdrawalAmount(event.target.value)} placeholder="e.g. 1000" />
-        </label>
-        {withdrawalMessage && <p className="fine" role="status" aria-live="polite">{withdrawalMessage}</p>}
-        <button className="btn" type="button" disabled={withdrawalSubmitting || !savedBank || available < 100000} onClick={requestWithdrawal}>{withdrawalSubmitting ? 'Submitting…'
+      <section className="card stack" style={{ borderColor: 'var(--border, #ddd)' }}>
+        <div className="sechead"><h2 className="h2">Withdrawals are not open yet</h2><span className="badge">Coming soon</span></div>
+        <p className="muted" style={{ margin: 0, lineHeight: 1.65 }}>Your author share is safely recorded as pending while Palixia finalises its payout policy. You can view your earnings activity below, but withdrawal requests are currently disabled. We will announce the payout rules and open requests when the system is ready. Saving a bank account now only prepares your details; it does not trigger a transfer.</p>
+      </section>
+      <section className="card stack">
+        <h2 className="h2">Withdrawal requests</h2>
+        {loading ? <p className="muted">Loading requests…</p> : requests.length === 0 ? (
+          <p className="empty">No withdrawal requests yet.</p>
+        ) : requests.map((request) => (
+          <div className="row" key={request.id} style={{ justifyContent: 'space-between', borderBottom: '1px solid var(--border, #ddd)', padding: '0.65rem 0' }}>
+            <div className="stack" style={{ gap: '0.2rem' }}>
+              <b>{naira(request.amount_kobo)}</b>
+              <span className="fine">{new Date(request.requested_at).toLocaleDateString()} · {request.status.replaceAll('_', ' ')}</span>
+              {request.admin_note && <span className="fine">{request.admin_note}</span>}
+            </div>
+          </div>
+        ))}
+      </section>
+
+    </div>
+  );
+}
+
+export default function AuthorWalletPage() {
+  return <Guard roles={['author','admin']}><EarningsWallet /></Guard>;
+}
