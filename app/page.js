@@ -57,14 +57,19 @@ export default function Home() {
 
     (async () => {
       try {
-        const [f, t, n, g, a, creatorSelection, o] = await Promise.all([
-          supabase.from('book_cards').select('*').eq('featured', true).order('reads', { ascending: false }).limit(6),
-          supabase.from('book_cards').select('*').order('reads', { ascending: false }).limit(12),
-          supabase.from('book_cards').select('*').order('created_at', { ascending: false }).limit(12),
+        // Start supporting homepage requests in parallel, but do not make the
+        // main story shelves wait for genres, author lists or editorial sections.
+        const secondaryPromise = Promise.all([
           supabase.from('genres').select('*').order('sort'),
           supabase.rpc('popular_authors', { lim: 8 }),
           supabase.from('creator_of_week').select('book_id').eq('id', true).maybeSingle(),
           supabase.from('palixia_originals_home_cards_v2').select('*').order('created_at', { ascending: false }).limit(12),
+        ]);
+
+        const [f, t, n] = await Promise.all([
+          supabase.from('book_cards').select('*').eq('featured', true).order('reads', { ascending: false }).limit(6),
+          supabase.from('book_cards').select('*').order('reads', { ascending: false }).limit(12),
+          supabase.from('book_cards').select('*').order('created_at', { ascending: false }).limit(12),
         ]);
         if (f.error || t.error || n.error) throw new Error('Could not load books');
         if (cancelled) return;
@@ -72,7 +77,12 @@ export default function Home() {
         const featured = f.data || [];
         const trending = t.data || [];
         const fresh = n.data || [];
+        // Render the main shelves as soon as their three essential queries finish.
         setData({ featured, trending, fresh });
+        setFailed(false);
+
+        const [g, a, creatorSelection, o] = await secondaryPromise;
+        if (cancelled) return;
         setOriginals(o.error ? [] : (o.data || []));
         // Keep the Comics genre hidden until Palixia has comics ready to feature.
         // Keep the original homepage genres; newly added genres are shown in Discover only.
