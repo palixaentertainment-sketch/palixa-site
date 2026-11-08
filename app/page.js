@@ -67,9 +67,9 @@ export default function Home() {
         ]);
 
         const [f, t, n] = await Promise.all([
-          supabase.from('book_cards').select('*').eq('featured', true).order('reads', { ascending: false }).limit(6),
-          supabase.from('book_cards').select('*').order('reads', { ascending: false }).limit(12),
-          supabase.from('book_cards').select('*').order('created_at', { ascending: false }).limit(12),
+          supabase.from('book_cards').select('id,title,author_name,genre_name,description,cover_url,book_type,story_status,is_sample,reads,genre_id,tags,author_id,created_at,featured').eq('featured', true).order('reads', { ascending: false }).limit(6),
+          supabase.from('book_cards').select('id,title,author_name,genre_name,description,cover_url,book_type,story_status,is_sample,reads,genre_id,tags,author_id,created_at,featured').order('reads', { ascending: false }).limit(12),
+          supabase.from('book_cards').select('id,title,author_name,genre_name,description,cover_url,book_type,story_status,is_sample,reads,genre_id,tags,author_id,created_at,featured').order('created_at', { ascending: false }).limit(12),
         ]);
         if (f.error || t.error || n.error) throw new Error('Could not load books');
         if (cancelled) return;
@@ -95,7 +95,7 @@ export default function Home() {
           setCreatorBook(null);
           const selectedBookId = creatorSelection.data?.book_id;
           if (selectedBookId) {
-            const selected = await supabase.from('book_cards').select('*').eq('id', selectedBookId).maybeSingle();
+            const selected = await supabase.from('book_cards').select('id,title,author_name,genre_name,description,cover_url,book_type,story_status,is_sample,reads,genre_id,tags,author_id,created_at,featured').eq('id', selectedBookId).maybeSingle();
             if (!cancelled && !selected.error && selected.data) setCreatorBook(selected.data);
           }
         }).catch((error) => console.warn('[Palixia home] Secondary sections unavailable:', error));
@@ -123,7 +123,7 @@ export default function Home() {
 
         let historyBooks = [];
         if (historyIds.length) {
-          const historyResult = await supabase.from('book_cards').select('*').in('id', historyIds);
+          const historyResult = await supabase.from('book_cards').select('id,title,author_name,genre_name,description,cover_url,book_type,story_status,is_sample,reads,genre_id,tags,author_id,created_at,featured').in('id', historyIds);
           if (historyResult.error) throw new Error('Could not load reading history');
           historyBooks = historyResult.data || [];
         }
@@ -145,7 +145,7 @@ export default function Home() {
           }
         }
 
-        const candidatesResult = await supabase.from('book_cards').select('*').order('reads', { ascending: false }).limit(100);
+        const candidatesResult = await supabase.from('book_cards').select('id,title,author_name,genre_name,cover_url,book_type,story_status,is_sample,reads,genre_id,tags,author_id').order('reads', { ascending: false }).limit(100);
         if (candidatesResult.error) throw new Error('Could not load recommendations');
         const alreadyKnown = new Set(historyIds);
         const candidates = (candidatesResult.data || []).filter((b) => !alreadyKnown.has(b.id));
