@@ -189,7 +189,8 @@ export default function Reader() {
     );
   }
 
-  if (!user && ch.status === 'published' && book.status === 'published') {
+  // Let visitors read the first three published chapters before asking them to join.
+  if (!user && ch.chapter_number > 3 && ch.status === 'published' && book.status === 'published') {
     const bookHref = '/book/' + book.id;
     const chapterHref = '/read/' + id;
     return (
@@ -202,8 +203,8 @@ export default function Reader() {
           style={{ width: '100%', maxWidth: '27rem', padding: 'clamp(1.25rem, 5vw, 2rem)', borderRadius: '1rem', boxShadow: '0 20px 70px rgba(0,0,0,.28)', background: 'var(--surface, #fff)', color: 'var(--fg, #21182e)' }}
         >
           <p className="mono">YOUR NEXT STORY STARTS HERE</p>
-          <h1 id="palixia-signup-title" className="h1" style={{ margin: 0 }}>Found a story you love?</h1>
-          <p>Join Palixia for free to read this chapter, follow your favourite authors, and discover more stories from our growing community.</p>
+          <h1 id="palixia-signup-title" className="h1" style={{ margin: 0 }}>Enjoying the story?</h1>
+          <p>You’ve reached the end of the free preview. Create a free Palixia account to continue reading, follow your favourite authors, and discover more stories.</p>
           <div className="stack" style={{ gap: '.65rem' }}>
             <Link className="btn" href={'/signup?next=' + encodeURIComponent(chapterHref)} style={{ justifyContent: 'center' }}>Create a free account</Link>
             <Link className="btn ghost" href={'/login?next=' + encodeURIComponent(chapterHref)} style={{ justifyContent: 'center' }}>Log in</Link>
