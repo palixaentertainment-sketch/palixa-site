@@ -30,6 +30,7 @@ export default function Home() {
     { icon: '♡', title: 'You keep your rights', text: 'Your original work remains yours.' },
     { icon: '⌕', title: 'Get discovered', text: 'Help new readers find your books and stories.' },
     { icon: '▤', title: 'Your own author page', text: 'Showcase your work in one place.' },
+    { icon: '♡', title: 'Earn through reader support', text: 'Readers will be able to support authors through Palixia Sparks.' },
   ];
 
   useEffect(() => {
@@ -173,7 +174,7 @@ export default function Home() {
             <Link className="btn" href="/discover">Explore stories</Link>
             <PublishLink className="btn ghost">Publish your story</PublishLink>
           </div>
-          <p className="homehero-free-note">Read for free. Publish for free.</p>
+          <p className="homehero-free-note">Read for free. Publish for free. Earn through reader support — coming soon.</p>
         </div>
         <div className="homehero-art" aria-hidden="true">
           <div className="hero-book hero-book-back"><span>NEW WORLDS</span><b>Find a story<br />that stays.</b></div>
