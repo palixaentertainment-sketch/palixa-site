@@ -81,22 +81,24 @@ export default function Home() {
         setData({ featured, trending, fresh });
         setFailed(false);
 
-        const [g, a, creatorSelection, o] = await secondaryPromise;
-        if (cancelled) return;
-        setOriginals(o.error ? [] : (o.data || []));
-        // Keep the Comics genre hidden until Palixia has comics ready to feature.
-        // Keep the original homepage genres; newly added genres are shown in Discover only.
-        const homepageGenreSlugs = new Set(['romance', 'thriller', 'crime', 'mystery', 'fantasy', 'horror', 'drama', 'sci-fi', 'short-stories']);
-        setGenres((g.data || []).filter((genre) => homepageGenreSlugs.has(genre.slug)));
-        setAuthors(a.data || []);
-        // Creator of the Week is selected manually by an admin. Never fall back to the newest book.
-        setCreatorBook(null);
-        const selectedBookId = creatorSelection.data?.book_id;
-        if (selectedBookId) {
-          const selected = await supabase.from('book_cards').select('*').eq('id', selectedBookId).maybeSingle();
-          if (!cancelled && !selected.error && selected.data) setCreatorBook(selected.data);
-        }
-        setFailed(false);
+        // Secondary editorial/discovery sections must never hold up the reader's
+        // personalised shelves after login.
+        secondaryPromise.then(async ([g, a, creatorSelection, o]) => {
+          if (cancelled) return;
+          setOriginals(o.error ? [] : (o.data || []));
+          // Keep the Comics genre hidden until Palixia has comics ready to feature.
+          // Keep the original homepage genres; newly added genres are shown in Discover only.
+          const homepageGenreSlugs = new Set(['romance', 'thriller', 'crime', 'mystery', 'fantasy', 'horror', 'drama', 'sci-fi', 'short-stories']);
+          setGenres((g.data || []).filter((genre) => homepageGenreSlugs.has(genre.slug)));
+          setAuthors(a.data || []);
+          // Creator of the Week is selected manually by an admin. Never fall back to the newest book.
+          setCreatorBook(null);
+          const selectedBookId = creatorSelection.data?.book_id;
+          if (selectedBookId) {
+            const selected = await supabase.from('book_cards').select('*').eq('id', selectedBookId).maybeSingle();
+            if (!cancelled && !selected.error && selected.data) setCreatorBook(selected.data);
+          }
+        }).catch((error) => console.warn('[Palixia home] Secondary sections unavailable:', error));
 
         if (!user) {
           setContinueReading([]);
