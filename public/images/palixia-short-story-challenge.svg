@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1536 864" role="img" aria-labelledby="title desc">
+<title id="title">Palixia Short Story Challenge — January 2027</title>
+<desc id="desc">A story. A thousand possibilities. Open to all writers. More details coming soon.</desc>
+<defs>
+  <pattern id="grid" width="80" height="80" patternUnits="userSpaceOnUse"><path d="M80 0H0V80" fill="none" stroke="#e8e4e8" stroke-width="2"/></pattern>
+  <linearGradient id="purple" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#8c4be9"/><stop offset="1" stop-color="#5b16b5"/></linearGradient>
+</defs>
+<rect width="1536" height="864" fill="#fff"/><rect width="1536" height="864" fill="url(#grid)"/>
+<g transform="translate(40 30)"><path d="M55 0Q-8 65 10 180" fill="none" stroke="#17131a" stroke-width="9"/><path d="M365 0q63 65 45 180" fill="none" stroke="#17131a" stroke-width="9"/><text x="75" y="125" fill="#5b16b5" font-family="Georgia,serif" font-size="94" font-weight="bold" font-style="italic">Palixia</text><circle cx="95" cy="72" r="17" fill="#f2a9b2"/></g>
+<g fill="#8a4be8" stroke="#3a2350" stroke-width="5" stroke-linejoin="round"><path d="M1190 0l43 105 112-60-52 112 134 16-131 38 83 100-126-53-28 132-30-132-119 55 79-105-128-37 131-18-55-109 113 61z"/></g>
+<g text-anchor="middle" font-family="Trebuchet MS,Arial,sans-serif" font-weight="900" fill="#8c4be9" stroke="#3b2b43" stroke-width="5" paint-order="stroke" stroke-linejoin="round">
+<text x="770" y="135" font-size="112" letter-spacing="2">SHORT</text>
+<text x="770" y="255" font-size="112" letter-spacing="2">STORY</text>
+<text x="770" y="375" font-size="112" letter-spacing="1">CHALLENGE</text></g>
+<g text-anchor="middle" font-family="Arial,sans-serif" fill="#5415a7"><text x="770" y="470" font-size="54">Coming January 2027</text><text x="770" y="585" font-size="48">A story. A thousand possibilities.</text><text x="770" y="660" font-size="48">Open to all writers.</text><text x="770" y="735" font-size="48">More details coming soon.</text></g>
+<g transform="translate(1165 165) rotate(8)"><rect x="0" y="0" width="430" height="360" rx="35" fill="url(#purple)" stroke="#3b2350" stroke-width="10"/><rect x="24" y="22" width="382" height="220" rx="15" fill="#fff0fa"/><circle cx="375" cy="43" r="7" fill="#8c4be9"/><path d="M24 240h382l-25 90H50z" fill="#f8eafa" stroke="#3b2350" stroke-width="5"/><g stroke="#b8a9c5" stroke-width="3" fill="#fff"><path d="M48 260h330M44 282h340M65 304h295M90 250v75m48-75v75m48-75v75m48-75v75m48-75v75m48-75v75"/></g></g>
+<g transform="translate(-30 575) rotate(-22)"><path d="M0 35h500l-55 78H0z" fill="#8c4be9" stroke="#3b2b43" stroke-width="10"/><path d="M500 35l105 39-105 39z" fill="#f7d8c7" stroke="#3b2b43" stroke-width="10"/><path d="M580 74l25 0-25 12z" fill="#3b2b43"/><path d="M25 48h420" stroke="#d7b8ff" stroke-width="8"/></g>
+<text x="1125" y="805" font-family="Arial,sans-serif" font-size="44" fill="#111">PALIXIA.COM</text>
+</svg>
