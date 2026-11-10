@@ -1493,3 +1493,25 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
     font-size: .72rem;
   }
 }
+
+
+/* Homepage: January 2027 Short Story Challenge poster */
+.short-story-challenge {
+  width: 100%;
+  margin: .25rem 0 1.5rem;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgba(46,16,101,.045);
+}
+.short-story-challenge img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+}
+@media (max-width: 38rem) {
+  .short-story-challenge { margin: .15rem 0 1.1rem; border-radius: 12px; }
+}
