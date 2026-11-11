@@ -1,7 +1,5 @@
--- Harden Sparks tip idempotency without changing the admin-only test gate.
--- A reused reference must match the original reader, author, Spark amount and
--- both 90/10 ledger entries; it must never be treated as a successful retry
--- for a different tip.
+-- Apply the 90/10 Sparks split to new tips only.
+-- Existing ledger entries are intentionally left unchanged.
 create or replace function public.send_author_sparks(
   p_author_id uuid,
   p_book_id uuid,
@@ -18,14 +16,12 @@ declare
   v_author_role text;
   v_author_status text;
   v_book_author uuid;
-  v_existing_reader public.reader_spark_ledger%rowtype;
-  v_existing_author public.author_wallet_ledger%rowtype;
-  v_existing_fee public.author_wallet_ledger%rowtype;
+  v_existing uuid;
   v_total_kobo bigint;
   v_author_kobo bigint;
   v_platform_kobo bigint;
 begin
-  -- Public tipping remains disabled; only active admins can test.
+  -- Keep the existing admin-only test gate. Public tipping is not enabled.
   if not public.is_admin() then
     raise exception 'Sparks is currently restricted to Palixia admins during testing' using errcode = '42501';
   end if;
@@ -59,6 +55,7 @@ begin
     end if;
   end if;
 
+  -- Require acceptance of the revised 90/10 earnings terms.
   if not exists (
     select 1 from public.author_earnings_agreements
     where author_id = p_author_id and agreement_version = 'sparks-v3-monthly-payouts'
@@ -66,38 +63,8 @@ begin
     raise exception 'The author has not accepted the updated 90/10 Sparks earnings agreement';
   end if;
 
-  -- A retry is idempotent only when every financial leg matches the original.
-  select * into v_existing_reader
-  from public.reader_spark_ledger
-  where reference = p_reference
-  for update;
-
-  if found then
-    select * into v_existing_author
-    from public.author_wallet_ledger
-    where reference = p_reference and entry_type = 'tip_credit';
-
-    select * into v_existing_fee
-    from public.author_wallet_ledger
-    where reference = p_reference || '_PLATFORM_FEE' and entry_type = 'platform_fee';
-
-    v_total_kobo := p_sparks::bigint * 100;
-    v_author_kobo := (v_total_kobo * 90) / 100;
-    v_platform_kobo := v_total_kobo - v_author_kobo;
-
-    if v_existing_reader.reader_id <> v_reader_id
-       or v_existing_reader.entry_type <> 'tip_debit'
-       or v_existing_reader.sparks_amount <> p_sparks
-       or v_existing_author.id is null
-       or v_existing_author.author_id <> p_author_id
-       or v_existing_author.amount_kobo <> v_author_kobo
-       or v_existing_fee.id is null
-       or v_existing_fee.author_id <> p_author_id
-       or v_existing_fee.amount_kobo <> v_platform_kobo then
-      raise exception 'Tip reference has already been used for a different transaction'
-        using errcode = '23505';
-    end if;
-
+  select id into v_existing from public.reader_spark_ledger where reference = p_reference;
+  if v_existing is not null then
     return jsonb_build_object('success', true, 'already_processed', true);
   end if;
 
@@ -113,6 +80,8 @@ begin
     raise exception 'Insufficient Sparks balance' using errcode = '22023';
   end if;
 
+  -- One Spark is valued at ₦1. The split is calculated in kobo to avoid
+  -- floating-point arithmetic; any rounding remainder goes to Palixia.
   v_total_kobo := p_sparks::bigint * 100;
   v_author_kobo := (v_total_kobo * 90) / 100;
   v_platform_kobo := v_total_kobo - v_author_kobo;
@@ -145,5 +114,3 @@ $$;
 
 revoke all on function public.send_author_sparks(uuid, uuid, integer, text) from public, anon;
 grant execute on function public.send_author_sparks(uuid, uuid, integer, text) to authenticated;
-
-notify pgrst, 'reload schema';
