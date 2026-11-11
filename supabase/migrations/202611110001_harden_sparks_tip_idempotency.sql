@@ -87,9 +87,15 @@ begin
        or v_existing_author.id is null
        or v_existing_author.author_id <> p_author_id
        or v_existing_author.amount_kobo <> v_author_kobo
+       or v_existing_author.currency <> 'NGN'
+       or v_existing_author.related_book_id is distinct from p_book_id
+       or v_existing_author.status <> 'pending'
        or v_existing_fee.id is null
        or v_existing_fee.author_id <> p_author_id
-       or v_existing_fee.amount_kobo <> v_platform_kobo then
+       or v_existing_fee.amount_kobo <> v_platform_kobo
+       or v_existing_fee.currency <> 'NGN'
+       or v_existing_fee.related_book_id is distinct from p_book_id
+       or v_existing_fee.status <> 'pending' then
       raise exception 'Tip reference has already been used for a different transaction'
         using errcode = '23505';
     end if;
