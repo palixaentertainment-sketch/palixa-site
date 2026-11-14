@@ -1493,3 +1493,53 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
     font-size: .72rem;
   }
 }
+
+
+/* Homepage: January 2027 Short Story Challenge poster */
+.short-story-challenge {
+  width: 100%;
+  margin: .25rem 0 1.5rem;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgba(46,16,101,.045);
+}
+.short-story-challenge img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+}
+@media (max-width: 38rem) {
+  .short-story-challenge { margin: .15rem 0 1.1rem; border-radius: 12px; }
+}
+
+
+/* Palixia Short Story Challenge landing page */
+.short-story-challenge-link { display: block; color: inherit; text-decoration: none; border-radius: 16px; }
+.short-story-challenge-link:focus-visible { outline: 3px solid var(--accent, #7b3ed1); outline-offset: 4px; }
+.short-story-page { min-height: 75vh; padding: 1.5rem 1rem 4rem; }
+.short-story-page-inner { width: min(100%, 900px); margin: 0 auto; }
+.short-story-back { display: inline-block; margin: 0 0 1.25rem; color: var(--muted, #6b6472); text-decoration: none; font-weight: 600; }
+.short-story-page-poster { overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
+.short-story-page-poster img { display: block; width: 100%; height: auto; }
+.short-story-page-intro { max-width: 720px; margin: 2.5rem auto 2rem; text-align: center; }
+.short-story-eyebrow { margin: 0 0 .75rem; color: #7540bd; font-size: .78rem; font-weight: 800; letter-spacing: .14em; }
+.short-story-page-intro h1 { margin: 0; color: var(--text, #241b2c); font-size: clamp(2rem, 5vw, 3.25rem); line-height: 1.08; }
+.short-story-tagline { margin: .9rem 0; color: #7540bd; font-family: Georgia, serif; font-size: clamp(1.2rem, 3vw, 1.65rem); }
+.short-story-description { max-width: 620px; margin: 0 auto; color: var(--muted, #6b6472); font-size: 1.05rem; line-height: 1.75; }
+.short-story-open-note { display: inline-block; margin-top: 1.25rem; padding: .65rem 1rem; border-radius: 999px; background: rgba(126,75,190,.1); color: #6532a5; font-weight: 700; }
+.short-story-details { max-width: 650px; margin: 2rem auto 0; padding: 1.75rem; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); text-align: center; }
+.short-story-details h2 { margin: 0 0 .7rem; font-size: 1.35rem; color: var(--text, #241b2c); }
+.short-story-details p { color: var(--muted, #6b6472); line-height: 1.7; }
+.short-story-details .btn { display: inline-flex; margin-top: .75rem; }
+@media (max-width: 38rem) { .short-story-page { padding: 1rem .75rem 3rem; } .short-story-details { padding: 1.25rem; } }
+
+
+/* Admin-managed homepage banner slot: preserve artwork proportions. */
+.short-story-challenge { padding: 0; }
+.short-story-challenge img { display: block; width: 100%; height: auto; aspect-ratio: auto; object-fit: contain; }
+.homepage-banner-link { display: block; color: inherit; text-decoration: none; }
+.homepage-banner-link:focus-visible { outline: 3px solid var(--accent, #7b3ed1); outline-offset: 4px; }
