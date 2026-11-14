@@ -58,9 +58,9 @@ export async function POST(request) {
 
   let body;
   try { body = await request.json(); } catch { return fail('Invalid request.'); }
-  const accountNumber = String(body.accountNumber || '').replace(/\\s+/g, '');
+  const accountNumber = String(body.accountNumber || '').replace(/\s+/g, '');
   const bankCode = String(body.bankCode || '').trim();
-  if (!/^\\d{10}$/.test(accountNumber) || !/^\\d{2,10}$/.test(bankCode)) {
+  if (!/^\d{10}$/.test(accountNumber) || !/^\d{2,10}$/.test(bankCode)) {
     return fail('Enter a valid 10-digit account number and select a bank.');
   }
 
