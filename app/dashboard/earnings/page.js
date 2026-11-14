@@ -31,6 +31,7 @@ function EarningsWallet() {
   const [bankSaving, setBankSaving] = useState(false);
   const [bankError, setBankError] = useState('');
   const [verifiedBank, setVerifiedBank] = useState(null);
+  const [bankOwnershipConfirmed, setBankOwnershipConfirmed] = useState(false);
   const [savedBank, setSavedBank] = useState(null);
   const [savedBankLoading, setSavedBankLoading] = useState(true);
   const [savedBankError, setSavedBankError] = useState('');
@@ -113,18 +114,65 @@ function EarningsWallet() {
 
   async function verifyAndSaveBank() {
     const bank = banks.find((item) => item.code === bankCode);
-    if (!bank || !/^\d{10}$/.test(accountNumber)) { setBankError('Choose a bank and enter a valid 10-digit account number.'); return; }
-    setBankSaving(true); setBankError(''); setVerifiedBank(null);
+    if (!bank || !/^\d{10}$/.test(accountNumber)) {
+      setBankError('Choose a bank and enter a valid 10-digit account number.');
+      return;
+    }
+    setBankSaving(true);
+    setBankError('');
+    setVerifiedBank(null);
+    setBankOwnershipConfirmed(false);
     const sessionResult = await supabase.auth.getSession();
     const token = sessionResult.data && sessionResult.data.session && sessionResult.data.session.access_token;
-    if (!token) { setBankError('Your session has expired. Please sign in again.'); setBankSaving(false); return; }
+    if (!token) {
+      setBankError('Your session has expired. Please sign in again.');
+      setBankSaving(false);
+      return;
+    }
     try {
-      const response = await fetch('/api/payout/verify-account', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ bankCode, bankName: bank.name, accountNumber }) });
+      const response = await fetch('/api/payout/verify-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify({ bankCode, accountNumber }),
+      });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || 'Could not verify this account.');
-      setVerifiedBank(payload); setSavedBank({ accountName: payload.accountName, bankName: payload.bankName, accountLast4: payload.accountLast4, verifiedAt: new Date().toISOString() }); setAccountNumber('');
-    } catch (err) { setBankError(err.message); }
-    finally { setBankSaving(false); }
+      setVerifiedBank({ ...payload, bankName: bank.name });
+    } catch (err) {
+      setBankError(err.message);
+    } finally {
+      setBankSaving(false);
+    }
+  }
+
+  async function confirmAndSaveBank() {
+    if (!verifiedBank || !bankOwnershipConfirmed) return;
+    setBankSaving(true);
+    setBankError('');
+    const sessionResult = await supabase.auth.getSession();
+    const token = sessionResult.data && sessionResult.data.session && sessionResult.data.session.access_token;
+    if (!token) {
+      setBankError('Your session has expired. Please sign in again.');
+      setBankSaving(false);
+      return;
+    }
+    try {
+      const response = await fetch('/api/payout/verify-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify({ action: 'save', confirmAccountOwnership: true, bankCode, accountNumber }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'Could not save this account.');
+      setSavedBank({ accountName: payload.accountName, bankName: payload.bankName, accountLast4: payload.accountLast4, verifiedAt: new Date().toISOString() });
+      setVerifiedBank(null);
+      setBankOwnershipConfirmed(false);
+      setAccountNumber('');
+    } catch (err) {
+      setBankError(err.message);
+    } finally {
+      setBankSaving(false);
+    }
   }
 
   async function copyStoryInviteLink() {
@@ -178,20 +226,27 @@ function EarningsWallet() {
       <section className="card stack">
         <div><h2 className="h2">Payout bank account</h2><p className="muted" style={{ margin: 0 }}>Choose your bank and verify your account name. Your account number is encrypted before storage. This does not enable withdrawals or transfers.</p></div>
         <label className="stack" style={{ gap: '.35rem' }}><span className="fine">Bank</span>
-          <select className="in" value={bankCode} onChange={(event) => { setBankCode(event.target.value); setVerifiedBank(null); }} disabled={bankLoading}>
+          <select className="in" value={bankCode} onChange={(event) => { setBankCode(event.target.value); setVerifiedBank(null); setBankOwnershipConfirmed(false); }} disabled={bankLoading}>
             <option value="">{bankLoading ? 'Loading banks…' : 'Select your bank'}</option>
             {banks.map((bank) => <option key={bank.code} value={bank.code}>{bank.name}</option>)}
           </select>
         </label>
         <label className="stack" style={{ gap: '.35rem' }}><span className="fine">10-digit account number</span>
-          <input className="in" inputMode="numeric" autoComplete="off" maxLength={10} value={accountNumber} onChange={(event) => { setAccountNumber(event.target.value.replace(/\D/g, '').slice(0, 10)); setVerifiedBank(null); }} placeholder="Enter account number" />
+          <input className="in" inputMode="numeric" autoComplete="off" maxLength={10} value={accountNumber} onChange={(event) => { setAccountNumber(event.target.value.replace(/\D/g, '').slice(0, 10)); setVerifiedBank(null); setBankOwnershipConfirmed(false); }} placeholder="Enter account number" />
         </label>
         {bankError && <p className="msg-err" role="alert">{bankError}</p>}
         {savedBankLoading && <p className="fine" role="status">Checking for your saved bank account…</p>}
         {savedBankError && <div className="stack" style={{ gap: '.35rem' }}><p className="msg-err" role="alert">{savedBankError}</p><button className="btn ghost small" type="button" onClick={loadSavedBank}>Try loading bank details again</button></div>}
-        {verifiedBank && <div className="card" style={{ background: 'var(--soft, #f7f2ff)' }}><b>✓ Account verified</b><p style={{ margin: '.35rem 0 0' }}>{verifiedBank.accountName}</p><span className="fine">{verifiedBank.bankName} · •••• {verifiedBank.accountLast4}</span></div>}
+        {verifiedBank && <div className="card stack" style={{ background: 'var(--soft, #f7f2ff)' }}>
+          <div><b>Paystack found this account name</b><p style={{ margin: '.35rem 0 0' }}>{verifiedBank.accountName}</p><span className="fine">{verifiedBank.bankName} · account ending in {accountNumber.slice(-4)}</span></div>
+          <label className="row" style={{ alignItems: 'flex-start', gap: '.55rem' }}>
+            <input type="checkbox" checked={bankOwnershipConfirmed} onChange={(event) => setBankOwnershipConfirmed(event.target.checked)} />
+            <span className="fine">I confirm that this bank account belongs to me and that the account name shown above is correct.</span>
+          </label>
+          <button className="btn" type="button" disabled={!bankOwnershipConfirmed || bankSaving} onClick={confirmAndSaveBank}>{bankSaving ? 'Saving securely…' : 'Confirm and save account'}</button>
+        </div>}
         {savedBank && !verifiedBank && <div className="card" style={{ background: 'var(--soft, #f7f2ff)' }}><b>✓ Verified payout account saved</b><p style={{ margin: '.35rem 0 0' }}>{savedBank.accountName}</p><span className="fine">{savedBank.bankName} · •••• {savedBank.accountLast4}</span><p className="fine" style={{ marginBottom: 0 }}>Verified {new Date(savedBank.verifiedAt).toLocaleDateString()}</p></div>}
-        <button className="btn" type="button" disabled={bankLoading || bankSaving || !bankCode || accountNumber.length !== 10} onClick={verifyAndSaveBank}>{bankSaving ? 'Verifying…' : 'Verify and save bank account'}</button>
+        <button className="btn" type="button" disabled={bankLoading || bankSaving || !bankCode || accountNumber.length !== 10 || Boolean(verifiedBank)} onClick={verifyAndSaveBank}>{bankSaving ? 'Verifying…' : 'Verify account name'}</button>
       </section>
       <section className="card stack" style={{ borderColor: 'var(--accent, #7042a5)', background: 'var(--soft, #f7f2ff)' }}>
         <div className="sechead">
