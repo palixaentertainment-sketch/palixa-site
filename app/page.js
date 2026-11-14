@@ -25,6 +25,7 @@ export default function Home() {
   const [creatorDescriptionExpanded, setCreatorDescriptionExpanded] = useState(false);
   const [benefitIndex, setBenefitIndex] = useState(0);
   const [comingSoonBooks, setComingSoonBooks] = useState([]);
+  const [homepageBanner, setHomepageBanner] = useState(null);
   const publishBenefits = [
     { icon: '✦', title: 'Free to publish', text: 'Share your stories without a publishing fee.' },
     { icon: '♡', title: 'You keep your rights', text: 'Your original work remains yours.' },
@@ -32,6 +33,19 @@ export default function Home() {
     { icon: '▤', title: 'Your own author page', text: 'Showcase your work in one place.' },
     { icon: '♡', title: 'Earn through reader support', text: 'Readers will be able to support authors through Palixia Sparks.' },
   ];
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!configured) return () => { cancelled = true; };
+    supabase.from('homepage_banner')
+      .select('image_url,alt_text,link_url,is_active')
+      .eq('id', true)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (!cancelled && !error && data?.is_active && data?.image_url) setHomepageBanner(data);
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -183,16 +197,17 @@ export default function Home() {
         </div>
       </section>
 
-      <Link href="/short-story-challenge" className="short-story-challenge-link" aria-label="Learn about the Palixia Short Story Challenge">
-        <section className="short-story-challenge" aria-label="Palixia Short Story Challenge">
-          <img
-            src="/images/palixia-short-story-challenge.svg"
-            alt="Palixia Short Story Challenge. Coming January 2027. A story. A thousand possibilities. Open to all writers. More details coming soon."
-            loading="lazy"
-            decoding="async"
-          />
+      {homepageBanner?.image_url && (
+        <section className="short-story-challenge" aria-label={homepageBanner.alt_text || 'Palixia announcement'}>
+          {homepageBanner.link_url ? (
+            <a href={homepageBanner.link_url} className="homepage-banner-link" aria-label={homepageBanner.alt_text || 'Open announcement'}>
+              <img src={homepageBanner.image_url} alt={homepageBanner.alt_text || 'Palixia announcement'} loading="lazy" decoding="async" />
+            </a>
+          ) : (
+            <img src={homepageBanner.image_url} alt={homepageBanner.alt_text || 'Palixia announcement'} loading="lazy" decoding="async" />
+          )}
         </section>
-      </Link>
+      )}
 
       <PalixiaFridaysBanner />
 
