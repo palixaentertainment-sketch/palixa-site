@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import HomepageBannerImage from '@/components/HomepageBannerImage';
 
 export const metadata = {
   title: 'Short Story Challenge 2027',
@@ -11,12 +12,7 @@ export default function ShortStoryChallengePage() {
       <div className="short-story-page-inner">
         <Link href="/" className="short-story-back">← Back to Palixia</Link>
 
-        <div className="short-story-page-poster">
-          <img
-            src="/images/palixia-short-story-challenge.svg"
-            alt="Palixia Short Story Challenge. Coming January 2027. A story. A thousand possibilities. Open to all writers. More details coming soon."
-          />
-        </div>
+        <HomepageBannerImage />
 
         <section className="short-story-page-intro">
           <p className="short-story-eyebrow">COMING JANUARY 2027</p>
