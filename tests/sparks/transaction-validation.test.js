@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateVerifiedSparkTransaction } from '../lib/sparks/transaction-validation.js';
+import { validateVerifiedSparkTransaction } from '../../lib/sparks/transaction-validation.js';
 
 const valid = (overrides = {}) => ({
   reference: 'PLXSPK_0123456789abcdef0123456789abcdef',
