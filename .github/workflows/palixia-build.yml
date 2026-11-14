@@ -1,0 +1,34 @@
+name: Palixia build check
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - feat/sparks-public-launch-hardening
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Run automated tests
+        run: npm test
+      - name: Build Next.js application
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+          SUPABASE_SERVICE_ROLE_KEY: ci-placeholder-service-role-key
+          PAYSTACK_SECRET_KEY: sk_test_ci_placeholder
+          PAYSTACK_TEST_MODE: "true"
+          SPARKS_ADMIN_ONLY: "true"
+          PAYOUT_DETAILS_ENCRYPTION_KEY: ci-placeholder-encryption-key

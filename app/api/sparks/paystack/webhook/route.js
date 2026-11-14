@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
+import { validateVerifiedSparkTransaction } from '@/lib/sparks/transaction-validation';
 
 export const runtime = 'nodejs';
 
@@ -54,31 +55,52 @@ export async function POST(request) {
   if (!verifiedResponse.ok || !verified?.status || transaction?.status !== 'success') return response(502);
 
   const admin = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
-  const { data: purchase, error: purchaseError } = await admin
+  if (transaction.reference !== reference) return response(400);
+  const metadataReaderId = transaction.metadata?.reader_id;
+  const verifiedPackage = validateVerifiedSparkTransaction(transaction, metadataReaderId, secretIsTest);
+  if (!verifiedPackage) return response(400);
+  const sparksAmount = verifiedPackage.sparks;
+  const expectedAmount = verifiedPackage.amountKobo;
+
+  const { data: buyer, error: buyerError } = await admin
+    .from('profiles')
+    .select('role,status')
+    .eq('id', metadataReaderId)
+    .maybeSingle();
+  if (buyerError) return response(500);
+  if (buyer?.role !== 'admin' || buyer?.status !== 'active') return response(403);
+
+  let { data: purchase, error: purchaseError } = await admin
     .from('spark_purchases')
     .select('reader_id,amount_kobo,sparks_amount,currency,status')
     .eq('paystack_reference', reference)
     .maybeSingle();
   if (purchaseError) return response(500);
-  if (!purchase) return response(200);
 
-  const { data: buyer, error: buyerError } = await admin
-    .from('profiles')
-    .select('role,status')
-    .eq('id', purchase.reader_id)
-    .maybeSingle();
-  if (buyerError) return response(500);
-  if (buyer?.role !== 'admin' || buyer?.status !== 'active') return response(403);
-
-  if (transaction.reference !== reference ||
-      transaction.amount !== Number(purchase.amount_kobo) ||
-      transaction.currency !== purchase.currency ||
-      transaction.metadata?.purpose !== 'palixia_sparks_purchase' ||
-      transaction.metadata?.reader_id !== purchase.reader_id ||
-      Number(transaction.metadata?.sparks_amount) !== purchase.sparks_amount ||
-      Boolean(transaction.metadata?.test_mode) !== secretIsTest) {
-    return response(400);
+  // A signed webhook can arrive even when the initial pending-row write was
+  // lost or delayed. Reconstruct only from Paystack's independently verified
+  // transaction metadata and the exact supported NGN package mapping.
+  if (!purchase) {
+    const { error: recoveryInsertError } = await admin.from('spark_purchases').insert({
+      reader_id: metadataReaderId,
+      paystack_reference: reference,
+      amount_kobo: expectedAmount,
+      sparks_amount: sparksAmount,
+      currency: 'NGN',
+      status: 'pending',
+    });
+    if (recoveryInsertError && recoveryInsertError.code !== '23505') return response(500);
+    const recovered = await admin.from('spark_purchases')
+      .select('reader_id,amount_kobo,sparks_amount,currency,status')
+      .eq('paystack_reference', reference)
+      .maybeSingle();
+    if (recovered.error) return response(500);
+    purchase = recovered.data;
   }
+
+  if (!purchase || purchase.reader_id !== metadataReaderId ||
+      Number(purchase.amount_kobo) !== expectedAmount ||
+      Number(purchase.sparks_amount) !== sparksAmount || purchase.currency !== 'NGN') return response(409);
 
   const { error } = await admin.rpc('post_verified_spark_purchase', {
     p_reference: reference,

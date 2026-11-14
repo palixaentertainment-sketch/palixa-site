@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { validateVerifiedSparkTransaction } from '@/lib/sparks/transaction-validation';
 
 export const runtime = 'nodejs';
 
@@ -64,6 +65,9 @@ export async function POST(request) {
     return NextResponse.json({ status: transaction.status || 'pending', credited: false });
   }
 
+  const verifiedPackage = validateVerifiedSparkTransaction(transaction, userData.user.id, true);
+  if (!verifiedPackage) return fail('Paystack transaction details do not match a supported Sparks package.', 409);
+
   const { data: existingPurchase, error: purchaseLookupError } = await admin
     .from('spark_purchases')
     .select('id,reader_id,amount_kobo,sparks_amount,currency,status')
@@ -87,7 +91,7 @@ export async function POST(request) {
     const recoverable =
       metadata.purpose === 'palixia_sparks_purchase' &&
       metadata.reader_id === userData.user.id &&
-      Boolean(metadata.test_mode) === true &&
+      metadata.test_mode === true &&
       Boolean(pack) &&
       transaction.currency === 'NGN' &&
       transaction.amount === pack.amountKobo;
@@ -138,7 +142,11 @@ export async function POST(request) {
     return fail('Payment details did not match this Sparks purchase. Please contact support with your reference.', 409);
   }
 
-  const { data: posted, error: postError } = await userClient.rpc('post_verified_spark_purchase', {
+  // Paystack has been independently verified above. Credit through the
+  // server-side service-role client: the database function intentionally
+  // rejects ordinary authenticated-user calls and only trusts this server
+  // path (or an active admin during the existing test phase).
+  const { data: posted, error: postError } = await admin.rpc('post_verified_spark_purchase', {
     p_reference: reference,
     p_amount_kobo: transaction.amount,
     p_currency: transaction.currency,
