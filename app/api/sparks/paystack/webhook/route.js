@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
+import { validateVerifiedSparkTransaction } from '@/lib/sparks/transaction-validation';
 
 export const runtime = 'nodejs';
 
@@ -54,18 +55,12 @@ export async function POST(request) {
   if (!verifiedResponse.ok || !verified?.status || transaction?.status !== 'success') return response(502);
 
   const admin = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
-  if (transaction.reference !== reference ||
-      transaction.currency !== 'NGN' ||
-      transaction.metadata?.purpose !== 'palixia_sparks_purchase' ||
-      Boolean(transaction.metadata?.test_mode) !== secretIsTest) {
-    return response(400);
-  }
-
+  if (transaction.reference !== reference) return response(400);
   const metadataReaderId = transaction.metadata?.reader_id;
-  const sparksAmount = Number(transaction.metadata?.sparks_amount);
-  const packageAmounts = new Map([[100, 10000], [200, 20000], [300, 30000], [500, 50000], [1000, 100000]]);
-  const expectedAmount = packageAmounts.get(sparksAmount);
-  if (!metadataReaderId || !expectedAmount || transaction.amount !== expectedAmount) return response(400);
+  const verifiedPackage = validateVerifiedSparkTransaction(transaction, metadataReaderId, secretIsTest);
+  if (!verifiedPackage) return response(400);
+  const sparksAmount = verifiedPackage.sparks;
+  const expectedAmount = verifiedPackage.amountKobo;
 
   const { data: buyer, error: buyerError } = await admin
     .from('profiles')
