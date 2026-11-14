@@ -183,14 +183,16 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="short-story-challenge" aria-label="Palixia Short Story Challenge">
-        <img
-          src="/images/palixia-short-story-challenge.svg"
-          alt="Palixia Short Story Challenge. Coming January 2027. A story. A thousand possibilities. Open to all writers. More details coming soon."
-          loading="lazy"
-          decoding="async"
-        />
-      </section>
+      <Link href="/short-story-challenge" className="short-story-challenge-link" aria-label="Learn about the Palixia Short Story Challenge">
+        <section className="short-story-challenge" aria-label="Palixia Short Story Challenge">
+          <img
+            src="/images/palixia-short-story-challenge.svg"
+            alt="Palixia Short Story Challenge. Coming January 2027. A story. A thousand possibilities. Open to all writers. More details coming soon."
+            loading="lazy"
+            decoding="async"
+          />
+        </section>
+      </Link>
 
       <PalixiaFridaysBanner />
 
