@@ -72,14 +72,19 @@ export default function Home() {
 
     (async () => {
       try {
-        const [f, t, n, g, a, creatorSelection, o] = await Promise.all([
-          supabase.from('book_cards').select('*').eq('featured', true).order('reads', { ascending: false }).limit(6),
-          supabase.from('book_cards').select('*').order('reads', { ascending: false }).limit(12),
-          supabase.from('book_cards').select('*').order('created_at', { ascending: false }).limit(12),
+        // Start supporting homepage requests in parallel, but do not make the
+        // main story shelves wait for genres, author lists or editorial sections.
+        const secondaryPromise = Promise.all([
           supabase.from('genres').select('*').order('sort'),
           supabase.rpc('popular_authors', { lim: 8 }),
           supabase.from('creator_of_week').select('book_id').eq('id', true).maybeSingle(),
           supabase.from('palixia_originals_home_cards_v2').select('*').order('created_at', { ascending: false }).limit(12),
+        ]);
+
+        const [f, t, n] = await Promise.all([
+          supabase.from('book_cards').select('id,title,author_name,genre_name,description,cover_url,book_type,story_status,is_sample,reads,genre_id,tags,author_id,created_at,featured').eq('featured', true).order('reads', { ascending: false }).limit(6),
+          supabase.from('book_cards').select('id,title,author_name,genre_name,description,cover_url,book_type,story_status,is_sample,reads,genre_id,tags,author_id,created_at,featured').order('reads', { ascending: false }).limit(12),
+          supabase.from('book_cards').select('id,title,author_name,genre_name,description,cover_url,book_type,story_status,is_sample,reads,genre_id,tags,author_id,created_at,featured').order('created_at', { ascending: false }).limit(12),
         ]);
         if (f.error || t.error || n.error) throw new Error('Could not load books');
         if (cancelled) return;
@@ -87,21 +92,28 @@ export default function Home() {
         const featured = f.data || [];
         const trending = t.data || [];
         const fresh = n.data || [];
+        // Render the main shelves as soon as their three essential queries finish.
         setData({ featured, trending, fresh });
-        setOriginals(o.error ? [] : (o.data || []));
-        // Keep the Comics genre hidden until Palixia has comics ready to feature.
-        // Keep the original homepage genres; newly added genres are shown in Discover only.
-        const homepageGenreSlugs = new Set(['romance', 'thriller', 'crime', 'mystery', 'fantasy', 'horror', 'drama', 'sci-fi', 'short-stories']);
-        setGenres((g.data || []).filter((genre) => homepageGenreSlugs.has(genre.slug)));
-        setAuthors(a.data || []);
-        // Creator of the Week is selected manually by an admin. Never fall back to the newest book.
-        setCreatorBook(null);
-        const selectedBookId = creatorSelection.data?.book_id;
-        if (selectedBookId) {
-          const selected = await supabase.from('book_cards').select('*').eq('id', selectedBookId).maybeSingle();
-          if (!cancelled && !selected.error && selected.data) setCreatorBook(selected.data);
-        }
         setFailed(false);
+
+        // Secondary editorial/discovery sections must never hold up the reader's
+        // personalised shelves after login.
+        secondaryPromise.then(async ([g, a, creatorSelection, o]) => {
+          if (cancelled) return;
+          setOriginals(o.error ? [] : (o.data || []));
+          // Keep the Comics genre hidden until Palixia has comics ready to feature.
+          // Keep the original homepage genres; newly added genres are shown in Discover only.
+          const homepageGenreSlugs = new Set(['romance', 'thriller', 'crime', 'mystery', 'fantasy', 'horror', 'drama', 'sci-fi', 'short-stories']);
+          setGenres((g.data || []).filter((genre) => homepageGenreSlugs.has(genre.slug)));
+          setAuthors(a.data || []);
+          // Creator of the Week is selected manually by an admin. Never fall back to the newest book.
+          setCreatorBook(null);
+          const selectedBookId = creatorSelection.data?.book_id;
+          if (selectedBookId) {
+            const selected = await supabase.from('book_cards').select('id,title,author_name,genre_name,description,cover_url,book_type,story_status,is_sample,reads,genre_id,tags,author_id,created_at,featured').eq('id', selectedBookId).maybeSingle();
+            if (!cancelled && !selected.error && selected.data) setCreatorBook(selected.data);
+          }
+        }).catch((error) => console.warn('[Palixia home] Secondary sections unavailable:', error));
 
         if (!user) {
           setContinueReading([]);
@@ -126,7 +138,7 @@ export default function Home() {
 
         let historyBooks = [];
         if (historyIds.length) {
-          const historyResult = await supabase.from('book_cards').select('*').in('id', historyIds);
+          const historyResult = await supabase.from('book_cards').select('id,title,author_name,genre_name,description,cover_url,book_type,story_status,is_sample,reads,genre_id,tags,author_id,created_at,featured').in('id', historyIds);
           if (historyResult.error) throw new Error('Could not load reading history');
           historyBooks = historyResult.data || [];
         }
@@ -148,7 +160,7 @@ export default function Home() {
           }
         }
 
-        const candidatesResult = await supabase.from('book_cards').select('*').order('reads', { ascending: false }).limit(100);
+        const candidatesResult = await supabase.from('book_cards').select('id,title,author_name,genre_name,cover_url,book_type,story_status,is_sample,reads,genre_id,tags,author_id').order('reads', { ascending: false }).limit(100);
         if (candidatesResult.error) throw new Error('Could not load recommendations');
         const alreadyKnown = new Set(historyIds);
         const candidates = (candidatesResult.data || []).filter((b) => !alreadyKnown.has(b.id));
