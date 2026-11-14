@@ -1536,3 +1536,10 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 .short-story-details p { color: var(--muted, #6b6472); line-height: 1.7; }
 .short-story-details .btn { display: inline-flex; margin-top: .75rem; }
 @media (max-width: 38rem) { .short-story-page { padding: 1rem .75rem 3rem; } .short-story-details { padding: 1.25rem; } }
+
+
+/* Admin-managed homepage banner slot: preserve artwork proportions. */
+.short-story-challenge { padding: 0; }
+.short-story-challenge img { display: block; width: 100%; height: auto; aspect-ratio: auto; object-fit: contain; }
+.homepage-banner-link { display: block; color: inherit; text-decoration: none; }
+.homepage-banner-link:focus-visible { outline: 3px solid var(--accent, #7b3ed1); outline-offset: 4px; }
