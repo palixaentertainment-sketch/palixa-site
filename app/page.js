@@ -113,19 +113,23 @@ export default function Home() {
           return;
         }
 
-        const [pr, sv, fo] = await Promise.all([
+        const [pr, sv, fo, finished] = await Promise.all([
           supabase.from('reading_progress').select('book_id,chapter_id,progress,updated_at')
             .eq('user_id', user.id).lt('progress', 100).order('updated_at', { ascending: false }).limit(8),
           supabase.from('bookmarks').select('book_id').eq('user_id', user.id).is('chapter_id', null),
           supabase.from('follows').select('author_id').eq('user_id', user.id),
+          supabase.from('reading_progress').select('book_id')
+            .eq('user_id', user.id).eq('progress', 100),
         ]);
         if (pr.error || sv.error || fo.error) throw new Error('Could not load personalised books');
 
         const progressRows = pr.data || [];
         const savedIds = (sv.data || []).map((r) => r.book_id).filter(Boolean);
         const progressIds = progressRows.map((r) => r.book_id).filter(Boolean);
+        const finishedIds = finished.error ? [] : (finished.data || []).map((r) => r.book_id).filter(Boolean);
         const followedAuthors = new Set((fo.data || []).map((r) => r.author_id));
-        const historyIds = [...new Set([...savedIds, ...progressIds])];
+        // Include completed books in recommendation preferences and exclude them from repeat suggestions.
+        const historyIds = [...new Set([...savedIds, ...progressIds, ...finishedIds])];
 
         let historyBooks = [];
         if (historyIds.length) {
