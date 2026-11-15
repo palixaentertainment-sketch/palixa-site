@@ -18,6 +18,7 @@ export default function Home() {
   const [genres, setGenres] = useState([]);
   const [authors, setAuthors] = useState([]);
   const [continueReading, setContinueReading] = useState([]);
+  const [followedUpdates, setFollowedUpdates] = useState([]);
   const [recommended, setRecommended] = useState([]);
   const [recommendationNote, setRecommendationNote] = useState('');
   const [failed, setFailed] = useState(false);
@@ -66,6 +67,7 @@ export default function Home() {
     if (!configured) {
       setData({ featured: [], trending: [], fresh: [] });
       setContinueReading([]);
+      setFollowedUpdates([]);
       setRecommended([]);
       return () => { cancelled = true; };
     }
@@ -105,6 +107,7 @@ export default function Home() {
 
         if (!user) {
           setContinueReading([]);
+          setFollowedUpdates([]);
           setRecommended([]);
           setRecommendationNote('');
           return;
@@ -137,6 +140,52 @@ export default function Home() {
         }).filter(Boolean);
         if (cancelled) return;
         setContinueReading(continueRows);
+
+        // Show fresh chapters from authors the reader has chosen to follow.
+        // Keep this independent of popularity/read metrics so updates are surfaced fairly.
+        setFollowedUpdates([]);
+        if (followedAuthors.size > 0) {
+          try {
+            const followedBooksResult = await supabase.from('books')
+              .select('id,title,cover_url,book_type,is_sample,author_id')
+              .in('author_id', [...followedAuthors])
+              .eq('status', 'published')
+              .limit(100);
+            if (followedBooksResult.error) throw followedBooksResult.error;
+            const followedBooks = followedBooksResult.data || [];
+            const followedBookIds = followedBooks.map((book) => book.id).filter(Boolean);
+            if (followedBookIds.length) {
+              const chapterResult = await supabase.from('chapters')
+                .select('id,book_id,title,updated_at')
+                .in('book_id', followedBookIds)
+                .eq('status', 'published')
+                .order('updated_at', { ascending: false })
+                .limit(8);
+              if (chapterResult.error) throw chapterResult.error;
+              const bookById = new Map(followedBooks.map((book) => [book.id, book]));
+              const authorIds = [...new Set(followedBooks.map((book) => book.author_id).filter(Boolean))];
+              const authorResult = authorIds.length
+                ? await supabase.from('profiles').select('id,name').in('id', authorIds)
+                : { data: [], error: null };
+              if (authorResult.error) throw authorResult.error;
+              const authorById = new Map((authorResult.data || []).map((author) => [author.id, author.name]));
+              const updates = (chapterResult.data || []).map((chapter) => {
+                const book = bookById.get(chapter.book_id);
+                return book ? {
+                  ...chapter,
+                  book_title: book.title,
+                  cover_url: book.cover_url,
+                  book_type: book.book_type,
+                  is_sample: book.is_sample,
+                  author_name: authorById.get(book.author_id) || '',
+                } : null;
+              }).filter(Boolean);
+              if (!cancelled) setFollowedUpdates(updates);
+            }
+          } catch (updateError) {
+            console.warn('[Palixia home] Followed-author updates could not load:', updateError);
+          }
+        }
 
         const genreWeights = new Map();
         const tagWeights = new Map();
@@ -295,6 +344,28 @@ export default function Home() {
               <Link key={b.id} href={b.chapter_id ? '/read/' + b.chapter_id : '/book/' + b.id} className="bcard continue-card">
                 <Cover b={b} />
                 <div><h3>{b.title}</h3><span className="sub">{b.author_name}</span><div className="progress"><b style={{ width: (b.progress || 0) + '%' }} /></div><span className="sub">{b.progress || 0}% read · Continue</span></div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {user && followedUpdates.length > 0 && (
+        <section>
+          <div className="sechead">
+            <div><h2 className="h2">New chapters from authors you follow</h2><p className="fine">The writers you follow have added something new.</p></div>
+            <Link href="/library">Your library</Link>
+          </div>
+          <div className="shelf">
+            {followedUpdates.map((chapter) => (
+              <Link key={chapter.id} href={'/read/' + chapter.id} className="bcard">
+                <Cover b={{ id: chapter.book_id, title: chapter.book_title, cover_url: chapter.cover_url, book_type: chapter.book_type, is_sample: chapter.is_sample, author_name: chapter.author_name }} />
+                <div>
+                  <h3>{chapter.book_title}</h3>
+                  <span className="sub">{chapter.author_name}</span>
+                  <span className="sub">{chapter.title || 'New chapter'}</span>
+                  <span className="sub">Read new chapter →</span>
+                </div>
               </Link>
             ))}
           </div>
