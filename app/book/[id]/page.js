@@ -65,7 +65,7 @@ export default function BookPage() {
       data.genre_id
         ? supabase.from('genres').select('name,slug').eq('id', data.genre_id).maybeSingle()
         : Promise.resolve({ data: null, error: null }),
-      supabase.from('chapters').select('id,chapter_number,title,status,reads,created_at,updated_at').eq('book_id', bookId).order('chapter_number'),
+      supabase.from('chapters').select('id,chapter_number,title,content,status,reads,created_at,updated_at').eq('book_id', bookId).order('chapter_number'),
       supabase.rpc('author_stats', { p_author: data.author_id }),
       supabase.from('profile_badges').select('badge_type').eq('profile_id', data.author_id).maybeSingle(),
     ]);
@@ -177,6 +177,9 @@ export default function BookPage() {
   const author = book.profiles;
   const isOwner = user && user.id === book.author_id;
   const live = chapters.filter((c) => c.status === 'published');
+  const totalWords = book.book_type === 'text'
+    ? live.reduce((total, chapter) => total + (String(chapter.content || '').trim().match(/\S+/g) || []).length, 0)
+    : null;
   const visible = isOwner ? chapters : live;
   const first = live[0] || visible[0];
   const resumeId = progress && progress.chapter_id && live.some((c) => c.id === progress.chapter_id) ? progress.chapter_id : null;
@@ -200,6 +203,7 @@ export default function BookPage() {
           <dl className="facts">
             {isOwner && <div><dt>Reads</dt><dd>{fmtNum(Math.max(0, Number(book.reads || 0) + Number(book.read_adjustment || 0)))}</dd></div>}
             <div><dt>Chapters</dt><dd>{live.length}</dd></div>
+            {totalWords !== null && <div><dt>Words</dt><dd>{fmtNum(totalWords)}</dd></div>}
             <div><dt>Format</dt><dd>{typeLabel(book.book_type)}</dd></div>
           </dl>
         </div>
