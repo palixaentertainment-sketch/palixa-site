@@ -1550,3 +1550,8 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 .discover-shelf .sechead { align-items: flex-start; }
 .discover-shelf .sechead .fine { margin: .2rem 0 0; }
 .discover-shelf + .discover-shelf { padding-top: .35rem; }
+
+/* Discover section headers and compact See all action */
+.discover-shelf .sechead { display:flex; justify-content:space-between; gap:1rem; }
+.discover-shelf .sechead .btn { flex:none; align-self:center; }
+@media (max-width: 38rem) { .discover-shelf .sechead .btn { padding:.45rem .7rem; font-size:.78rem; } }
