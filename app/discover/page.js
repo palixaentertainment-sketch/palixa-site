@@ -22,12 +22,13 @@ function Discover() {
   const q = params.get('q') || '';
   const genre = params.get('genre') || '';
   const sort = params.get('sort') || 'popular';
+  const storyStatus = params.get('status') || '';
 
   const [input, setInput] = useState(q);
   const [genres, setGenres] = useState([]);
   const [rows, setRows] = useState(null);
   const [authors, setAuthors] = useState([]);
-  const [shelves, setShelves] = useState({ featured: [], updated: [], newest: [] });
+  const [shelves, setShelves] = useState({ featured: [], updated: [], newest: [], completed: [] });
   const [more, setMore] = useState(false);
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -63,16 +64,17 @@ function Discover() {
     if (!configured) return;
     let alive = true;
     async function loadShelves() {
-      const [featuredResult, chapterResult, newestResult] = await Promise.all([
+      const [featuredResult, chapterResult, newestResult, completedResult] = await Promise.all([
         supabase.from('book_cards').select('*').eq('book_type', 'text').eq('featured', true).order('created_at', { ascending: false }).limit(6),
         supabase.from('chapters').select('book_id,updated_at').eq('status', 'published').order('updated_at', { ascending: false }).limit(60),
         supabase.from('book_cards').select('*').eq('book_type', 'text').order('created_at', { ascending: false }).limit(6),
+        supabase.from('book_cards').select('*').eq('book_type', 'text').eq('story_status', 'completed').order('created_at', { ascending: false }).limit(6),
       ]);
       const updatedIds = [...new Set((chapterResult.data || []).map((chapter) => chapter.book_id).filter(Boolean))].slice(0, 6);
       const updatedResult = updatedIds.length ? await supabase.from('book_cards').select('*').eq('book_type', 'text').in('id', updatedIds) : { data: [], error: null };
       if (!alive) return;
       const updatedById = new Map((updatedResult.data || []).map((book) => [book.id, book]));
-      setShelves({ featured: featuredResult.error ? [] : (featuredResult.data || []), updated: updatedIds.map((id) => updatedById.get(id)).filter(Boolean), newest: newestResult.error ? [] : (newestResult.data || []) });
+      setShelves({ featured: featuredResult.error ? [] : (featuredResult.data || []), updated: updatedIds.map((id) => updatedById.get(id)).filter(Boolean), newest: newestResult.error ? [] : (newestResult.data || []), completed: completedResult.error ? [] : (completedResult.data || []) });
     }
     loadShelves();
     return () => { alive = false; };
@@ -81,6 +83,7 @@ function Discover() {
     let query = supabase.from('book_cards').select('*');
     query = query.eq('book_type', 'text');
     if (genre) query = query.eq('genre_slug', genre);
+    if (storyStatus) query = query.eq('story_status', storyStatus);
     const term = q.trim().toLowerCase().replace(/[%,()]/g, ' ');
     if (term) query = query.ilike('search', '%' + term + '%');
     if (sort === 'newest') query = query.order('created_at', { ascending: false });
@@ -108,7 +111,7 @@ function Discover() {
     }
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, genre, sort]);
+  }, [q, genre, sort, storyStatus]);
 
   async function loadMore() {
     setBusy(true);
@@ -146,6 +149,15 @@ function Discover() {
             </select>
           </div>
           <div className="field" style={{ minWidth: '10rem', flex: 1 }}>
+            <label htmlFor="dstatus">Story status</label>
+            <select id="dstatus" className="in" value={storyStatus} onChange={(e) => go({ status: e.target.value })}>
+              <option value="">Any status</option>
+              <option value="ongoing">Ongoing</option>
+              <option value="completed">Completed</option>
+              <option value="hiatus">On hiatus</option>
+            </select>
+          </div>
+          <div className="field" style={{ minWidth: '10rem', flex: 1 }}>
             <label htmlFor="ds">Sort by</label>
             <select id="ds" className="in" value={sort} onChange={(e) => go({ sort: e.target.value === 'popular' ? '' : e.target.value })}>
               {SORTS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
@@ -154,11 +166,12 @@ function Discover() {
         </div>
       </div>
 
-      {!q && !genre && (
+      {!q && !genre && !storyStatus && (
         <div className="discover-shelves">
           {shelves.featured.length > 0 && <section className="discover-shelf"><div className="sechead"><div><h2 className="h2">Featured on Palixia</h2><p className="fine">Stories selected by the Palixia team.</p></div></div><div className="grid discover-book-grid">{shelves.featured.map((b, index) => <div className="discover-book-reveal" key={b.id} style={{ "--discover-index": index }}><BookCard b={b} /></div>)}</div></section>}
           {shelves.updated.length > 0 && <section className="discover-shelf"><div className="sechead"><div><h2 className="h2">Recently Updated</h2><p className="fine">Stories with newly published chapters.</p></div></div><div className="grid discover-book-grid">{shelves.updated.map((b, index) => <div className="discover-book-reveal" key={b.id} style={{ "--discover-index": index }}><BookCard b={b} /></div>)}</div></section>}
           {shelves.newest.length > 0 && <section className="discover-shelf"><div className="sechead"><div><h2 className="h2">New on Palixia</h2><p className="fine">The latest stories published by independent authors.</p></div></div><div className="grid discover-book-grid">{shelves.newest.map((b, index) => <div className="discover-book-reveal" key={b.id} style={{ "--discover-index": index }}><BookCard b={b} /></div>)}</div></section>}
+          {shelves.completed.length > 0 && <section className="discover-shelf"><div className="sechead"><div><h2 className="h2">Completed Stories</h2><p className="fine">Enjoy a story from beginning to end.</p></div><button type="button" className="btn ghost" onClick={() => go({ status: 'completed' })}>See all</button></div><div className="grid discover-book-grid">{shelves.completed.map((b, index) => <div className="discover-book-reveal" key={b.id} style={{ "--discover-index": index }}><BookCard b={b} /></div>)}</div></section>}
         </div>
       )}
       {authors.length > 0 && (
@@ -176,7 +189,7 @@ function Discover() {
       )}
 
       <section>
-        {q && <div className="sechead"><h2 className="h2">Stories matching &ldquo;{q}&rdquo;</h2></div>}
+        {(q || genre || storyStatus) && <div className="sechead"><h2 className="h2">{q ? `Stories matching “${q}”` : storyStatus === 'completed' ? 'Completed stories' : storyStatus === 'hiatus' ? 'Stories on hiatus' : storyStatus === 'ongoing' ? 'Ongoing stories' : genres.find((g) => g.slug === genre)?.name || 'Explore stories'}</h2></div>}
         {failed && <p className="notice">We could not load stories. Check your connection and try again.</p>}
         {rows === null && <p className="muted">Loading...</p>}
         {rows && rows.length === 0 && !failed && (
