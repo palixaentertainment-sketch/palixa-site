@@ -1543,3 +1543,15 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 .short-story-challenge img { display: block; width: 100%; height: auto; aspect-ratio: auto; object-fit: contain; }
 .homepage-banner-link { display: block; color: inherit; text-decoration: none; }
 .homepage-banner-link:focus-visible { outline: 3px solid var(--accent, #7b3ed1); outline-offset: 4px; }
+
+
+/* Discover page editorial shelves */
+.discover-shelf { margin: 1.8rem 0 2.2rem; }
+.discover-shelf .sechead { align-items: flex-start; }
+.discover-shelf .sechead .fine { margin: .2rem 0 0; }
+.discover-shelf + .discover-shelf { padding-top: .35rem; }
+
+/* Discover section headers and compact See all action */
+.discover-shelf .sechead { display:flex; justify-content:space-between; gap:1rem; }
+.discover-shelf .sechead .btn { flex:none; align-self:center; }
+@media (max-width: 38rem) { .discover-shelf .sechead .btn { padding:.45rem .7rem; font-size:.78rem; } }
