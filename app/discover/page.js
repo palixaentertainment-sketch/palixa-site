@@ -27,7 +27,7 @@ function Discover() {
   const [genres, setGenres] = useState([]);
   const [rows, setRows] = useState(null);
   const [authors, setAuthors] = useState([]);
-  const [shelves, setShelves] = useState({ featured: [], popular: [], newest: [] });
+  const [shelves, setShelves] = useState({ featured: [], updated: [], newest: [] });
   const [more, setMore] = useState(false);
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -63,13 +63,16 @@ function Discover() {
     if (!configured) return;
     let alive = true;
     async function loadShelves() {
-      const [featuredResult, popularResult, newestResult] = await Promise.all([
+      const [featuredResult, chapterResult, newestResult] = await Promise.all([
         supabase.from('book_cards').select('*').eq('book_type', 'text').eq('featured', true).order('created_at', { ascending: false }).limit(6),
-        supabase.from('book_cards').select('*').eq('book_type', 'text').order('reads', { ascending: false }).order('created_at', { ascending: false }).limit(6),
+        supabase.from('chapters').select('book_id,updated_at').eq('status', 'published').order('updated_at', { ascending: false }).limit(60),
         supabase.from('book_cards').select('*').eq('book_type', 'text').order('created_at', { ascending: false }).limit(6),
       ]);
+      const updatedIds = [...new Set((chapterResult.data || []).map((chapter) => chapter.book_id).filter(Boolean))].slice(0, 6);
+      const updatedResult = updatedIds.length ? await supabase.from('book_cards').select('*').eq('book_type', 'text').in('id', updatedIds) : { data: [], error: null };
       if (!alive) return;
-      setShelves({ featured: featuredResult.error ? [] : (featuredResult.data || []), popular: popularResult.error ? [] : (popularResult.data || []), newest: newestResult.error ? [] : (newestResult.data || []) });
+      const updatedById = new Map((updatedResult.data || []).map((book) => [book.id, book]));
+      setShelves({ featured: featuredResult.error ? [] : (featuredResult.data || []), updated: updatedIds.map((id) => updatedById.get(id)).filter(Boolean), newest: newestResult.error ? [] : (newestResult.data || []) });
     }
     loadShelves();
     return () => { alive = false; };
@@ -154,7 +157,7 @@ function Discover() {
       {!q && !genre && (
         <div className="discover-shelves">
           {shelves.featured.length > 0 && <section className="discover-shelf"><div className="sechead"><div><h2 className="h2">Featured on Palixia</h2><p className="fine">Stories selected by the Palixia team.</p></div></div><div className="grid discover-book-grid">{shelves.featured.map((b, index) => <div className="discover-book-reveal" key={b.id} style={{ "--discover-index": index }}><BookCard b={b} /></div>)}</div></section>}
-          {shelves.popular.length > 0 && <section className="discover-shelf"><div className="sechead"><div><h2 className="h2">Popular on Palixia</h2><p className="fine">Books with the highest recorded reads.</p></div></div><div className="grid discover-book-grid">{shelves.popular.map((b, index) => <div className="discover-book-reveal" key={b.id} style={{ "--discover-index": index }}><BookCard b={b} /></div>)}</div></section>}
+          {shelves.updated.length > 0 && <section className="discover-shelf"><div className="sechead"><div><h2 className="h2">Recently Updated</h2><p className="fine">Stories with newly published chapters.</p></div></div><div className="grid discover-book-grid">{shelves.updated.map((b, index) => <div className="discover-book-reveal" key={b.id} style={{ "--discover-index": index }}><BookCard b={b} /></div>)}</div></section>}
           {shelves.newest.length > 0 && <section className="discover-shelf"><div className="sechead"><div><h2 className="h2">New on Palixia</h2><p className="fine">The latest stories published by independent authors.</p></div></div><div className="grid discover-book-grid">{shelves.newest.map((b, index) => <div className="discover-book-reveal" key={b.id} style={{ "--discover-index": index }}><BookCard b={b} /></div>)}</div></section>}
         </div>
       )}
