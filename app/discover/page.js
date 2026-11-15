@@ -67,14 +67,20 @@ function Discover() {
       const [featuredResult, chapterResult, newestResult, completedResult] = await Promise.all([
         supabase.from('book_cards').select('*').eq('book_type', 'text').eq('featured', true).order('created_at', { ascending: false }).limit(6),
         supabase.from('chapters').select('book_id,updated_at').eq('status', 'published').order('updated_at', { ascending: false }).limit(60),
-        supabase.from('book_cards').select('*').eq('book_type', 'text').order('created_at', { ascending: false }).limit(6),
+        supabase.from('book_cards').select('*').eq('book_type', 'text').order('created_at', { ascending: false }).limit(36),
         supabase.from('book_cards').select('*').eq('book_type', 'text').eq('story_status', 'completed').order('created_at', { ascending: false }).limit(6),
       ]);
       const updatedIds = [...new Set((chapterResult.data || []).map((chapter) => chapter.book_id).filter(Boolean))].slice(0, 6);
       const updatedResult = updatedIds.length ? await supabase.from('book_cards').select('*').eq('book_type', 'text').in('id', updatedIds) : { data: [], error: null };
       if (!alive) return;
       const updatedById = new Map((updatedResult.data || []).map((book) => [book.id, book]));
-      setShelves({ featured: featuredResult.error ? [] : (featuredResult.data || []), updated: updatedIds.map((id) => updatedById.get(id)).filter(Boolean), newest: newestResult.error ? [] : (newestResult.data || []), completed: completedResult.error ? [] : (completedResult.data || []) });
+      const seenAuthors = new Set();
+      const recentByDifferentAuthors = (newestResult.data || []).filter((book) => {
+        if (!book.author_id || seenAuthors.has(book.author_id)) return false;
+        seenAuthors.add(book.author_id);
+        return true;
+      }).slice(0, 6);
+      setShelves({ featured: featuredResult.error ? [] : (featuredResult.data || []), updated: updatedIds.map((id) => updatedById.get(id)).filter(Boolean), newest: newestResult.error ? [] : recentByDifferentAuthors, completed: completedResult.error ? [] : (completedResult.data || []) });
     }
     loadShelves();
     return () => { alive = false; };
@@ -170,7 +176,7 @@ function Discover() {
         <div className="discover-shelves">
           {shelves.featured.length > 0 && <section className="discover-shelf"><div className="sechead"><div><h2 className="h2">Featured on Palixia</h2><p className="fine">Stories selected by the Palixia team.</p></div></div><div className="grid discover-book-grid">{shelves.featured.map((b, index) => <div className="discover-book-reveal" key={b.id} style={{ "--discover-index": index }}><BookCard b={b} /></div>)}</div></section>}
           {shelves.updated.length > 0 && <section className="discover-shelf"><div className="sechead"><div><h2 className="h2">Recently Updated</h2><p className="fine">Stories with newly published chapters.</p></div></div><div className="grid discover-book-grid">{shelves.updated.map((b, index) => <div className="discover-book-reveal" key={b.id} style={{ "--discover-index": index }}><BookCard b={b} /></div>)}</div></section>}
-          {shelves.newest.length > 0 && <section className="discover-shelf"><div className="sechead"><div><h2 className="h2">New on Palixia</h2><p className="fine">The latest stories published by independent authors.</p></div></div><div className="grid discover-book-grid">{shelves.newest.map((b, index) => <div className="discover-book-reveal" key={b.id} style={{ "--discover-index": index }}><BookCard b={b} /></div>)}</div></section>}
+          {shelves.newest.length > 0 && <section className="discover-shelf"><div className="sechead"><div><h2 className="h2">New stories</h2><p className="fine">Recent releases, with room for different authors to be discovered.</p></div></div><div className="grid discover-book-grid">{shelves.newest.map((b, index) => <div className="discover-book-reveal" key={b.id} style={{ "--discover-index": index }}><BookCard b={b} /></div>)}</div></section>}
           {shelves.completed.length > 0 && <section className="discover-shelf"><div className="sechead"><div><h2 className="h2">Completed Stories</h2><p className="fine">Enjoy a story from beginning to end.</p></div><button type="button" className="btn ghost" onClick={() => go({ status: 'completed' })}>See all</button></div><div className="grid discover-book-grid">{shelves.completed.map((b, index) => <div className="discover-book-reveal" key={b.id} style={{ "--discover-index": index }}><BookCard b={b} /></div>)}</div></section>}
         </div>
       )}
