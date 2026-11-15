@@ -178,7 +178,7 @@ export default function BookPage() {
   const isOwner = user && user.id === book.author_id;
   const live = chapters.filter((c) => c.status === 'published');
   const totalWords = book.book_type === 'text'
-    ? live.reduce((total, chapter) => total + (String(chapter.content || '').trim().match(/\\S+/g) || []).length, 0)
+    ? live.reduce((total, chapter) => total + (String(chapter.content || '').trim().match(/\S+/g) || []).length, 0)
     : null;
   const visible = isOwner ? chapters : live;
   const first = live[0] || visible[0];
