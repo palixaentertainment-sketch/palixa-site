@@ -199,7 +199,7 @@ function Discover() {
         {failed && <p className="notice">We could not load stories. Check your connection and try again.</p>}
         {rows === null && <p className="muted">Loading...</p>}
         {rows && rows.length === 0 && !failed && (
-          q || genre ? (
+          q || genre || storyStatus ? (
             <Empty title="Nothing matches that." text="Try a different word, or clear the filters." href="/discover" cta="Clear filters" />
           ) : (
             <Empty title="No stories are published yet." text="Be the first to publish on Palixia." href={publishHref} cta="Publish Your Story" />
