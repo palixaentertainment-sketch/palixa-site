@@ -1555,3 +1555,20 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 .discover-shelf .sechead { display:flex; justify-content:space-between; gap:1rem; }
 .discover-shelf .sechead .btn { flex:none; align-self:center; }
 @media (max-width: 38rem) { .discover-shelf .sechead .btn { padding:.45rem .7rem; font-size:.78rem; } }
+
+
+/* Palixia promotional banner carousel */
+.promo-banner-carousel { position:relative; width:100%; margin:.25rem 0 1.5rem; overflow:hidden; border:1px solid var(--line); border-radius:16px; background:var(--surface); box-shadow:0 8px 24px rgba(46,16,101,.045); }
+.promo-banner-stage { width:100%; overflow:hidden; }
+.promo-banner-stage > img, .promo-banner-image-link img { display:block; width:100%; height:auto; max-height: min(52vw, 520px); object-fit:contain; animation:promo-banner-enter 420ms ease both; }
+.promo-banner-image-link { display:block; }
+.promo-banner-arrow { position:absolute; top:50%; z-index:2; display:grid; place-items:center; width:2.35rem; height:2.35rem; border:1px solid rgba(255,255,255,.75); border-radius:50%; background:rgba(30,16,48,.55); color:#fff; font-size:1.65rem; line-height:1; transform:translateY(-50%); backdrop-filter:blur(5px); }
+.promo-banner-arrow.prev { left:.75rem; }
+.promo-banner-arrow.next { right:.75rem; }
+.promo-banner-arrow:hover { background:rgba(30,16,48,.78); }
+.promo-banner-dots { position:absolute; left:50%; bottom:.75rem; z-index:2; display:flex; align-items:center; gap:.4rem; padding:.35rem .55rem; border-radius:99px; background:rgba(20,10,38,.42); transform:translateX(-50%); }
+.promo-banner-dots button { width:.45rem; height:.45rem; border-radius:50%; background:rgba(255,255,255,.65); transition:width 180ms ease, background 180ms ease; }
+.promo-banner-dots button.active { width:1.15rem; border-radius:99px; background:#fff; }
+@keyframes promo-banner-enter { from { opacity:.65; transform:translateX(12px); } to { opacity:1; transform:translateX(0); } }
+@media(max-width:38rem) { .promo-banner-carousel { margin:.15rem 0 1.1rem; border-radius:12px; } .promo-banner-arrow { width:1.9rem; height:1.9rem; font-size:1.35rem; } .promo-banner-arrow.prev { left:.45rem; } .promo-banner-arrow.next { right:.45rem; } .promo-banner-dots { bottom:.45rem; } }
+@media(prefers-reduced-motion:reduce) { .promo-banner-stage > img, .promo-banner-image-link img { animation:none; } .promo-banner-dots button { transition:none; } }
