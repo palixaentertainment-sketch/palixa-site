@@ -1593,3 +1593,14 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
   flex: 0 0 auto;
   white-space: nowrap;
 }
+
+/* Coming Soon preview */
+.coming-soon-preview-trigger { display:inline-flex; align-items:center; gap:.35rem; margin-top:.35rem; color:var(--accent); font-size:.82rem; font-weight:700; }
+.coming-soon-preview-trigger span:first-child { display:grid; place-items:center; width:1.45rem; height:1.45rem; border:1px solid var(--line); border-radius:50%; }
+.coming-soon-backdrop { position:fixed; inset:0; z-index:80; display:grid; place-items:center; padding:1rem; background:rgba(22,10,43,.58); }
+.coming-soon-dialog { position:relative; width:min(100%,34rem); max-height:min(85vh,42rem); overflow:auto; padding:1.25rem; border:1px solid var(--line); border-radius:12px; background:var(--bg); box-shadow:0 24px 70px rgba(20,8,50,.3); }
+.coming-soon-close { position:absolute; top:.5rem; right:.75rem; z-index:1; width:2rem; height:2rem; display:grid; place-items:center; border-radius:50%; background:var(--soft); font-size:1.4rem; }
+.coming-soon-dialog-main { display:grid; grid-template-columns:7rem minmax(0,1fr); gap:1rem; padding-top:.5rem; }
+.coming-soon-dialog-main > img { width:100%; aspect-ratio:2/3; object-fit:cover; border-radius:6px; background:var(--soft); }
+.coming-soon-description { color:var(--muted); white-space:pre-line; overflow-wrap:anywhere; }
+@media(max-width:380px) { .coming-soon-dialog-main { grid-template-columns:5.5rem minmax(0,1fr); gap:.75rem; } .coming-soon-dialog { padding:1rem; } }
