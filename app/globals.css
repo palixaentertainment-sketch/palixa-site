@@ -1599,7 +1599,7 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 .cover-publisher-mark {
   position: absolute;
   top: .45rem;
-  right: .45rem;
+  left: .45rem;
   z-index: 3;
   display: grid;
   place-items: center;
