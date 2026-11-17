@@ -74,3 +74,51 @@ create trigger published_book_releases_coming_soon
 after insert or update of status
 on public.books
 for each row execute function public.mark_coming_soon_books_released();
+
+
+-- Reader release reminders for Coming Soon books.
+create table if not exists public.coming_soon_subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  coming_soon_book_id uuid not null references public.coming_soon_books(id) on delete cascade,
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  notified_at timestamptz,
+  unique (coming_soon_book_id, user_id)
+);
+create index if not exists coming_soon_subscriptions_book_idx
+  on public.coming_soon_subscriptions(coming_soon_book_id);
+alter table public.coming_soon_subscriptions enable row level security;
+drop policy if exists "readers manage own coming soon reminders" on public.coming_soon_subscriptions;
+create policy "readers manage own coming soon reminders"
+  on public.coming_soon_subscriptions for all to authenticated
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
+grant select, insert on public.coming_soon_subscriptions to authenticated;
+
+-- Add the release-reminder notification kind without changing existing kinds.
+alter table public.notifications drop constraint if exists notifications_kind_check;
+alter table public.notifications add constraint notifications_kind_check
+  check (kind in ('community_like','community_comment','follow','new_book','new_chapter','palixia_news','coming_soon_release'));
+
+create or replace function public.notify_coming_soon_subscribers()
+returns trigger language plpgsql security definer set search_path = public
+as $$
+begin
+  if old.status = 'upcoming' and new.status = 'released' then
+    insert into public.notifications(recipient_id, actor_id, kind, message, link_url)
+    select s.user_id, null, 'coming_soon_release',
+           'The book you were waiting for is now available: ' || new.title,
+           case when new.linked_book_id is not null then '/book/' || new.linked_book_id::text else '/discover' end
+    from public.coming_soon_subscriptions s
+    where s.coming_soon_book_id = new.id and s.notified_at is null
+    on conflict do nothing;
+    update public.coming_soon_subscriptions
+      set notified_at = now()
+      where coming_soon_book_id = new.id and notified_at is null;
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists coming_soon_release_notifications on public.coming_soon_books;
+create trigger coming_soon_release_notifications
+after update of status on public.coming_soon_books
+for each row execute function public.notify_coming_soon_subscribers();
