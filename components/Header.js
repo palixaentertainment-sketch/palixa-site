@@ -10,6 +10,36 @@ import NotificationsBell from '@/components/NotificationsBell';
 import ThemeToggle from '@/components/ThemeToggle';
 import { openInstallApp } from '@/components/InstallAppPrompt';
 
+// Cache the shared announcement so client-side navigation does not hit Supabase on every page.
+const FRIDAY_CACHE_TTL = 60 * 1000;
+let fridayCache = { data: null, expiresAt: 0, promise: null };
+
+async function getFridayAnnouncement() {
+  if (!configured) return null;
+  if (fridayCache.expiresAt > Date.now()) return fridayCache.data;
+  if (fridayCache.promise) return fridayCache.promise;
+
+  fridayCache.promise = supabase.from('palixia_friday_hunts')
+    .select('id,title,starts_at,ends_at,status')
+    .eq('status', 'published')
+    .gte('ends_at', new Date().toISOString())
+    .order('starts_at', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+    .then(({ data }) => {
+      fridayCache.data = data || null;
+      fridayCache.expiresAt = Date.now() + FRIDAY_CACHE_TTL;
+      return fridayCache.data;
+    })
+    .catch(() => {
+      fridayCache.expiresAt = Date.now() + 15 * 1000;
+      return fridayCache.data;
+    })
+    .finally(() => { fridayCache.promise = null; });
+
+  return fridayCache.promise;
+}
+
 const LINKS = [
   ['/', 'Home'],
   ['/discover', 'Discover'],
@@ -29,19 +59,9 @@ export default function Header() {
 
   useEffect(() => {
     let cancelled = false;
-    async function loadFridayAnnouncement() {
-      if (!configured) return;
-      const now = new Date().toISOString();
-      const { data } = await supabase.from('palixia_friday_hunts')
-        .select('id,title,starts_at,ends_at,status')
-        .eq('status', 'published')
-        .gte('ends_at', now)
-        .order('starts_at', { ascending: true })
-        .limit(1)
-        .maybeSingle();
-      if (!cancelled) setFridayAnnouncement(data || null);
-    }
-    loadFridayAnnouncement();
+    getFridayAnnouncement().then((data) => {
+      if (!cancelled) setFridayAnnouncement(data);
+    });
     return () => { cancelled = true; };
   }, [pathname]);
 
