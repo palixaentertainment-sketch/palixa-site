@@ -13,6 +13,8 @@ import ProfileBadge from '@/components/ProfileBadge';
 import ReleaseJourney from '@/components/ReleaseJourney';
 import TipAuthor from '@/components/TipAuthor';
 
+const BOOK_CARD_FIELDS = 'id,author_id,title,description,cover_url,book_type,tags,reads,featured,is_sample,created_at,genre_id,genre_name,genre_slug,author_name,author_username,author_avatar,story_status';
+
 export default function AuthorPage() {
   const { username } = useParams();
   const { user } = useAuth();
@@ -31,7 +33,7 @@ export default function AuthorPage() {
       setP(data);
       const { data: badgeRow } = await supabase.from('profile_badges').select('badge_type').eq('profile_id', data.id).maybeSingle();
       setBadge(badgeRow ? badgeRow.badge_type : null);
-      const { data: bk } = await supabase.from('book_cards').select('*').eq('author_id', data.id).order('created_at', { ascending: false });
+      const { data: bk } = await supabase.from('book_cards').select(BOOK_CARD_FIELDS).eq('author_id', data.id).order('created_at', { ascending: false });
       setBooks(bk || []);
       if (bk && bk.length) {
         const { data: recentChapters } = await supabase.from('chapters')

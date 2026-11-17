@@ -9,6 +9,7 @@ import Avatar from '@/components/Avatar';
 import Empty from '@/components/Empty';
 
 const PAGE = 24;
+const BOOK_CARD_FIELDS = 'id,author_id,title,description,cover_url,book_type,tags,reads,featured,is_sample,created_at,genre_id,genre_name,genre_slug,author_name,author_username,author_avatar,story_status';
 const SORTS = [
   ['popular', 'Popular'],
   ['newest', 'Newest'],
@@ -65,13 +66,13 @@ function Discover() {
     let alive = true;
     async function loadShelves() {
       const [featuredResult, chapterResult, newestResult, completedResult] = await Promise.all([
-        supabase.from('book_cards').select('*').eq('book_type', 'text').eq('featured', true).order('created_at', { ascending: false }).limit(6),
+        supabase.from('book_cards').select(BOOK_CARD_FIELDS).eq('book_type', 'text').eq('featured', true).order('created_at', { ascending: false }).limit(6),
         supabase.from('chapters').select('book_id,updated_at').eq('status', 'published').order('updated_at', { ascending: false }).limit(60),
-        supabase.from('book_cards').select('*').eq('book_type', 'text').order('created_at', { ascending: false }).limit(36),
-        supabase.from('book_cards').select('*').eq('book_type', 'text').eq('story_status', 'completed').order('created_at', { ascending: false }).limit(6),
+        supabase.from('book_cards').select(BOOK_CARD_FIELDS).eq('book_type', 'text').order('created_at', { ascending: false }).limit(36),
+        supabase.from('book_cards').select(BOOK_CARD_FIELDS).eq('book_type', 'text').eq('story_status', 'completed').order('created_at', { ascending: false }).limit(6),
       ]);
       const updatedIds = [...new Set((chapterResult.data || []).map((chapter) => chapter.book_id).filter(Boolean))].slice(0, 6);
-      const updatedResult = updatedIds.length ? await supabase.from('book_cards').select('*').eq('book_type', 'text').in('id', updatedIds) : { data: [], error: null };
+      const updatedResult = updatedIds.length ? await supabase.from('book_cards').select(BOOK_CARD_FIELDS).eq('book_type', 'text').in('id', updatedIds) : { data: [], error: null };
       if (!alive) return;
       const updatedById = new Map((updatedResult.data || []).map((book) => [book.id, book]));
       const seenAuthors = new Set();
@@ -86,7 +87,7 @@ function Discover() {
     return () => { alive = false; };
   }, []);
   function build(from) {
-    let query = supabase.from('book_cards').select('*');
+    let query = supabase.from('book_cards').select(BOOK_CARD_FIELDS);
     query = query.eq('book_type', 'text');
     if (genre) query = query.eq('genre_slug', genre);
     if (storyStatus) query = query.eq('story_status', storyStatus);
