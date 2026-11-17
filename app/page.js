@@ -12,6 +12,9 @@ import Avatar from '@/components/Avatar';
 import PalixiaFridaysBanner from '@/components/PalixiaFridaysBanner';
 import HomepagePromotionalBanners from '@/components/HomepagePromotionalBanners';
 
+// Keep catalogue list queries lean: the view also exposes computed chapter_count/search fields.
+const BOOK_CARD_FIELDS = 'id,author_id,title,description,cover_url,book_type,tags,reads,featured,is_sample,created_at,genre_id,genre_name,genre_slug,author_name,author_username,author_avatar,story_status';
+
 export default function Home() {
   const { user } = useAuth();
   const [data, setData] = useState(null);
@@ -61,16 +64,18 @@ export default function Home() {
 
     (async () => {
       try {
-        const [f, t, n, g, a, creatorSelection, o] = await Promise.all([
-          supabase.from('book_cards').select('*').eq('featured', true).order('reads', { ascending: false }).limit(6),
-          supabase.from('book_cards').select('*').order('reads', { ascending: false }).limit(12),
-          supabase.from('book_cards').select('*').order('created_at', { ascending: false }).limit(12),
+        const [f, t, n, g, a, creatorSelection, o, candidatesResult] = await Promise.all([
+          supabase.from('book_cards').select(BOOK_CARD_FIELDS).eq('featured', true).order('reads', { ascending: false }).limit(6),
+          supabase.from('book_cards').select(BOOK_CARD_FIELDS).order('reads', { ascending: false }).limit(12),
+          supabase.from('book_cards').select(BOOK_CARD_FIELDS).order('created_at', { ascending: false }).limit(12),
           supabase.from('genres').select('*').order('sort'),
           supabase.rpc('popular_authors', { lim: 8 }),
           supabase.from('creator_of_week').select('book_id').eq('id', true).maybeSingle(),
-          supabase.from('palixia_originals_home_cards_v2').select('*').order('created_at', { ascending: false }).limit(12),
+          supabase.from('palixia_originals_home_cards_v2').select(BOOK_CARD_FIELDS).order('created_at', { ascending: false }).limit(12),
+          supabase.from('book_cards').select(BOOK_CARD_FIELDS).order('reads', { ascending: false }).limit(60),
         ]);
         if (f.error || t.error || n.error) throw new Error('Could not load books');
+        if (candidatesResult.error) throw new Error('Could not load recommendations');
         if (cancelled) return;
 
         const featured = f.data || [];
@@ -87,7 +92,7 @@ export default function Home() {
         setCreatorBook(null);
         const selectedBookId = creatorSelection.data?.book_id;
         if (selectedBookId) {
-          const selected = await supabase.from('book_cards').select('*').eq('id', selectedBookId).maybeSingle();
+          const selected = await supabase.from('book_cards').select(BOOK_CARD_FIELDS).eq('id', selectedBookId).maybeSingle();
           if (!cancelled && !selected.error && selected.data) setCreatorBook(selected.data);
         }
         setFailed(false);
@@ -103,10 +108,10 @@ export default function Home() {
         const [pr, sv, fo, finished] = await Promise.all([
           supabase.from('reading_progress').select('book_id,chapter_id,progress,updated_at')
             .eq('user_id', user.id).lt('progress', 100).order('updated_at', { ascending: false }).limit(8),
-          supabase.from('bookmarks').select('book_id').eq('user_id', user.id).is('chapter_id', null),
-          supabase.from('follows').select('author_id').eq('user_id', user.id),
+          supabase.from('bookmarks').select('book_id').eq('user_id', user.id).is('chapter_id', null).limit(100),
+          supabase.from('follows').select('author_id').eq('user_id', user.id).limit(100),
           supabase.from('reading_progress').select('book_id')
-            .eq('user_id', user.id).eq('progress', 100),
+            .eq('user_id', user.id).eq('progress', 100).limit(100),
         ]);
         if (pr.error || sv.error || fo.error) throw new Error('Could not load personalised books');
 
@@ -120,7 +125,7 @@ export default function Home() {
 
         let historyBooks = [];
         if (historyIds.length) {
-          const historyResult = await supabase.from('book_cards').select('*').in('id', historyIds);
+          const historyResult = await supabase.from('book_cards').select(BOOK_CARD_FIELDS).in('id', historyIds);
           if (historyResult.error) throw new Error('Could not load reading history');
           historyBooks = historyResult.data || [];
         }
@@ -137,8 +142,8 @@ export default function Home() {
         setFollowedUpdates([]);
         if (followedAuthors.size > 0) {
           try {
-            const followedBooksResult = await supabase.from('books')
-              .select('id,title,cover_url,book_type,is_sample,author_id')
+            const followedBooksResult = await supabase.from('book_cards')
+              .select('id,title,cover_url,book_type,is_sample,author_id,author_name')
               .in('author_id', [...followedAuthors])
               .eq('status', 'published')
               .limit(100);
@@ -154,12 +159,6 @@ export default function Home() {
                 .limit(8);
               if (chapterResult.error) throw chapterResult.error;
               const bookById = new Map(followedBooks.map((book) => [book.id, book]));
-              const authorIds = [...new Set(followedBooks.map((book) => book.author_id).filter(Boolean))];
-              const authorResult = authorIds.length
-                ? await supabase.from('profiles').select('id,name').in('id', authorIds)
-                : { data: [], error: null };
-              if (authorResult.error) throw authorResult.error;
-              const authorById = new Map((authorResult.data || []).map((author) => [author.id, author.name]));
               const updates = (chapterResult.data || []).map((chapter) => {
                 const book = bookById.get(chapter.book_id);
                 return book ? {
@@ -168,7 +167,7 @@ export default function Home() {
                   cover_url: book.cover_url,
                   book_type: book.book_type,
                   is_sample: book.is_sample,
-                  author_name: authorById.get(book.author_id) || '',
+                  author_name: book.author_name || '',
                 } : null;
               }).filter(Boolean);
               if (!cancelled) setFollowedUpdates(updates);
@@ -188,8 +187,6 @@ export default function Home() {
           }
         }
 
-        const candidatesResult = await supabase.from('book_cards').select('*').order('reads', { ascending: false }).limit(100);
-        if (candidatesResult.error) throw new Error('Could not load recommendations');
         const alreadyKnown = new Set(historyIds);
         const candidates = (candidatesResult.data || []).filter((b) => !alreadyKnown.has(b.id));
         const hasHistory = genreWeights.size > 0 || tagWeights.size > 0 || followedAuthors.size > 0;
