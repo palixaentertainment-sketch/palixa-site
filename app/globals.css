@@ -1598,7 +1598,7 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 /* Small publisher mark for books published by the official Palixia account. */
 .cover-publisher-mark {
   position: absolute;
-  top: .45rem;
+  bottom: .45rem;
   left: .45rem;
   z-index: 3;
   display: grid;
