@@ -200,12 +200,11 @@ export default function BookPage() {
           <p className="mono">{book.genres ? book.genres.name : 'Story'} &middot; {typeLabel(book.book_type)}</p>
           <h1 className="h1">{book.title}</h1>
           <p className="muted">by <Link className="linkbtn" href={'/author/' + (author ? author.username : '')}>{author ? author.name : 'Unknown'}</Link>{' '}<ProfileBadge type={authorBadge} /></p>
-          <dl className="book-stat-grid" aria-label="Book statistics">
-            {isOwner && <div className="book-stat"><dt>Reads</dt><dd>{fmtNum(Math.max(0, Number(book.reads || 0) + Number(book.read_adjustment || 0)))}</dd></div>}
-            <div className="book-stat"><dt>Chapters</dt><dd>{fmtNum(live.length)}</dd></div>
-            {totalWords !== null && <div className="book-stat"><dt>Words</dt><dd>{fmtNum(totalWords)}</dd></div>}
-            <div className="book-stat"><dt>Format</dt><dd>{typeLabel(book.book_type)}</dd></div>
-          </dl>
+          <p className="book-meta-line">
+            {fmtNum(live.length)} {live.length === 1 ? 'chapter' : 'chapters'}
+            {totalWords !== null && <> <span aria-hidden="true">·</span> {fmtNum(totalWords)} words</>}
+            {isOwner && <> <span aria-hidden="true">·</span> {fmtNum(Math.max(0, Number(book.reads || 0) + Number(book.read_adjustment || 0)))} reads</>}
+          </p>
         </div>
       </div>
 
@@ -219,28 +218,23 @@ export default function BookPage() {
           <LikeButton kind="book" id={book.id} count={book.like_count} authorId={book.author_id} />
           <button type="button" className={'btn ghost' + (saved ? ' on' : '')} aria-pressed={saved} onClick={toggleSave}>{saved ? 'Saved' : 'Save'}</button>
           {!isOwner && (
-            <button type="button" className={'btn ghost' + (following ? ' on' : '')} aria-pressed={following} onClick={toggleFollow}>{following ? 'Following' : 'Follow Author'}</button>
+            <button type="button" className={'btn ghost' + (following ? ' on' : '')} aria-pressed={following} onClick={toggleFollow}>{following ? 'Following' : 'Follow'}</button>
           )}
           {isOwner && <Link className="btn ghost" href={'/dashboard/books/' + book.id}>Edit</Link>}
-          <button type="button" className="btn ghost" onClick={shareBook}>Share</button>
-          {user && user.id !== book.author_id && (
-            <details className="book-more-actions">
-              <summary aria-label="More book actions">•••</summary>
-              <div className="book-more-menu">
-                <button type="button" onClick={reportBook}>Report book</button>
-              </div>
-            </details>
-          )}
+          <details className="book-more-actions">
+            <summary aria-label="More book actions">•••</summary>
+            <div className="book-more-menu">
+              <button type="button" onClick={shareBook}>Share book</button>
+              {user && user.id !== book.author_id && <button type="button" onClick={reportBook}>Report book</button>}
+            </div>
+          </details>
         </div>
       </div>
       {resumeId && progress && <p className="fine">You are {progress.progress}% through this book.</p>}
       {msg && <p className="msg-err" role="alert">{msg} {!user && <Link className="linkbtn" href={'/login?next=/book/' + id}>Log in</Link>}</p>}
 
       <section className="stack book-about-section">
-        <div className="book-about-heading">
-          <h2 className="h2">About this {book.book_type === 'comic' ? 'comic' : 'book'}</h2>
-          {book.genres?.name && <span className="book-genre-chip">{book.genres.name}</span>}
-        </div>
+        <h2 className="h2">About this {book.book_type === 'comic' ? 'comic' : 'book'}</h2>
         <div className="book-description" style={{ maxWidth: '40rem' }}>
           <p className={descriptionExpanded ? 'book-description-text expanded' : 'book-description-text'}>{book.description || 'The author has not added a description yet.'}</p>
           {book.description && book.description.length > 180 && (
