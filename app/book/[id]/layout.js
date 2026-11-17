@@ -16,9 +16,12 @@ export async function generateMetadata({ params }) {
 
     const title = book.title + (book.author_name ? ' by ' + book.author_name : '');
     const description = (book.description || 'Read ' + book.title + ' on Palixia.')
-      .replace(/\\s+/g, ' ')
+      .replace(/\s+/g, ' ')
       .slice(0, 160);
-    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://palixia.com').replace(/\\/$/, '');
+    const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://palixia.com';
+    const siteUrl = configuredSiteUrl.endsWith('/')
+      ? configuredSiteUrl.slice(0, -1)
+      : configuredSiteUrl;
     const imageUrl = siteUrl + '/api/book-preview/' + params.id;
     const image = [{ url: imageUrl, width: 1200, height: 630, alt: book.title + ' on Palixia' }];
 
