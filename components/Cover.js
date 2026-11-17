@@ -17,10 +17,7 @@ export default function Cover({ b }) {
   const authorUsername = (b.author_username || (b.profiles && b.profiles.username) || '').toLowerCase();
   const isPalixiaPublished = authorUsername === 'palixia';
   const publisherMark = isPalixiaPublished ? (
-    <span className="cover-publisher-mark" aria-label="Published by Palixia" title="Published by Palixia">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/brand/palixa-logo.png" alt="Palixia" />
-    </span>
+    <span className="cover-publisher-mark" aria-label="Published by Palixia" title="Published by Palixia">P</span>
   ) : null;
   const sum = Array.from(title).reduce((a, c) => a + c.charCodeAt(0), 0);
   const pair = PAIRS[sum % PAIRS.length];
