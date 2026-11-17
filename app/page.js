@@ -11,6 +11,7 @@ import BookCard from '@/components/BookCard';
 import Avatar from '@/components/Avatar';
 import PalixiaFridaysBanner from '@/components/PalixiaFridaysBanner';
 import HomepagePromotionalBanners from '@/components/HomepagePromotionalBanners';
+import ComingSoonPreview from '@/components/ComingSoonPreview';
 
 // Keep catalogue list queries lean: the view also exposes computed chapter_count/search fields.
 const BOOK_CARD_FIELDS = 'id,author_id,title,description,cover_url,book_type,tags,reads,featured,is_sample,created_at,genre_id,genre_name,genre_slug,author_name,author_username,author_avatar,story_status';
@@ -247,7 +248,7 @@ export default function Home() {
                   <img src={b.cover_url} alt={b.title + ' cover'} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
                   <span style={{ position: 'absolute', top: '.5rem', left: '.5rem', background: 'var(--accent)', color: 'white', borderRadius: '999px', padding: '.25rem .5rem', fontSize: '.68rem', fontWeight: 700 }}>COMING SOON</span>
                 </div>
-                <div><h3>{b.title}</h3><span className="sub">{b.author_name}</span>{b.release_date && <p className="sub">Expected {new Date(b.release_date + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}</p>}</div>
+                <div><h3>{b.title}</h3><span className="sub">{b.author_name}</span>{b.release_date && <p className="sub">Expected {new Date(b.release_date + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}</p>}<ComingSoonPreview book={b} /></div>
               </article>
             ))}
           </div>
