@@ -1603,3 +1603,29 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
   .book-actions { gap: 0.75rem; }
   .book-read-primary { width: auto; justify-self: start; min-width: 13rem; }
 }
+
+
+/* Mobile-first simplification: remove boxed micro-stats and reduce action clutter. */
+.book-stat-grid, .book-stat { display: none !important; }
+.book-meta-line { margin-top: .15rem; color: var(--muted); font-size: .9rem; line-height: 1.5; }
+.book-meta-line span { padding-inline: .22rem; color: var(--accent); }
+.book-actions { margin-top: 1.35rem; gap: .65rem; }
+.book-read-primary { width: 100%; min-height: 2.9rem; }
+.book-secondary-actions { display: flex; flex-wrap: nowrap; align-items: center; gap: .5rem; }
+.book-secondary-actions > .btn { flex: 1 1 0; min-width: 0; padding-inline: .55rem; white-space: nowrap; }
+.book-more-actions { flex: 0 0 auto; }
+.book-more-actions summary { min-width: 2.6rem; min-height: 2.6rem; padding: 0 .55rem; }
+.book-more-menu { min-width: 9.5rem; }
+.book-about-section { margin-top: 1.9rem; gap: .8rem; }
+.book-about-section > .h2 { margin: 0; }
+.book-genre-chip { display: none; }
+.tip-author-section { margin-top: 1.8rem; padding: 1rem; gap: .8rem; background: var(--surface); }
+.tip-author-section-copy { flex-basis: 100%; }
+.tip-author-wrap { flex-basis: 100%; }
+@media (min-width: 40rem) {
+  .book-read-primary { width: auto; justify-self: start; min-width: 13rem; }
+  .book-secondary-actions { flex-wrap: wrap; }
+  .book-secondary-actions > .btn { flex: 0 0 auto; }
+  .tip-author-section-copy { flex: 1 1 13rem; }
+  .tip-author-wrap { flex: 1 1 13rem; }
+}
