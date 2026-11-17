@@ -3,7 +3,10 @@ import { ImageResponse } from 'next/og';
 export const runtime = 'edge';
 
 const UUID_PATTERN = /^[0-9a-f-]{36}$/i;
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://palixia.com').replace(/\\/$/, '');
+const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://palixia.com';
+const SITE_URL = configuredSiteUrl.endsWith('/')
+  ? configuredSiteUrl.slice(0, -1)
+  : configuredSiteUrl;
 
 export async function GET(_request, { params }) {
   const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -28,13 +31,13 @@ export async function GET(_request, { params }) {
     const book = rows && rows[0];
     if (!book) return new Response('Not found', { status: 404 });
 
-    const coverUrl = book.cover_url && /^https:\\/\\//.test(book.cover_url)
+    const coverUrl = book.cover_url && String(book.cover_url).startsWith('https://')
       ? book.cover_url
       : null;
     const title = String(book.title || 'A story on Palixia').slice(0, 100);
     const author = String(book.author_name || 'Independent author').slice(0, 70);
     const description = String(book.description || 'Discover and read this story for free on Palixia.')
-      .replace(/\\s+/g, ' ')
+      .replace(/\s+/g, ' ')
       .slice(0, 190);
     const iconUrl = SITE_URL + '/brand/icon-512.png';
 
