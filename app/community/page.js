@@ -40,6 +40,11 @@ export default function CommunityPage() {
   const [sendingComment, setSendingComment] = useState({});
   const [commentErrors, setCommentErrors] = useState({});
   const [openComments, setOpenComments] = useState({});
+  const [editingPost, setEditingPost] = useState(null);
+  const [postEditBody, setPostEditBody] = useState('');
+  const [editingComment, setEditingComment] = useState(null);
+  const [commentEditBody, setCommentEditBody] = useState('');
+  const [savingEdit, setSavingEdit] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -186,6 +191,33 @@ export default function CommunityPage() {
     }
   }
 
+  async function savePostEdit(postId) {
+    const nextBody = postEditBody.trim();
+    if (!nextBody) { setNotice('A post cannot be empty.'); return; }
+    setSavingEdit(true);
+    const { error: updateError } = await supabase.from('community_posts').update({ body: nextBody, updated_at: new Date().toISOString() }).eq('id', postId).eq('user_id', user.id);
+    setSavingEdit(false);
+    if (updateError) { setNotice('Could not edit this post. Please try again.'); return; }
+    setEditingPost(null); setNotice('Post updated.'); await loadPosts();
+  }
+
+  async function saveCommunityCommentEdit(commentId, postId) {
+    const nextBody = commentEditBody.trim();
+    if (!nextBody) { setNotice('A comment cannot be empty.'); return; }
+    setSavingEdit(true);
+    const { error: updateError } = await supabase.from('community_comments').update({ body: nextBody, updated_at: new Date().toISOString() }).eq('id', commentId).eq('user_id', user.id);
+    setSavingEdit(false);
+    if (updateError) { setNotice('Could not edit this reply. Please try again.'); return; }
+    setEditingComment(null); setNotice('Reply updated.'); await loadComments(postId, true);
+  }
+
+  async function deleteCommunityComment(commentId, postId) {
+    if (!window.confirm('Delete this comment or reply? This cannot be undone.')) return;
+    const { error: deleteError } = await supabase.from('community_comments').delete().eq('id', commentId).eq('user_id', user.id);
+    if (deleteError) { setNotice('Could not delete this reply. Please try again.'); return; }
+    setNotice('Comment deleted.'); await loadComments(postId, true); await loadPosts();
+  }
+
   async function deletePost(postId) {
     if (!window.confirm('Delete this post? This cannot be undone.')) return;
     const { error: deleteError } = await supabase.from('community_posts').delete().eq('id', postId);
@@ -328,7 +360,12 @@ export default function CommunityPage() {
                 </div>
                 <span className="community-category">{LABELS[post.category] || 'General Lounge'}</span>
               </div>
-              <p className="community-post-body">{post.body}</p>
+              {editingPost === post.id ? (
+                <form className="stack" onSubmit={(e) => { e.preventDefault(); savePostEdit(post.id); }}>
+                  <textarea className="in" rows={4} maxLength={2000} value={postEditBody} onChange={(e) => setPostEditBody(e.target.value)} aria-label="Edit your community post" />
+                  <div className="row"><button className="btn small" disabled={savingEdit}>{savingEdit ? 'Saving…' : 'Save changes'}</button><button className="btn ghost small" type="button" onClick={() => setEditingPost(null)}>Cancel</button></div>
+                </form>
+              ) : <p className="community-post-body">{post.body}</p>}
               {post.image_url && <a className="community-post-image-link" href={post.image_url} target="_blank" rel="noreferrer" aria-label="Open attached image in full size"><img className="community-post-image" src={post.image_url} alt={'Image shared by ' + (post.profiles ? post.profiles.name : 'a community member')} loading="lazy" /></a>}
               {post.books && <Link className="community-book-link" href={'/book/' + post.books.id}>📚 {post.books.title}{post.books.book_type === 'comic' ? ' · Comic' : ''} <span>Open story →</span></Link>}
               <div className="community-post-actions">
@@ -340,7 +377,7 @@ export default function CommunityPage() {
                     <path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                   </svg>
                 </button>
-                {mine && <button className="linkbtn" type="button" onClick={() => deletePost(post.id)}>Delete</button>}
+                {mine && <><button className="linkbtn" type="button" onClick={() => { setEditingPost(post.id); setPostEditBody(post.body); }}>Edit</button><button className="linkbtn" type="button" onClick={() => deletePost(post.id)}>Delete</button></>}
                 {!mine && <button className="linkbtn fine" type="button" onClick={() => reportPost(post.id)}>Report</button>}
               </div>
               {openComments[post.id] && (
@@ -350,10 +387,11 @@ export default function CommunityPage() {
                   {(comments[post.id] || []).map((comment) => comment.parent_id ? null : (
                     <div className="community-comment" key={comment.id}>
                       <p className="fine"><b>{comment.profiles ? comment.profiles.name : 'Reader'}</b> · {timeLabel(comment.created_at)}</p>
-                      <p>{comment.body}</p>
+                      {editingComment === comment.id ? <form className="stack" onSubmit={(e) => { e.preventDefault(); saveCommunityCommentEdit(comment.id, post.id); }}><textarea className="in" rows={2} maxLength={1000} value={commentEditBody} onChange={(e) => setCommentEditBody(e.target.value)} aria-label="Edit your comment" /><div className="row"><button className="btn ghost small" disabled={savingEdit}>{savingEdit ? 'Saving…' : 'Save'}</button><button className="linkbtn fine" type="button" onClick={() => setEditingComment(null)}>Cancel</button></div></form> : <p>{comment.body}</p>}
+                      {user && user.id === comment.user_id && editingComment !== comment.id && <div className="row"><button type="button" className="linkbtn fine" onClick={() => { setEditingComment(comment.id); setCommentEditBody(comment.body); }}>Edit</button><button type="button" className="linkbtn fine" onClick={() => deleteCommunityComment(comment.id, post.id)}>Delete</button></div>}
                       {user && user.id !== comment.user_id && <button type="button" className="linkbtn fine" onClick={() => reportCommunityItem('community_comment', comment.id, 'Why are you reporting this comment?')}>Report comment</button>}
                       {(comments[post.id] || []).filter((reply) => reply.parent_id === comment.id).map((reply) => (
-                        <div className="community-reply" key={reply.id}><p className="fine"><b>{reply.profiles ? reply.profiles.name : 'Reader'}</b> · {timeLabel(reply.created_at)}</p><p>{reply.body}</p>{user && user.id !== reply.user_id && <button type="button" className="linkbtn fine" onClick={() => reportCommunityItem('community_comment', reply.id, 'Why are you reporting this reply?')}>Report reply</button>}</div>
+                        <div className="community-reply" key={reply.id}><p className="fine"><b>{reply.profiles ? reply.profiles.name : 'Reader'}</b> · {timeLabel(reply.created_at)}</p>{editingComment === reply.id ? <form className="stack" onSubmit={(e) => { e.preventDefault(); saveCommunityCommentEdit(reply.id, post.id); }}><textarea className="in" rows={2} maxLength={1000} value={commentEditBody} onChange={(e) => setCommentEditBody(e.target.value)} aria-label="Edit your reply" /><div className="row"><button className="btn ghost small" disabled={savingEdit}>{savingEdit ? 'Saving…' : 'Save'}</button><button className="linkbtn fine" type="button" onClick={() => setEditingComment(null)}>Cancel</button></div></form> : <p>{reply.body}</p>}{user && user.id === reply.user_id && editingComment !== reply.id && <div className="row"><button type="button" className="linkbtn fine" onClick={() => { setEditingComment(reply.id); setCommentEditBody(reply.body); }}>Edit</button><button type="button" className="linkbtn fine" onClick={() => deleteCommunityComment(reply.id, post.id)}>Delete</button></div>}{user && user.id !== reply.user_id && <button type="button" className="linkbtn fine" onClick={() => reportCommunityItem('community_comment', reply.id, 'Why are you reporting this reply?')}>Report reply</button>}</div>
                       ))}
                       {user && <form className="community-reply-form" onSubmit={(e) => { e.preventDefault(); addComment(post.id, comment.id); }}>
                         <input className="in" maxLength={1000} placeholder="Reply to this comment…" value={commentDrafts[post.id + comment.id] || ''} onChange={(e) => setCommentDrafts((old) => ({ ...old, [post.id + comment.id]: e.target.value }))} />
