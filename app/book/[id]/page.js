@@ -200,40 +200,44 @@ export default function BookPage() {
           <p className="mono">{book.genres ? book.genres.name : 'Story'} &middot; {typeLabel(book.book_type)}</p>
           <h1 className="h1">{book.title}</h1>
           <p className="muted">by <Link className="linkbtn" href={'/author/' + (author ? author.username : '')}>{author ? author.name : 'Unknown'}</Link>{' '}<ProfileBadge type={authorBadge} /></p>
-          <p className="book-meta-line">
-            {fmtNum(live.length)} {live.length === 1 ? 'chapter' : 'chapters'}
-            {totalWords !== null && <> <span aria-hidden="true">·</span> {fmtNum(totalWords)} words</>}
-            {isOwner && <> <span aria-hidden="true">·</span> {fmtNum(Math.max(0, Number(book.reads || 0) + Number(book.read_adjustment || 0)))} reads</>}
-          </p>
+          <dl className="facts">
+            {isOwner && <div><dt>Reads</dt><dd>{fmtNum(Math.max(0, Number(book.reads || 0) + Number(book.read_adjustment || 0)))}</dd></div>}
+            <div><dt>Chapters</dt><dd>{live.length}</dd></div>
+            {totalWords !== null && <div><dt>Words</dt><dd>{fmtNum(totalWords)}</dd></div>}
+            <div><dt>Format</dt><dd>{typeLabel(book.book_type)}</dd></div>
+          </dl>
         </div>
       </div>
 
-      <div className="book-actions">
+      <div className="row">
+        <LikeButton kind="book" id={book.id} count={book.like_count} authorId={book.author_id} />
+        {user && user.id !== book.author_id && <button type="button" className="btn ghost" onClick={reportBook}>Report book</button>}
         {readTarget ? (
-          <Link className="btn book-read-primary" href={'/read/' + readTarget}>{resumeId ? 'Continue reading' : 'Read Now'}</Link>
+          <Link className="btn" href={'/read/' + readTarget}>{resumeId ? 'Continue reading' : 'Read Now'}</Link>
         ) : (
-          <button type="button" className="btn book-read-primary" disabled>No chapters yet</button>
+          <button type="button" className="btn" disabled>No chapters yet</button>
         )}
-        <div className="book-secondary-actions">
-          <LikeButton kind="book" id={book.id} count={book.like_count} authorId={book.author_id} />
-          <button type="button" className={'btn ghost' + (saved ? ' on' : '')} aria-pressed={saved} onClick={toggleSave}>{saved ? 'Saved' : 'Save'}</button>
-          {!isOwner && (
-            <button type="button" className={'btn ghost' + (following ? ' on' : '')} aria-pressed={following} onClick={toggleFollow}>{following ? 'Following' : 'Follow'}</button>
-          )}
-          {isOwner && <Link className="btn ghost" href={'/dashboard/books/' + book.id}>Edit</Link>}
-          <details className="book-more-actions">
-            <summary aria-label="More book actions">•••</summary>
-            <div className="book-more-menu">
-              <button type="button" onClick={shareBook}>Share book</button>
-              {user && user.id !== book.author_id && <button type="button" onClick={reportBook}>Report book</button>}
-            </div>
-          </details>
-        </div>
+        <button type="button" className={'btn ghost' + (saved ? ' on' : '')} aria-pressed={saved} onClick={toggleSave}>{saved ? 'Saved' : 'Save'}</button>
+        {!isOwner && (
+          <button type="button" className={'btn ghost' + (following ? ' on' : '')} aria-pressed={following} onClick={toggleFollow}>{following ? 'Following' : 'Follow Author'}</button>
+        )}
+        
+        {isOwner && <Link className="btn ghost" href={'/dashboard/books/' + book.id}>Edit</Link>}
+        <button type="button" className="btn ghost" onClick={shareBook}>Share</button>
       </div>
+      {!isOwner && (
+        <section className="tip-author-section" aria-label="Support the author">
+          <div className="tip-author-section-copy">
+            <h2>Palixia Sparks</h2>
+            <p>Send a little money to support this author.</p>
+          </div>
+          <TipAuthor authorName={author?.name} authorId={book.author_id} bookId={book.id} />
+        </section>
+      )}
       {resumeId && progress && <p className="fine">You are {progress.progress}% through this book.</p>}
       {msg && <p className="msg-err" role="alert">{msg} {!user && <Link className="linkbtn" href={'/login?next=/book/' + id}>Log in</Link>}</p>}
 
-      <section className="stack book-about-section">
+      <section className="stack">
         <h2 className="h2">About this {book.book_type === 'comic' ? 'comic' : 'book'}</h2>
         <div className="book-description" style={{ maxWidth: '40rem' }}>
           <p className={descriptionExpanded ? 'book-description-text expanded' : 'book-description-text'}>{book.description || 'The author has not added a description yet.'}</p>
@@ -244,16 +248,6 @@ export default function BookPage() {
           )}
         </div>
       </section>
-      {!isOwner && (
-        <section className="tip-author-section" aria-label="Support the author">
-          <div className="tip-author-section-copy">
-            <span className="book-spark-mark" aria-hidden="true">✦</span>
-            <h2>Support this author</h2>
-            <p>Enjoying this story? Send the author a Palixia Spark to show your appreciation.</p>
-          </div>
-          <TipAuthor authorName={author?.name} authorId={book.author_id} bookId={book.id} />
-        </section>
-      )}
 
       <ReleaseJourney chapters={visible} />
 
