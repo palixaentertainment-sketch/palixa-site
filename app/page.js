@@ -145,7 +145,6 @@ export default function Home() {
             const followedBooksResult = await supabase.from('book_cards')
               .select('id,title,cover_url,book_type,is_sample,author_id,author_name')
               .in('author_id', [...followedAuthors])
-              .eq('status', 'published')
               .limit(100);
             if (followedBooksResult.error) throw followedBooksResult.error;
             const followedBooks = followedBooksResult.data || [];
