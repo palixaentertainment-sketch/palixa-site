@@ -1593,25 +1593,3 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
   flex: 0 0 auto;
   white-space: nowrap;
 }
-
-
-/* Compact Palixia publisher monogram on official-account book covers. */
-.cover-publisher-mark {
-  position: absolute;
-  bottom: .45rem;
-  left: .45rem;
-  z-index: 3;
-  display: grid;
-  place-items: center;
-  width: 1.55rem;
-  height: 1.55rem;
-  border-radius: 4px 4px 4px 1px;
-  background: #6d28d9;
-  color: #fff;
-  font-family: var(--display);
-  font-size: 1.05rem;
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: -.06em;
-  box-shadow: 0 1px 5px rgba(20,8,50,.28);
-}
