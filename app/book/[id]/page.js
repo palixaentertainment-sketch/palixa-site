@@ -62,7 +62,7 @@ export default function BookPage() {
     // make readers wait before they can see the title, cover, and description.
     setBook({ ...data, profiles: null, genres: null });
 
-    const [authorResult, genreResult, chaptersResult, statsResult, badgeResult] = await Promise.all([
+    const [authorResult, genreResult, chaptersResult, statsResult, wordCountResult, badgeResult] = await Promise.all([
       supabase.from('profiles').select('id,name,username,avatar_url,bio').eq('id', data.author_id).maybeSingle(),
       data.genre_id
         ? supabase.from('genres').select('name,slug').eq('id', data.genre_id).maybeSingle()
