@@ -1572,3 +1572,24 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 @keyframes promo-banner-enter { from { opacity:.65; transform:translateX(12px); } to { opacity:1; transform:translateX(0); } }
 @media(max-width:38rem) { .promo-banner-carousel { margin:.15rem 0 1.1rem; border-radius:12px; } .promo-banner-arrow { width:1.9rem; height:1.9rem; font-size:1.35rem; } .promo-banner-arrow.prev { left:.45rem; } .promo-banner-arrow.next { right:.45rem; } .promo-banner-dots { bottom:.45rem; } }
 @media(prefers-reduced-motion:reduce) { .promo-banner-stage > img, .promo-banner-image-link img { animation:none; } .promo-banner-dots button { transition:none; } }
+
+
+/* Keep the Send a Spark control compact on narrow book pages. */
+.tip-author-section .tip-author-wrap {
+  width: fit-content;
+  max-width: 100%;
+  min-width: 0;
+}
+.tip-author-section .tip-author-wrap .row {
+  display: flex;
+  width: auto;
+  max-width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.tip-author-section .tip-author-wrap .btn {
+  width: auto;
+  max-width: 100%;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
