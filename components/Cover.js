@@ -14,6 +14,14 @@ const PAIRS = [
 export default function Cover({ b }) {
   const title = b.title || '';
   const author = b.author_name || (b.profiles && b.profiles.name) || '';
+  const authorUsername = (b.author_username || (b.profiles && b.profiles.username) || '').toLowerCase();
+  const isPalixiaPublished = authorUsername === 'palixia';
+  const publisherMark = isPalixiaPublished ? (
+    <span className="cover-publisher-mark" aria-label="Published by Palixia" title="Published by Palixia">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/brand/palixa-logo.png" alt="Palixia" />
+    </span>
+  ) : null;
   const sum = Array.from(title).reduce((a, c) => a + c.charCodeAt(0), 0);
   const pair = PAIRS[sum % PAIRS.length];
   const storyLabels = { ongoing: 'Ongoing', completed: 'Completed', hiatus: 'Hiatus' };
@@ -42,6 +50,7 @@ export default function Cover({ b }) {
           <img src={b.cover_url} alt={'Cover of ' + title} loading="lazy" decoding="async" />
         )}
         {tags}
+        {publisherMark}
       </div>
     );
   }
@@ -51,6 +60,7 @@ export default function Cover({ b }) {
       <span className="cv-title">{title}</span>
       <span className="cv-by">{author}</span>
       {tags}
+      {publisherMark}
     </div>
   );
 }
