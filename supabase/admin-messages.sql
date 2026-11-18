@@ -33,6 +33,10 @@ create policy "users read messages addressed to them" on public.admin_messages
     where r.message_id = admin_messages.id and r.recipient_id = auth.uid()
   ));
 
+drop policy if exists "admins read all admin messages" on public.admin_messages;
+create policy "admins read all admin messages" on public.admin_messages
+  for select to authenticated using (public.is_admin());
+
 drop policy if exists "users read own message receipts" on public.admin_message_recipients;
 create policy "users read own message receipts" on public.admin_message_recipients
   for select to authenticated using (recipient_id = auth.uid());
