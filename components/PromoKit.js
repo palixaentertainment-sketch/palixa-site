@@ -92,9 +92,6 @@ export default function PromoKit({ book, authorName }) {
       ctx.font = '800 34px Arial';
       ctx.fillText('PALIXIA', 72, 92);
     }
-    ctx.fillStyle = 'rgba(255,255,255,.76)';
-    ctx.font = '500 19px Arial';
-    ctx.fillText('INDEPENDENT STORIES. CURIOUS READERS.', 72, 184);
     ctx.textAlign = 'right';
     ctx.fillStyle = '#eadcff';
     ctx.font = '700 19px Arial';
