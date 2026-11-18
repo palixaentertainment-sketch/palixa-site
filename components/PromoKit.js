@@ -142,7 +142,7 @@ export default function PromoKit({ book, authorName }) {
     // Clear call-to-action footer.
     ctx.fillStyle = 'rgba(255,255,255,.13)';
     ctx.beginPath();
-    ctx.roundRect(82, 1120, 916, 112, 22);
+    ctx.fillRect(82, 1120, 916, 112);
     ctx.fill();
     ctx.fillStyle = '#ffffff';
     ctx.font = '700 30px Arial';
