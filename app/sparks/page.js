@@ -75,29 +75,29 @@ function SparksWallet() {
     <main className="wrap page sparks-page">
       <div className="sparks-heading">
         <Link href="/profile" className="sparks-back">← Profile</Link>
-        <span className="sparks-eyebrow">THE PALIXIA EXPERIENCE</span>
+        <span className="sparks-eyebrow">PALIXIA SPARKS WALLET</span>
         <h1 className="h1">Your Sparks</h1>
-        <p className="muted">A little appreciation can keep a great story going.</p>
+        <p className="muted">Manage your Sparks balance and keep track of your support activity.</p>
       </div>
 
       <section className="sparks-balance">
         <div className="sparks-balance-top">
           <span className="sparks-label">YOUR AVAILABLE BALANCE</span>
-          <span className="sparks-private">PRIVATE WALLET</span>
+          <span className="sparks-private">ACCOUNT BALANCE</span>
         </div>
         <div className="sparks-total">{loading ? '…' : balance.toLocaleString('en-NG')} <span>✦</span></div>
-        <p>Sparks ready for the stories and authors you love.</p>
-        <div className="sparks-balance-foot"><span>✦</span> Your balance is only visible to you.</div>
+        <p>Available to support authors and stories on Palixia.</p>
+        <div className="sparks-balance-foot"><span>✦</span> Your wallet activity is private to your account.</div>
         <span className="sparks-orbit sparks-orbit-one" aria-hidden="true" />
         <span className="sparks-orbit sparks-orbit-two" aria-hidden="true" />
       </section>
 
       <section className="sparks-topup">
         <div className="sparks-section-head">
-          <div><span className="sparks-eyebrow">ADD TO YOUR WALLET</span><h2 className="h2">Get more Sparks</h2></div>
+          <div><span className="sparks-eyebrow">ADD TO YOUR WALLET</span><h2 className="h2">Add Sparks</h2></div>
           <span className="sparks-topup-icon">✧</span>
         </div>
-        <p className="muted">Top up your balance and use your Sparks to support authors on Palixia.</p>
+        <p className="muted">Choose a package to add Sparks to your wallet. Use them to show appreciation for authors.</p>
         {adminTesting ? (
           <>
             <div className="sparks-packages">
