@@ -22,9 +22,12 @@ export async function POST(request) {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const paystackSecret = process.env.PAYSTACK_SECRET_KEY;
   if (!supabaseUrl || !anonKey || !serviceKey || !paystackSecret) return fail('Sparks payments are not configured.', 503);
-  // Fail closed: this release is an admin-only test, never a public/live checkout.
-  if (process.env.SPARKS_ADMIN_ONLY !== 'true' || process.env.PAYSTACK_TEST_MODE !== 'true' || !paystackSecret.startsWith('sk_test_')) {
-    return fail('Sparks testing is not enabled. Admin-only Paystack test mode is required.', 503);
+  // Keep checkout restricted to active admins while allowing an explicitly selected
+  // Paystack test or live environment for a controlled smoke test.
+  const configuredTestMode = process.env.PAYSTACK_TEST_MODE === 'true';
+  const secretMatchesMode = configuredTestMode ? paystackSecret.startsWith('sk_test_') : paystackSecret.startsWith('sk_live_');
+  if (process.env.SPARKS_ADMIN_ONLY !== 'true' || !secretMatchesMode) {
+    return fail('Sparks checkout is not configured for the selected admin-only Paystack mode.', 503);
   }
 
   const authHeader = request.headers.get('authorization') || '';
@@ -130,10 +133,9 @@ export async function POST(request) {
   }
 
   if (purchase.reader_id !== userData.user.id) return fail('This purchase does not belong to your account.', 403);
-  const configuredTestMode = process.env.PAYSTACK_TEST_MODE === 'true';
   const secretIsTest = paystackSecret.startsWith('sk_test_');
   if (configuredTestMode !== secretIsTest ||
-      Boolean(transaction.metadata?.test_mode) !== secretIsTest ||
+      transaction.metadata?.test_mode !== secretIsTest ||
       transaction.amount !== Number(purchase.amount_kobo) ||
       transaction.currency !== purchase.currency ||
       transaction.metadata?.purpose !== 'palixia_sparks_purchase' ||
