@@ -7,6 +7,7 @@ import { fmtNum, typeLabel } from '@/lib/format';
 import Guard from '@/components/Guard';
 import Cover from '@/components/Cover';
 import Empty from '@/components/Empty';
+import PromoKit from '@/components/PromoKit';
 
 function Dashboard() {
   const { user, profile } = useAuth();
@@ -88,6 +89,20 @@ function Dashboard() {
 
       {books && books.length === 0 && !failed && (
         <Empty title="You haven't published anything yet." text="Start with a title, a cover and a description, then add your first chapter." href="/dashboard/books/new" cta="Create Your First Book" />
+      )}
+
+      {books && books.some((book) => book.status === 'published') && (
+        <section className="stack">
+          <div className="stack" style={{ gap: '.35rem' }}>
+            <h2 className="h2">Promote your books</h2>
+            <p className="muted">Share your stories with friends, classmates and followers. Each published book has its own ready-made promo kit.</p>
+          </div>
+          <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 19rem), 1fr))', alignItems: 'start' }}>
+            {books.filter((book) => book.status === 'published').map((book) => (
+              <PromoKit key={book.id} book={book} authorName={profile.name} />
+            ))}
+          </div>
+        </section>
       )}
 
       {books && books.length > 0 && (
