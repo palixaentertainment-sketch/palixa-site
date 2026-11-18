@@ -49,6 +49,7 @@ export async function POST(request) {
   const amountNaira = Number(body.amountNaira);
   const pack = PACKAGES.get(amountNaira);
   if (!Number.isInteger(amountNaira) || !pack) return fail('Choose one of the available Sparks packages.');
+  if (!testMode && amountNaira !== 100) return fail('The live admin smoke test is limited to the ₦100 package.', 403);
 
   const reference = `PLXSPK_${randomUUID().replace(/-/g, '')}`;
   const { error: insertError } = await userClient.rpc('create_pending_spark_purchase', {
