@@ -104,3 +104,73 @@ $$;
 
 revoke all on function public.admin_send_message(text,text,text,uuid[]) from public, anon;
 grant execute on function public.admin_send_message(text,text,text,uuid[]) to authenticated;
+
+
+-- Threaded replies: only the original recipient and Palixia admins can view/reply.
+create table if not exists public.admin_message_replies (
+  id uuid primary key default gen_random_uuid(),
+  message_id uuid not null references public.admin_messages(id) on delete cascade,
+  sender_id uuid not null references public.profiles(id) on delete restrict,
+  sender_is_admin boolean not null,
+  body text not null check (char_length(body) between 1 and 5000),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists admin_message_replies_thread_idx
+  on public.admin_message_replies(message_id, created_at);
+
+alter table public.admin_message_replies enable row level security;
+
+drop policy if exists "message participants read replies" on public.admin_message_replies;
+create policy "message participants read replies" on public.admin_message_replies
+  for select to authenticated
+  using (
+    public.is_admin()
+    or exists (
+      select 1 from public.admin_message_recipients r
+      where r.message_id = admin_message_replies.message_id
+        and r.recipient_id = auth.uid()
+    )
+  );
+
+revoke all on public.admin_message_replies from anon, authenticated;
+grant select on public.admin_message_replies to authenticated;
+
+create or replace function public.admin_reply_to_message(
+  p_message_id uuid,
+  p_body text
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_reply_id uuid;
+  v_is_admin boolean := public.is_admin();
+begin
+  if auth.uid() is null then
+    raise exception 'You must be logged in' using errcode = '42501';
+  end if;
+  if nullif(trim(p_body), '') is null or char_length(trim(p_body)) > 5000 then
+    raise exception 'Reply must be between 1 and 5000 characters';
+  end if;
+  if not v_is_admin and not exists (
+    select 1 from public.admin_message_recipients r
+    where r.message_id = p_message_id and r.recipient_id = auth.uid()
+  ) then
+    raise exception 'You cannot reply to this message' using errcode = '42501';
+  end if;
+  if not exists (select 1 from public.admin_messages m where m.id = p_message_id) then
+    raise exception 'Message not found';
+  end if;
+
+  insert into public.admin_message_replies(message_id, sender_id, sender_is_admin, body)
+  values (p_message_id, auth.uid(), v_is_admin, trim(p_body))
+  returning id into v_reply_id;
+  return v_reply_id;
+end;
+$$;
+
+revoke all on function public.admin_reply_to_message(uuid,text) from public, anon;
+grant execute on function public.admin_reply_to_message(uuid,text) to authenticated;
