@@ -5,6 +5,7 @@ import { supabase, configured } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 
 function dateLabel(value) { return new Date(value).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }); }
+function timeLabel(value) { return new Date(value).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
 
 export default function MessagesPage() {
   const { user, loading } = useAuth();
@@ -61,56 +62,59 @@ export default function MessagesPage() {
     setSending(false);
   }
 
-  if (loading) return <section className="msg-page"><p className="msg-muted">Loading your inbox…</p><MessageStyles /></section>;
-  if (!user) return <section className="msg-page"><div className="msg-empty"><div className="msg-mark">✉</div><h1>Messages</h1><p>Log in to view messages from the Palixia team.</p><Link className="msg-primary" href="/login">Log in</Link></div><MessageStyles /></section>;
+  if (loading) return <section className="px-inbox"><p className="px-loading">Loading your messages…</p><MessageStyles /></section>;
+  if (!user) return <section className="px-inbox"><div className="px-empty"><div className="px-empty-icon">✉</div><h1>Messages</h1><p>Log in to view messages from the Palixia team.</p><Link className="px-login" href="/login">Log in</Link></div><MessageStyles /></section>;
 
-  return <section className="msg-page">
-    {selected ? <>
-      <div className="msg-topline">
-        <button type="button" className="msg-back" onClick={() => { setSelected(null); setReplies([]); setReply(''); setError(''); }}><span aria-hidden="true">←</span> Inbox</button>
-        <span className="msg-secure">PRIVATE MESSAGE</span>
-      </div>
-      <article className="msg-thread">
-        <header className="msg-thread-head">
-          <div className="msg-avatar msg-avatar-large">P</div>
-          <div className="msg-thread-sender"><b>Palixia</b><span>Official message</span></div>
-          <time>{dateLabel(selected.admin_messages.created_at)}</time>
-        </header>
-        <h1 className="msg-subject">{selected.admin_messages.subject}</h1>
-        <div className="msg-original">{selected.admin_messages.body}</div>
-        <div className="msg-divider"><span>YOUR CONVERSATION</span></div>
-        <div className="msg-replies">
-          {replies.map(item => <div key={item.id} className={'msg-bubble-wrap ' + (item.sender_is_admin ? 'from-palixia' : 'from-you')}>
-            <span className="msg-bubble-label">{item.sender_is_admin ? 'PALIXIA' : 'YOU'}</span>
-            <div className="msg-bubble">{item.body}</div>
-            <time>{dateLabel(item.created_at)}</time>
-          </div>)}
-          {!replies.length && <div className="msg-first-reply"><span>↳</span><p>Have something to share? Reply here and the Palixia team will see it.</p></div>}
-        </div>
-        {error && <p className="msg-error" role="alert">{error}</p>}
-        <form className="msg-composer" onSubmit={sendReply}>
-          <label className="sr-only" htmlFor="message-reply">Your reply</label>
-          <textarea id="message-reply" value={reply} onChange={e => setReply(e.target.value)} rows={2} maxLength={5000} placeholder="Write a reply…" required />
-          <div className="msg-compose-foot"><small>{reply.length}/5000</small><button className="msg-primary" disabled={sending || !reply.trim()}>{sending ? 'Sending…' : 'Send reply <'}</button></div>
-        </form>
-      </article>
-    </> : <>
-      <header className="msg-heading">
-        <div><p className="msg-kicker">YOUR PALIXIA INBOX</p><h1>Messages</h1><p>Updates and conversations from the Palixia team.</p></div>
-        <div className="msg-heading-icon" aria-hidden="true">✉</div>
+  return <section className={selected ? 'px-inbox px-inbox-thread' : 'px-inbox'}>
+    {selected ? <div className="px-chat-screen">
+      <header className="px-chat-header">
+        <button type="button" className="px-chat-back" onClick={() => { setSelected(null); setReplies([]); setReply(''); setError(''); }} aria-label="Back to inbox">‹</button>
+        <div className="px-brand-avatar">P</div>
+        <div className="px-chat-person"><b>Palixia</b><span><i/> Official account</span></div>
+        <span className="px-private-mark" aria-label="Private conversation">🔒</span>
       </header>
-      {error && <p className="msg-error" role="alert">{error}</p>}
-      <div className="msg-inbox-bar"><b>Inbox</b><span>{items.filter(item => !item.read_at).length ? items.filter(item => !item.read_at).length + ' unread' : 'All caught up'}</span></div>
-      {busy ? <div className="msg-loading">Loading messages…</div> : !items.length ? <div className="msg-empty"><div className="msg-mark">✉</div><h2>Your inbox is quiet</h2><p>Messages from the Palixia team will appear here.</p></div> :
-        <div className="msg-list">{items.map(row => <button key={row.id} type="button" onClick={() => openMessage(row)} className={'msg-card ' + (!row.read_at ? 'unread' : '')}>
-          <div className="msg-avatar">P</div>
-          <div className="msg-card-main">
-            <div className="msg-card-top"><b>Palixia <span className="msg-official">OFFICIAL</span></b><time>{dateLabel(row.admin_messages.created_at)}</time></div>
-            <strong>{row.admin_messages.subject}</strong>
-            <p>{row.admin_messages.body.slice(0, 135)}{row.admin_messages.body.length > 135 ? '…' : ''}</p>
+
+      <div className="px-chat-scroll">
+        <div className="px-day-divider"><span>MESSAGE FROM PALIXIA</span></div>
+        <article className="px-original-message">
+          <div className="px-original-meta"><b>Palixia</b><time>{dateLabel(selected.admin_messages.created_at)}</time></div>
+          <h1>{selected.admin_messages.subject}</h1>
+          <p>{selected.admin_messages.body}</p>
+        </article>
+        <div className="px-chat-divider"><span>REPLIES</span></div>
+        {replies.map(item => <div key={item.id} className={'px-chat-row ' + (item.sender_is_admin ? 'px-from-team' : 'px-from-user')}>
+          {item.sender_is_admin && <div className="px-mini-avatar">P</div>}
+          <div className="px-chat-message">
+            <div className="px-chat-bubble">{item.body}</div>
+            <time>{timeLabel(item.created_at)}</time>
           </div>
-          <div className="msg-card-end">{!row.read_at && <span className="msg-unread-dot" aria-label="Unread" />}<span aria-hidden="true">›</span></div>
+        </div>)}
+        {!replies.length && <div className="px-chat-hint"><span>✦</span><p>This is your private conversation with Palixia. Send a reply whenever you're ready.</p></div>}
+        {error && <p className="px-error" role="alert">{error}</p>}
+      </div>
+
+      <form className="px-composer" onSubmit={sendReply}>
+        <label className="sr-only" htmlFor="message-reply">Write a reply</label>
+        <textarea id="message-reply" value={reply} onChange={e => setReply(e.target.value)} rows={1} maxLength={5000} placeholder="Write a message…" required />
+        <button type="submit" disabled={sending || !reply.trim()} aria-label="Send reply">
+          {sending ? <span className="px-send-loading">…</span> : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20.5 21 12 3 3.5l.2 6.6L15 12 3.2 13.9 3 20.5Z" fill="currentColor"/></svg>}
+        </button>
+      </form>
+    </div> : <>
+      <header className="px-inbox-heading">
+        <div><span className="px-eyebrow">PALIXIA COMMUNITY</span><h1>Messages</h1><p>Conversations with the Palixia team.</p></div>
+        <div className="px-heading-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5h18v13H3zM3.5 6l8.5 7 8.5-7" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/></svg></div>
+      </header>
+      <div className="px-inbox-section"><div className="px-section-label"><b>INBOX</b><span>{items.filter(item => !item.read_at).length ? items.filter(item => !item.read_at).length + ' unread' : 'You’re all caught up'}</span></div>
+      {error && <p className="px-error" role="alert">{error}</p>}
+      {busy ? <p className="px-loading">Loading messages…</p> : !items.length ? <div className="px-empty"><div className="px-empty-icon">✉</div><h2>Your inbox is quiet</h2><p>Messages from the Palixia team will appear here.</p></div> :
+        <div className="px-message-list">{items.map(row => <button key={row.id} type="button" onClick={() => openMessage(row)} className={'px-message-row ' + (!row.read_at ? 'is-unread' : '')}>
+          <div className="px-brand-avatar">P</div><div className="px-row-content">
+            <div className="px-row-top"><b>Palixia <span className="px-verified">✓</span></b><time>{dateLabel(row.admin_messages.created_at)}</time></div>
+            <strong>{row.admin_messages.subject}</strong><p>{row.admin_messages.body.slice(0,110)}{row.admin_messages.body.length>110?'…':''}</p>
+          </div>{!row.read_at && <span className="px-unread-dot" aria-label="Unread"/>}
         </button>)}</div>}
+      </div>
     </>}
     <MessageStyles />
   </section>;
@@ -118,65 +122,74 @@ export default function MessagesPage() {
 
 function MessageStyles() {
   return <style jsx global>{`
-    .msg-page{width:min(100%,820px);margin:0 auto;padding:clamp(1rem,3vw,2rem) 1rem 5rem;min-height:65vh;color:var(--fg)}
-    .msg-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.35rem 0 1.35rem;border-bottom:1px solid var(--line)}
-    .msg-heading h1{font-size:clamp(2rem,7vw,2.65rem);font-weight:850;letter-spacing:-.055em;line-height:1.05}
-    .msg-heading p:not(.msg-kicker){margin-top:.5rem;color:var(--muted);font-size:.92rem}
-    .msg-kicker{margin-bottom:.5rem;color:var(--accent);font:700 .68rem var(--mono);letter-spacing:.12em}
-    .msg-heading-icon{display:grid;place-items:center;flex:none;width:3.4rem;height:3.4rem;border-radius:18px;background:var(--soft);color:var(--accent);font-size:1.55rem}
-    .msg-inbox-bar{display:flex;justify-content:space-between;align-items:center;padding:1.15rem .1rem .65rem;font-size:.9rem}
-    .msg-inbox-bar span{color:var(--muted);font-size:.78rem}
-    .msg-list{display:grid;gap:.65rem}
-    .msg-card{display:flex;align-items:flex-start;gap:.85rem;width:100%;min-width:0;padding:1rem;border:1px solid var(--line);border-radius:15px;background:var(--surface);color:var(--fg);text-align:left;transition:border-color .18s,transform .18s,box-shadow .18s}
-    .msg-card:hover{border-color:var(--lav);box-shadow:0 7px 22px rgba(55,25,100,.07);transform:translateY(-1px)}
-    .msg-card.unread{background:var(--soft);border-color:#d8c8f5}
-    .msg-avatar{display:grid;place-items:center;flex:none;width:2.75rem;height:2.75rem;border-radius:50%;background:linear-gradient(145deg,#6d28d9,#35116e);color:white;font-weight:850;font-size:1.1rem;box-shadow:0 4px 12px #4c1d951c}
-    .msg-card-main{min-width:0;flex:1;display:grid;gap:.3rem}
-    .msg-card-top{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
-    .msg-card-top b{font-size:.9rem}
-    .msg-card time,.msg-thread-head time{color:var(--muted);font-size:.7rem;white-space:nowrap}
-    .msg-official{margin-left:.3rem;color:var(--accent);font:700 .57rem var(--mono);letter-spacing:.07em}
-    .msg-card strong{font-size:.96rem;line-height:1.35;overflow-wrap:anywhere}
-    .msg-card p{color:var(--muted);font-size:.82rem;line-height:1.5;overflow-wrap:anywhere}
-    .msg-card-end{display:flex;align-items:center;gap:.55rem;align-self:center;color:var(--muted);font-size:1.35rem}
-    .msg-unread-dot{width:.55rem;height:.55rem;border-radius:50%;background:var(--accent)}
-    .msg-empty{display:grid;justify-items:center;text-align:center;gap:.55rem;padding:3.2rem 1.2rem;border:1px dashed var(--line);border-radius:16px;background:var(--surface);margin-top:1rem}
-    .msg-empty h1,.msg-empty h2{font-size:1.3rem;font-weight:800}
-    .msg-empty p{max-width:20rem;color:var(--muted);font-size:.88rem}
-    .msg-mark{display:grid;place-items:center;width:3.2rem;height:3.2rem;margin-bottom:.3rem;border-radius:50%;background:var(--soft);color:var(--accent);font-size:1.45rem}
-    .msg-loading{padding:2rem 1rem;text-align:center;color:var(--muted)}
-    .msg-topline{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
-    .msg-back{display:flex;align-items:center;gap:.45rem;color:var(--accent);font-weight:700;font-size:.9rem;padding:.45rem 0}
-    .msg-back span{font-size:1.2rem}
-    .msg-secure{color:var(--muted);font:700 .62rem var(--mono);letter-spacing:.1em}
-    .msg-thread{overflow:hidden;border:1px solid var(--line);border-radius:17px;background:var(--bg);box-shadow:0 8px 28px rgba(40,20,70,.045)}
-    .msg-thread-head{display:flex;align-items:center;gap:.75rem;padding:1rem 1.1rem;background:var(--surface);border-bottom:1px solid var(--line)}
-    .msg-avatar-large{width:2.8rem;height:2.8rem}
-    .msg-thread-sender{display:grid;gap:.1rem;flex:1}
-    .msg-thread-sender b{font-size:.92rem}
-    .msg-thread-sender span{font-size:.75rem;color:var(--muted)}
-    .msg-subject{padding:1.25rem 1.25rem .75rem;font-size:clamp(1.25rem,5vw,1.7rem);font-weight:850;letter-spacing:-.035em;line-height:1.2}
-    .msg-original{padding:0 1.25rem 1.4rem;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.75;font-size:.94rem}
-    .msg-divider{display:flex;align-items:center;gap:.7rem;padding:0 1.25rem;color:var(--muted);font:700 .62rem var(--mono);letter-spacing:.1em}
-    .msg-divider:after{content:"";height:1px;flex:1;background:var(--line)}
-    .msg-replies{display:grid;gap:1rem;padding:1.2rem}
-    .msg-bubble-wrap{display:grid;gap:.3rem;max-width:88%}
-    .msg-bubble-wrap.from-you{justify-self:end;text-align:right}
-    .msg-bubble-label{font:700 .6rem var(--mono);letter-spacing:.1em;color:var(--muted)}
-    .msg-bubble{padding:.8rem .95rem;border:1px solid var(--line);border-radius:14px 14px 14px 4px;background:var(--surface);text-align:left;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6;font-size:.9rem}
-    .from-you .msg-bubble{border-color:#d8c8f5;border-radius:14px 14px 4px 14px;background:var(--soft)}
-    .msg-bubble-wrap time{font-size:.67rem;color:var(--muted)}
-    .msg-first-reply{display:flex;gap:.65rem;align-items:center;padding:.8rem;border-radius:12px;background:var(--surface);color:var(--muted);font-size:.83rem}
-    .msg-first-reply span{color:var(--accent);font-size:1.3rem}
-    .msg-composer{position:sticky;bottom:calc(var(--nav-h,4.1rem) + .5rem);z-index:5;padding:.85rem;border-top:1px solid var(--line);background:var(--surface)}
-    .msg-composer textarea{display:block;width:100%;resize:vertical;min-height:3.2rem;padding:.7rem .8rem;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg);outline-offset:2px}
-    .msg-compose-foot{display:flex;justify-content:space-between;align-items:center;gap:.75rem;margin-top:.55rem}
-    .msg-compose-foot small{color:var(--muted);font-size:.7rem}
-    .msg-primary{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.7rem 1.05rem;border:0;border-radius:9px;background:var(--accent);color:white;font-weight:750;font-size:.86rem}
-    .msg-primary:disabled{opacity:.55;cursor:wait}
-    .msg-error{margin:.75rem 0;padding:.7rem .85rem;border:1px solid #f1c5d0;border-radius:10px;background:#fff4f6;color:#9f1239;font-size:.84rem}
-    @media(max-width:420px){.msg-page{padding-inline:.75rem}.msg-card{gap:.65rem;padding:.8rem}.msg-avatar{width:2.45rem;height:2.45rem}.msg-card-top{align-items:flex-start;flex-direction:column;gap:.1rem}.msg-card time{font-size:.66rem}.msg-bubble-wrap{max-width:95%}.msg-thread-head{padding:.85rem}.msg-subject{padding-inline:1rem}.msg-original{padding-inline:1rem}}
-    :root[data-theme="dark"] .msg-error{background:#351b2a;border-color:#713047;color:#fecdd3}
-    @media(prefers-reduced-motion:reduce){.msg-card{transition:none}}
+    .px-inbox{width:min(100%,780px);margin:0 auto;padding:1.25rem 1rem 5rem;min-height:68vh;color:var(--fg)}
+    .px-inbox-heading{display:flex;align-items:center;justify-content:space-between;padding:.3rem 0 1.25rem;border-bottom:1px solid var(--line)}
+    .px-eyebrow{font:700 .65rem var(--mono);letter-spacing:.13em;color:var(--accent)}
+    .px-inbox-heading h1{font-size:2.2rem;font-weight:850;letter-spacing:-.055em;line-height:1.1;margin-top:.25rem}
+    .px-inbox-heading p{font-size:.88rem;color:var(--muted);margin-top:.35rem}
+    .px-heading-icon{width:3rem;height:3rem;display:grid;place-items:center;border-radius:50%;background:var(--soft);color:var(--accent)}
+    .px-heading-icon svg{width:1.45rem;height:1.45rem}
+    .px-inbox-section{padding-top:1.1rem}
+    .px-section-label{display:flex;align-items:center;justify-content:space-between;margin-bottom:.55rem;font-size:.73rem;letter-spacing:.08em}
+    .px-section-label span{color:var(--muted);font-size:.72rem;letter-spacing:0}
+    .px-message-list{display:grid}
+    .px-message-row{display:flex;align-items:center;gap:.8rem;width:100%;padding:1rem .25rem;border-bottom:1px solid var(--line);text-align:left;color:var(--fg);min-width:0}
+    .px-message-row.is-unread{background:linear-gradient(90deg,var(--soft),transparent 85%)}
+    .px-brand-avatar{display:grid;place-items:center;flex:none;width:2.9rem;height:2.9rem;border-radius:50%;background:linear-gradient(145deg,#7c3aed,#321064);color:white;font-size:1.25rem;font-weight:900;box-shadow:0 3px 10px #4c1d9525}
+    .px-row-content{min-width:0;flex:1;display:grid;gap:.2rem}
+    .px-row-top{display:flex;justify-content:space-between;align-items:center;gap:.5rem}
+    .px-row-top b{font-size:.88rem}.px-row-top time{font-size:.67rem;color:var(--muted);white-space:nowrap}
+    .px-verified{display:inline-grid;place-items:center;width:.9rem;height:.9rem;border-radius:50%;background:var(--accent);color:white;font-size:.58rem}
+    .px-row-content strong{font-size:.9rem;line-height:1.35}
+    .px-row-content p{font-size:.78rem;color:var(--muted);line-height:1.45;overflow-wrap:anywhere}
+    .px-unread-dot{width:.48rem;height:.48rem;border-radius:50%;background:var(--accent);flex:none}
+    .px-empty{display:grid;justify-items:center;text-align:center;gap:.55rem;padding:3rem 1rem;color:var(--muted)}
+    .px-empty h1,.px-empty h2{font-size:1.2rem;color:var(--fg);font-weight:800}.px-empty p{font-size:.85rem}
+    .px-empty-icon{display:grid;place-items:center;width:3.4rem;height:3.4rem;border-radius:50%;background:var(--soft);color:var(--accent);font-size:1.5rem;margin-bottom:.3rem}
+    .px-login{padding:.65rem 1.2rem;border-radius:99px;background:var(--accent);color:white;font-weight:700;margin-top:.5rem}
+    .px-loading{text-align:center;padding:2rem;color:var(--muted)}
+    .px-error{margin:.65rem 0;padding:.65rem .8rem;border-radius:10px;background:#fff1f3;color:#9f1239;font-size:.8rem}
+    /* Native app conversation screen */
+    .px-inbox-thread{width:100%;max-width:760px;padding:0;margin:0 auto;min-height:0}
+    .px-chat-screen{height:calc(100dvh - 10.1rem);min-height:390px;display:flex;flex-direction:column;background:var(--bg);overflow:hidden}
+    .px-chat-header{display:flex;align-items:center;gap:.75rem;flex:none;padding:.7rem .85rem;border-bottom:1px solid var(--line);background:var(--bg)}
+    .px-chat-back{width:2rem;height:2.4rem;display:grid;place-items:center;color:var(--accent);font-size:2.1rem;line-height:1}
+    .px-chat-header .px-brand-avatar{width:2.55rem;height:2.55rem;font-size:1.05rem}
+    .px-chat-person{display:grid;gap:.08rem;flex:1}
+    .px-chat-person b{font-size:.94rem}.px-chat-person span{font-size:.72rem;color:var(--muted);display:flex;align-items:center;gap:.35rem}
+    .px-chat-person i{width:.42rem;height:.42rem;border-radius:50%;background:#22a06b}
+    .px-private-mark{font-size:.85rem;opacity:.65}
+    .px-chat-scroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:.9rem 1rem 1.2rem;display:flex;flex-direction:column;gap:.9rem;scrollbar-width:thin}
+    .px-day-divider,.px-chat-divider{display:flex;align-items:center;justify-content:center;gap:.7rem;color:var(--muted);font:700 .59rem var(--mono);letter-spacing:.12em}
+    .px-day-divider:before,.px-day-divider:after,.px-chat-divider:before,.px-chat-divider:after{content:"";height:1px;background:var(--line);flex:1}
+    .px-original-message{align-self:flex-start;width:min(94%,39rem);padding:1rem 1.05rem;border:1px solid var(--line);border-radius:4px 17px 17px 17px;background:var(--surface);box-shadow:0 3px 14px rgba(45,20,90,.035)}
+    .px-original-meta{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.55rem}
+    .px-original-meta b{font-size:.75rem;color:var(--accent)}.px-original-meta time{font-size:.65rem;color:var(--muted)}
+    .px-original-message h1{font-size:1.03rem;line-height:1.35;font-weight:800;margin-bottom:.65rem}
+    .px-original-message p{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.88rem;line-height:1.65}
+    .px-chat-divider{margin:.1rem 0}
+    .px-chat-row{display:flex;align-items:flex-end;gap:.45rem;max-width:88%}
+    .px-from-user{align-self:flex-end;justify-content:flex-end}
+    .px-from-team{align-self:flex-start}
+    .px-mini-avatar{width:1.55rem;height:1.55rem;display:grid;place-items:center;flex:none;border-radius:50%;background:linear-gradient(145deg,#7c3aed,#321064);color:#fff;font-size:.7rem;font-weight:900}
+    .px-chat-message{display:grid;gap:.22rem;min-width:0}
+    .px-chat-bubble{padding:.72rem .9rem;border-radius:16px 16px 16px 5px;background:var(--surface);border:1px solid var(--line);font-size:.9rem;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+    .px-from-user .px-chat-bubble{background:#eee5fc;border-color:#e0d1f8;color:#28134a;border-radius:16px 16px 5px 16px}
+    .px-chat-message time{font-size:.63rem;color:var(--muted);padding:0 .25rem}
+    .px-from-user .px-chat-message time{text-align:right}
+    .px-chat-hint{align-self:center;display:flex;align-items:center;gap:.6rem;max-width:23rem;margin:.3rem auto;padding:.7rem .85rem;border-radius:12px;background:var(--surface);color:var(--muted);font-size:.77rem}
+    .px-chat-hint span{color:var(--accent);font-size:1.1rem}
+    .px-composer{display:flex;align-items:flex-end;gap:.6rem;flex:none;padding:.65rem .8rem calc(.65rem + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--bg)}
+    .px-composer textarea{flex:1;min-width:0;max-height:7rem;min-height:2.7rem;resize:none;padding:.68rem .9rem;border:1px solid var(--line);border-radius:22px;background:var(--surface);color:var(--fg);font:inherit;font-size:.9rem;line-height:1.35;outline-offset:2px}
+    .px-composer textarea::placeholder{color:var(--muted)}
+    .px-composer button{width:2.7rem;height:2.7rem;display:grid;place-items:center;flex:none;border-radius:50%;background:var(--accent);color:white;box-shadow:0 3px 9px #4c1d9528}
+    .px-composer button:disabled{opacity:.45}
+    .px-composer button svg{width:1.25rem;height:1.25rem}
+    .px-send-loading{font-size:1.3rem;font-weight:800}
+    @media(min-width:52rem){.px-inbox-thread{padding:0 1rem}.px-chat-screen{height:calc(100vh - 8rem);min-height:500px;border:1px solid var(--line);border-radius:14px;margin:1rem auto;box-shadow:0 8px 30px rgba(45,20,90,.05)}.px-chat-header{padding:.85rem 1.1rem}.px-chat-scroll{padding:1.2rem 1.4rem}.px-composer{padding:.8rem 1rem}}
+    @media(max-width:420px){.px-inbox{padding:1rem .85rem 5rem}.px-inbox-thread{padding:0}.px-chat-screen{height:calc(100dvh - 10.2rem)}.px-chat-scroll{padding:.8rem .75rem 1rem;gap:.75rem}.px-original-message{width:97%;padding:.85rem .9rem}.px-chat-row{max-width:94%}.px-composer{padding-inline:.65rem}}
+    :root[data-theme="dark"] .px-from-user .px-chat-bubble{background:#38245a;border-color:#5b4380;color:#fff}
+    :root[data-theme="dark"] .px-error{background:#351b2a;color:#fecdd3}
+    @media(prefers-reduced-motion:reduce){.px-chat-scroll{scroll-behavior:auto}}
   `}</style>;
 }
