@@ -25,7 +25,8 @@ export async function POST(request) {
   // Keep checkout restricted to active admins while allowing an explicitly selected
   // Paystack test or live environment for a controlled smoke test.
   const configuredTestMode = process.env.PAYSTACK_TEST_MODE === 'true';
-  const secretMatchesMode = configuredTestMode ? paystackSecret.startsWith('sk_test_') : paystackSecret.startsWith('sk_live_');
+  const secretIsTest = paystackSecret.startsWith('sk_test_');
+  const secretMatchesMode = configuredTestMode ? secretIsTest : paystackSecret.startsWith('sk_live_');
   if (process.env.SPARKS_ADMIN_ONLY !== 'true' || !secretMatchesMode) {
     return fail('Sparks checkout is not configured for the selected admin-only Paystack mode.', 503);
   }
@@ -68,8 +69,9 @@ export async function POST(request) {
     return NextResponse.json({ status: transaction.status || 'pending', credited: false });
   }
 
-  const verifiedPackage = validateVerifiedSparkTransaction(transaction, userData.user.id, true);
+  const verifiedPackage = validateVerifiedSparkTransaction(transaction, userData.user.id, secretIsTest);
   if (!verifiedPackage) return fail('Paystack transaction details do not match a supported Sparks package.', 409);
+  if (!secretIsTest && verifiedPackage.sparks !== 100) return fail('The live admin smoke test is limited to the ₦100 package.', 403);
 
   const { data: existingPurchase, error: purchaseLookupError } = await admin
     .from('spark_purchases')
@@ -94,7 +96,7 @@ export async function POST(request) {
     const recoverable =
       metadata.purpose === 'palixia_sparks_purchase' &&
       metadata.reader_id === userData.user.id &&
-      metadata.test_mode === true &&
+      metadata.test_mode === secretIsTest &&
       Boolean(pack) &&
       transaction.currency === 'NGN' &&
       transaction.amount === pack.amountKobo;
@@ -133,7 +135,6 @@ export async function POST(request) {
   }
 
   if (purchase.reader_id !== userData.user.id) return fail('This purchase does not belong to your account.', 403);
-  const secretIsTest = paystackSecret.startsWith('sk_test_');
   if (configuredTestMode !== secretIsTest ||
       transaction.metadata?.test_mode !== secretIsTest ||
       transaction.amount !== Number(purchase.amount_kobo) ||
