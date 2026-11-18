@@ -69,7 +69,7 @@ export default function MessagesPage() {
     {selected ? <div className="px-chat-screen">
       <header className="px-chat-header">
         <button type="button" className="px-chat-back" onClick={() => { setSelected(null); setReplies([]); setReply(''); setError(''); }} aria-label="Back to inbox">‹</button>
-        <div className="px-brand-avatar">P</div>
+        <div className="px-brand-avatar"><img src="/brand/palixa-logo.png" alt="Palixia" /></div>
         <div className="px-chat-person"><b>Palixia</b><span><i/> Official account</span></div>
         <span className="px-private-mark" aria-label="Private conversation">🔒</span>
       </header>
@@ -83,7 +83,7 @@ export default function MessagesPage() {
         </article>
         <div className="px-chat-divider"><span>REPLIES</span></div>
         {replies.map(item => <div key={item.id} className={'px-chat-row ' + (item.sender_is_admin ? 'px-from-team' : 'px-from-user')}>
-          {item.sender_is_admin && <div className="px-mini-avatar">P</div>}
+          {item.sender_is_admin && <div className="px-mini-avatar"><img src="/brand/palixa-logo.png" alt="Palixia" /></div>}
           <div className="px-chat-message">
             <div className="px-chat-bubble">{item.body}</div>
             <time>{timeLabel(item.created_at)}</time>
@@ -135,7 +135,7 @@ function MessageStyles() {
     .px-message-list{display:grid}
     .px-message-row{display:flex;align-items:center;gap:.8rem;width:100%;padding:1rem .25rem;border-bottom:1px solid var(--line);text-align:left;color:var(--fg);min-width:0}
     .px-message-row.is-unread{background:linear-gradient(90deg,var(--soft),transparent 85%)}
-    .px-brand-avatar{display:grid;place-items:center;flex:none;width:2.9rem;height:2.9rem;border-radius:50%;background:linear-gradient(145deg,#7c3aed,#321064);color:white;font-size:1.25rem;font-weight:900;box-shadow:0 3px 10px #4c1d9525}
+    .px-brand-avatar{display:grid;place-items:center;flex:none;width:2.9rem;height:2.9rem;padding:.28rem;border-radius:50%;background:#fff;border:1px solid var(--line);overflow:hidden;box-shadow:0 3px 10px #4c1d9525}.px-brand-avatar img{width:100%;height:100%;object-fit:contain;display:block}
     .px-row-content{min-width:0;flex:1;display:grid;gap:.2rem}
     .px-row-top{display:flex;justify-content:space-between;align-items:center;gap:.5rem}
     .px-row-top b{font-size:.88rem}.px-row-top time{font-size:.67rem;color:var(--muted);white-space:nowrap}
@@ -154,7 +154,7 @@ function MessageStyles() {
     .px-chat-screen{height:calc(100dvh - 10.1rem);min-height:390px;display:flex;flex-direction:column;background:var(--bg);overflow:hidden}
     .px-chat-header{display:flex;align-items:center;gap:.75rem;flex:none;padding:.7rem .85rem;border-bottom:1px solid var(--line);background:var(--bg)}
     .px-chat-back{width:2rem;height:2.4rem;display:grid;place-items:center;color:var(--accent);font-size:2.1rem;line-height:1}
-    .px-chat-header .px-brand-avatar{width:2.55rem;height:2.55rem;font-size:1.05rem}
+    .px-chat-header .px-brand-avatar{width:2.55rem;height:2.55rem;padding:.22rem}
     .px-chat-person{display:grid;gap:.08rem;flex:1}
     .px-chat-person b{font-size:.94rem}.px-chat-person span{font-size:.72rem;color:var(--muted);display:flex;align-items:center;gap:.35rem}
     .px-chat-person i{width:.42rem;height:.42rem;border-radius:50%;background:#22a06b}
@@ -171,7 +171,7 @@ function MessageStyles() {
     .px-chat-row{display:flex;align-items:flex-end;gap:.45rem;max-width:88%}
     .px-from-user{align-self:flex-end;justify-content:flex-end}
     .px-from-team{align-self:flex-start}
-    .px-mini-avatar{width:1.55rem;height:1.55rem;display:grid;place-items:center;flex:none;border-radius:50%;background:linear-gradient(145deg,#7c3aed,#321064);color:#fff;font-size:.7rem;font-weight:900}
+    .px-mini-avatar{width:1.55rem;height:1.55rem;display:grid;place-items:center;flex:none;border-radius:50%;background:#fff;border:1px solid var(--line);padding:.15rem;overflow:hidden}.px-mini-avatar img{width:100%;height:100%;object-fit:contain;display:block}
     .px-chat-message{display:grid;gap:.22rem;min-width:0}
     .px-chat-bubble{padding:.72rem .9rem;border-radius:16px 16px 16px 5px;background:var(--surface);border:1px solid var(--line);font-size:.9rem;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
     .px-from-user .px-chat-bubble{background:#eee5fc;border-color:#e0d1f8;color:#28134a;border-radius:16px 16px 5px 16px}
