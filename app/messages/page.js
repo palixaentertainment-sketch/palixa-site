@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase, configured } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
+import Avatar from '@/components/Avatar';
 
 function dateLabel(value) { return new Date(value).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }); }
 function timeLabel(value) { return new Date(value).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
@@ -21,7 +22,7 @@ export default function MessagesPage() {
     if (!user || !configured) { setItems([]); setBusy(false); return; }
     setBusy(true);
     const { data, error: queryError } = await supabase.from('admin_message_recipients')
-      .select('id,read_at,created_at,admin_messages!admin_message_recipients_message_id_fkey(id,subject,body,created_at)')
+      .select('id,read_at,created_at,admin_messages!admin_message_recipients_message_id_fkey(id,subject,body,created_at,created_by,admin_sender:profiles!admin_messages_created_by_fkey(id,name,avatar_url))')
       .eq('recipient_id', user.id).order('created_at', { ascending: false }).limit(100);
     if (queryError) { setError('Messages are not enabled yet. Please contact Palixia support.'); setItems([]); }
     else { setError(''); setItems((data || []).filter(row => row.admin_messages)); }
@@ -32,7 +33,7 @@ export default function MessagesPage() {
 
   async function refreshReplies(row) {
     const { data, error: replyError } = await supabase.from('admin_message_replies')
-      .select('id,sender_id,sender_is_admin,body,created_at')
+      .select('id,sender_id,sender_is_admin,body,created_at,sender_profile:profiles!admin_message_replies_sender_id_fkey(id,name,avatar_url)')
       .eq('message_id', row.admin_messages.id).eq('recipient_id', user.id).order('created_at', { ascending: true });
     if (replyError) setError('Could not load this conversation. Please refresh and try again.');
     else setReplies(data || []);
@@ -69,7 +70,7 @@ export default function MessagesPage() {
     {selected ? <div className="px-chat-screen">
       <header className="px-chat-header">
         <button type="button" className="px-chat-back" onClick={() => { setSelected(null); setReplies([]); setReply(''); setError(''); }} aria-label="Back to inbox">‹</button>
-        <div className="px-brand-avatar">P</div>
+        <Avatar src={selected.admin_messages.admin_sender?.avatar_url} name={selected.admin_messages.admin_sender?.name || "Palixia"} size="2.55rem" />
         <div className="px-chat-person"><b>Palixia</b><span><i/> Official account</span></div>
         <span className="px-private-mark" aria-label="Private conversation">🔒</span>
       </header>
@@ -83,7 +84,7 @@ export default function MessagesPage() {
         </article>
         <div className="px-chat-divider"><span>REPLIES</span></div>
         {replies.map(item => <div key={item.id} className={'px-chat-row ' + (item.sender_is_admin ? 'px-from-team' : 'px-from-user')}>
-          {item.sender_is_admin && <div className="px-mini-avatar">P</div>}
+          {item.sender_is_admin && <Avatar src={item.sender_profile?.avatar_url || selected.admin_messages.admin_sender?.avatar_url} name={item.sender_profile?.name || selected.admin_messages.admin_sender?.name || 'Palixia'} size="1.55rem" />}
           <div className="px-chat-message">
             <div className="px-chat-bubble">{item.body}</div>
             <time>{timeLabel(item.created_at)}</time>
@@ -109,7 +110,7 @@ export default function MessagesPage() {
       {error && <p className="px-error" role="alert">{error}</p>}
       {busy ? <p className="px-loading">Loading messages…</p> : !items.length ? <div className="px-empty"><div className="px-empty-icon">✉</div><h2>Your inbox is quiet</h2><p>Messages from the Palixia team will appear here.</p></div> :
         <div className="px-message-list">{items.map(row => <button key={row.id} type="button" onClick={() => openMessage(row)} className={'px-message-row ' + (!row.read_at ? 'is-unread' : '')}>
-          <div className="px-brand-avatar">P</div><div className="px-row-content">
+          <Avatar src={row.admin_messages.admin_sender?.avatar_url} name={row.admin_messages.admin_sender?.name || "Palixia"} size="2.9rem" /><div className="px-row-content">
             <div className="px-row-top"><b>Palixia <span className="px-verified">✓</span></b><time>{dateLabel(row.admin_messages.created_at)}</time></div>
             <strong>{row.admin_messages.subject}</strong><p>{row.admin_messages.body.slice(0,110)}{row.admin_messages.body.length>110?'…':''}</p>
           </div>{!row.read_at && <span className="px-unread-dot" aria-label="Unread"/>}
@@ -135,7 +136,7 @@ function MessageStyles() {
     .px-message-list{display:grid}
     .px-message-row{display:flex;align-items:center;gap:.8rem;width:100%;padding:1rem .25rem;border-bottom:1px solid var(--line);text-align:left;color:var(--fg);min-width:0}
     .px-message-row.is-unread{background:linear-gradient(90deg,var(--soft),transparent 85%)}
-    .px-brand-avatar{display:grid;place-items:center;flex:none;width:2.9rem;height:2.9rem;border-radius:50%;background:linear-gradient(145deg,#7c3aed,#321064);color:white;font-size:1.25rem;font-weight:900;box-shadow:0 3px 10px #4c1d9525}
+    .px-message-row>.avatar{flex:none;box-shadow:0 3px 10px #4c1d9525}
     .px-row-content{min-width:0;flex:1;display:grid;gap:.2rem}
     .px-row-top{display:flex;justify-content:space-between;align-items:center;gap:.5rem}
     .px-row-top b{font-size:.88rem}.px-row-top time{font-size:.67rem;color:var(--muted);white-space:nowrap}
@@ -154,7 +155,7 @@ function MessageStyles() {
     .px-chat-screen{height:calc(100dvh - 10.1rem);min-height:390px;display:flex;flex-direction:column;background:var(--bg);overflow:hidden}
     .px-chat-header{display:flex;align-items:center;gap:.75rem;flex:none;padding:.7rem .85rem;border-bottom:1px solid var(--line);background:var(--bg)}
     .px-chat-back{width:2rem;height:2.4rem;display:grid;place-items:center;color:var(--accent);font-size:2.1rem;line-height:1}
-    .px-chat-header .px-brand-avatar{width:2.55rem;height:2.55rem;font-size:1.05rem}
+    .px-chat-header .avatar{flex:none}
     .px-chat-person{display:grid;gap:.08rem;flex:1}
     .px-chat-person b{font-size:.94rem}.px-chat-person span{font-size:.72rem;color:var(--muted);display:flex;align-items:center;gap:.35rem}
     .px-chat-person i{width:.42rem;height:.42rem;border-radius:50%;background:#22a06b}
@@ -171,7 +172,7 @@ function MessageStyles() {
     .px-chat-row{display:flex;align-items:flex-end;gap:.45rem;max-width:88%}
     .px-from-user{align-self:flex-end;justify-content:flex-end}
     .px-from-team{align-self:flex-start}
-    .px-mini-avatar{width:1.55rem;height:1.55rem;display:grid;place-items:center;flex:none;border-radius:50%;background:linear-gradient(145deg,#7c3aed,#321064);color:#fff;font-size:.7rem;font-weight:900}
+    .px-chat-row .avatar{flex:none}
     .px-chat-message{display:grid;gap:.22rem;min-width:0}
     .px-chat-bubble{padding:.72rem .9rem;border-radius:16px 16px 16px 5px;background:var(--surface);border:1px solid var(--line);font-size:.9rem;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
     .px-from-user .px-chat-bubble{background:#eee5fc;border-color:#e0d1f8;color:#28134a;border-radius:16px 16px 5px 16px}
