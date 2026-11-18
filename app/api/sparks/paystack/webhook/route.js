@@ -14,8 +14,11 @@ export async function POST(request) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!secret || !url || !serviceKey) return response(503);
-  // The webhook must never credit transactions unless the admin-only test gate is active.
-  if (process.env.SPARKS_ADMIN_ONLY !== 'true' || process.env.PAYSTACK_TEST_MODE !== 'true' || !secret.startsWith('sk_test_')) return response(503);
+  // Keep webhook crediting restricted to active-admin purchases while allowing
+  // the configured Paystack test or live environment for a controlled smoke test.
+  const testMode = process.env.PAYSTACK_TEST_MODE === 'true';
+  const secretMatchesMode = testMode ? secret.startsWith('sk_test_') : secret.startsWith('sk_live_');
+  if (process.env.SPARKS_ADMIN_ONLY !== 'true' || !secretMatchesMode) return response(503);
 
   const rawBody = await request.text();
   const signature = request.headers.get('x-paystack-signature') || '';
@@ -37,7 +40,6 @@ export async function POST(request) {
   if (typeof reference !== 'string' || !/^PLXSPK_[a-f0-9]{32}$/i.test(reference)) return response(200);
 
   // Do not trust webhook payload amounts/status alone: independently verify with Paystack.
-  const testMode = process.env.PAYSTACK_TEST_MODE === 'true';
   const secretIsTest = secret.startsWith('sk_test_');
   if (testMode !== secretIsTest) return response(503);
 
