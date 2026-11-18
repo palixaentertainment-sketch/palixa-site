@@ -1604,3 +1604,129 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 .coming-soon-dialog-main > img { width:100%; aspect-ratio:2/3; object-fit:cover; border-radius:6px; background:var(--soft); }
 .coming-soon-description { color:var(--muted); white-space:pre-line; overflow-wrap:anywhere; }
 @media(max-width:380px) { .coming-soon-dialog-main { grid-template-columns:5.5rem minmax(0,1fr); gap:.75rem; } .coming-soon-dialog { padding:1rem; } }
+
+
+/* Community-only mobile polish. Desktop styles and site-wide layout remain untouched. */
+@media (max-width: 640px) {
+  .community { gap: 1rem; }
+  .community-hero {
+    padding: 1.15rem;
+    border-radius: 14px;
+    gap: .65rem;
+  }
+  .community-hero .h1 {
+    font-size: clamp(1.85rem, 7.5vw, 2.35rem);
+    line-height: 1.08;
+  }
+  .community-hero > p:last-child {
+    font-size: .96rem;
+    line-height: 1.6;
+  }
+  .community-hero .row { margin-top: .5rem !important; }
+  .community-hero .btn { min-height: 2.7rem; }
+
+  .community-compose,
+  .community-post {
+    padding: 1rem;
+    border-radius: 13px;
+    gap: .85rem;
+  }
+  .community-compose .h2,
+  .community-feed-head .h2 { font-size: 1.2rem; }
+  .community-post-head { align-items: flex-start; gap: .65rem; }
+  .community-post-by { padding-top: .1rem; }
+  .community-post-by b { font-size: .95rem; line-height: 1.35; }
+  .community-post-by .fine { font-size: .76rem; line-height: 1.4; }
+  .community-category {
+    max-width: 42%;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .community-post-body {
+    font-size: .98rem;
+    line-height: 1.7;
+  }
+  .community-textarea {
+    min-height: 6.5rem;
+    font-size: 1rem;
+    line-height: 1.55;
+  }
+  .community-compose-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: .65rem;
+  }
+  .community-field { width: 100%; }
+  .community-compose-controls .in,
+  .community-compose-controls .btn { width: 100%; min-height: 2.8rem; }
+
+  .community-categories {
+    gap: .45rem;
+    padding: .15rem .05rem .5rem;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .community-categories::-webkit-scrollbar { display: none; }
+  .community-categories .chip {
+    flex: 0 0 auto;
+    min-height: 2.45rem;
+    padding: .55rem .85rem;
+    font-size: .82rem;
+    white-space: nowrap;
+  }
+  .community-feed-head { align-items: center; gap: .5rem; }
+  .community-feed-head .fine { white-space: nowrap; }
+
+  .community-image-picker { width: 100%; }
+  .community-image-preview,
+  .community-post-image-link { width: 100%; max-width: 100%; }
+  .community-image-preview img,
+  .community-post-image {
+    display: block;
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+    max-height: 65vh;
+    object-fit: contain;
+    border-radius: 10px;
+  }
+  .community-book-link {
+    align-items: flex-start;
+    padding: .8rem;
+    font-size: .9rem;
+    line-height: 1.45;
+  }
+  .community-book-link span { white-space: normal; text-align: right; }
+
+  .community-post-actions {
+    gap: .3rem .85rem;
+    padding-top: .7rem;
+  }
+  .community-post-actions button {
+    min-height: 2.5rem;
+    font-size: .82rem;
+  }
+  .community-comments { gap: .75rem; }
+  .community-comment { padding-left: .65rem; }
+  .community-reply { margin-left: .2rem; padding-left: .6rem; }
+  .community-reply-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: .45rem;
+  }
+  .community-reply-form .in { width: 100%; min-width: 0; min-height: 2.7rem; }
+  .community-reply-form .btn { min-height: 2.7rem; }
+  .community-poll-create,
+  .community-poll-card,
+  .community-poll-empty { padding: .9rem; border-radius: 13px; }
+  .community-poll-create-actions { gap: .5rem; }
+}
+@media (max-width: 380px) {
+  .community-category { display: none; }
+  .community-reply-form { grid-template-columns: minmax(0, 1fr); }
+  .community-reply-form .btn { width: 100%; }
+}
