@@ -71,13 +71,30 @@ export default function PromoKit({ book, authorName }) {
     ctx.fillStyle = glow;
     ctx.fillRect(0, 0, 1080, 1350);
 
-    // Minimal brand header.
-    ctx.fillStyle = '#fff';
-    ctx.font = '800 34px Arial';
-    ctx.fillText('PALIXIA', 72, 92);
+    // Use the actual Palixia brand artwork instead of typing the name as plain text.
+    // The light badge keeps the official purple logo clear against cover-derived dark backgrounds.
+    const brandLogo = new Image();
+    try {
+      brandLogo.src = '/brand/palixia-logo-clean.svg';
+      await new Promise((resolve, reject) => {
+        brandLogo.onload = resolve;
+        brandLogo.onerror = reject;
+        window.setTimeout(() => reject(new Error('Brand logo timed out')), 5000);
+      });
+      ctx.fillStyle = 'rgba(255,255,255,.96)';
+      ctx.beginPath();
+      ctx.roundRect(56, 42, 236, 116, 18);
+      ctx.fill();
+      ctx.drawImage(brandLogo, 76, 55, 196, 90);
+    } catch {
+      // Keep the card usable if the logo asset cannot be loaded.
+      ctx.fillStyle = '#fff';
+      ctx.font = '800 34px Arial';
+      ctx.fillText('PALIXIA', 72, 92);
+    }
     ctx.fillStyle = 'rgba(255,255,255,.76)';
     ctx.font = '500 19px Arial';
-    ctx.fillText('INDEPENDENT STORIES. CURIOUS READERS.', 72, 126);
+    ctx.fillText('INDEPENDENT STORIES. CURIOUS READERS.', 72, 184);
     ctx.textAlign = 'right';
     ctx.fillStyle = '#eadcff';
     ctx.font = '700 19px Arial';
