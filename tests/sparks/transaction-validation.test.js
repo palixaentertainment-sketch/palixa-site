@@ -23,6 +23,18 @@ test('accepts a supported, successful NGN Sparks purchase', () => {
   );
 });
 
+test('accepts a supported live NGN Sparks purchase when the live key is selected', () => {
+  const liveTransaction = valid({
+    amount: 10000,
+    metadata: { ...valid().metadata, sparks_amount: 100, test_mode: false },
+  });
+  assert.deepEqual(
+    validateVerifiedSparkTransaction(liveTransaction, 'reader-123', false),
+    { sparks: 100, amountKobo: 10000, currency: 'NGN' }
+  );
+  assert.equal(validateVerifiedSparkTransaction(liveTransaction, 'reader-123', true), null);
+});
+
 test('rejects failed or pending transactions', () => {
   assert.equal(validateVerifiedSparkTransaction(valid({ status: 'failed' }), 'reader-123', true), null);
   assert.equal(validateVerifiedSparkTransaction(valid({ status: 'pending' }), 'reader-123', true), null);

@@ -15,7 +15,8 @@ function SparksWallet() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(null);
   const [notice, setNotice] = useState('');
-  const [adminTesting, setAdminTesting] = useState(false);
+  const [adminTestMode, setAdminTestMode] = useState(null);
+  const adminTesting = adminTestMode !== null;
 
   const loadWallet = useCallback(async () => {
     if (!user) return;
@@ -39,7 +40,7 @@ function SparksWallet() {
           const response = await fetch('/api/sparks/access', { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' });
           if (response.ok) {
             const result = await response.json();
-            if (active) setAdminTesting(Boolean(result.enabled));
+            if (active && result.enabled) setAdminTestMode(result.mode || 'test');
           }
         } catch {}
       }
@@ -49,6 +50,7 @@ function SparksWallet() {
   }, [loadWallet]);
 
   async function buy(amountNaira) {
+    if (adminTestMode === 'live' && !window.confirm('LIVE PAYMENT: your real payment method will be charged ₦100 for 100 Sparks. Continue?')) return;
     setBusy(amountNaira);
     setNotice('');
     try {
@@ -99,18 +101,22 @@ function SparksWallet() {
         {adminTesting ? (
           <>
             <div className="sparks-packages">
-              {PACKAGES.map((amount) => (
+              {(adminTestMode === 'live' ? [100] : PACKAGES).map((amount) => (
                 <div className="sparks-package" key={amount}>
                   <span className="sparks-package-amount">{amount.toLocaleString('en-NG')}</span>
                   <span className="sparks-package-unit">SPARKS</span>
                   <span className="sparks-package-price">₦{amount.toLocaleString('en-NG')}</span>
                   <button className="btn" disabled={busy !== null} onClick={() => buy(amount)}>
-                    {busy === amount ? 'Opening…' : 'Choose pack'}
+                    {busy === amount ? 'Opening…' : adminTestMode === 'live' ? 'Pay ₦100' : 'Choose pack'}
                   </button>
                 </div>
               ))}
             </div>
-            <p className="fine">Admin testing only · ₦1 = 1 Spark</p>
+            {adminTestMode === 'live' ? (
+              <p className="notice" role="note">Live admin smoke test: this will charge real money. Only the ₦100 package is enabled, and ordinary readers cannot access this checkout.</p>
+            ) : (
+              <p className="fine">Admin testing only · ₦1 = 1 Spark</p>
+            )}
           </>
         ) : (
           <div className="sparks-coming"><span>✦</span><div><b>Top-ups are on their way</b><small>You'll be able to add Sparks to your wallet soon.</small></div><span className="badge">Coming soon</span></div>

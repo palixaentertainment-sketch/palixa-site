@@ -61,6 +61,7 @@ export async function POST(request) {
   const metadataReaderId = transaction.metadata?.reader_id;
   const verifiedPackage = validateVerifiedSparkTransaction(transaction, metadataReaderId, secretIsTest);
   if (!verifiedPackage) return response(400);
+  if (!secretIsTest && verifiedPackage.sparks !== 100) return response(400);
   const sparksAmount = verifiedPackage.sparks;
   const expectedAmount = verifiedPackage.amountKobo;
 
