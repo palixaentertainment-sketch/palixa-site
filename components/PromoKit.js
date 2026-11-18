@@ -26,132 +26,135 @@ export default function PromoKit({ book, authorName }) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Editorial-style 4:5 poster with the book cover as the main visual.
-    const bg = ctx.createLinearGradient(0, 0, 1080, 1350);
-    bg.addColorStop(0, '#160b32');
-    bg.addColorStop(.52, '#32106b');
-    bg.addColorStop(1, '#6d28d9');
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, 1080, 1350);
-
-    // Decorative orbital shapes and fine framing.
-    ctx.strokeStyle = 'rgba(226,210,255,.18)';
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(980, 170, 300, 0, Math.PI * 2); ctx.stroke();
-    ctx.beginPath(); ctx.arc(980, 170, 250, 0, Math.PI * 2); ctx.stroke();
-    ctx.fillStyle = 'rgba(255,255,255,.055)';
-    ctx.beginPath(); ctx.arc(85, 1110, 260, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,.28)';
-    ctx.strokeRect(52, 52, 976, 1246);
-
-    // Brand header.
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '800 34px Arial';
-    ctx.fillText('PALIXIA', 82, 112);
-    ctx.fillStyle = '#d9c8ff';
-    ctx.font = '500 22px Arial';
-    ctx.fillText('INDEPENDENT STORIES. CURIOUS READERS.', 82, 151);
-    ctx.textAlign = 'right';
-    ctx.fillStyle = '#e9ddff';
-    ctx.font = '700 21px Arial';
-    ctx.fillText('BOOK SPOTLIGHT', 998, 112);
-    ctx.textAlign = 'left';
-
-    // Cover panel with shadow. If the remote image cannot be loaded, create a designed cover placeholder.
-    const coverX = 340, coverY = 205, coverW = 400, coverH = 590;
-    ctx.save();
-    ctx.shadowColor = 'rgba(0,0,0,.42)';
-    ctx.shadowBlur = 38;
-    ctx.shadowOffsetY = 18;
-    ctx.fillStyle = '#241044';
-    ctx.fillRect(coverX, coverY, coverW, coverH);
-    ctx.restore();
-
-    let coverDrawn = false;
+    const img = new Image();
+    let coverLoaded = false;
     if (book.cover_url) {
       try {
-        const img = new Image();
         img.src = '/api/promo-cover?url=' + encodeURIComponent(book.cover_url);
         await new Promise((resolve, reject) => {
           img.onload = resolve;
           img.onerror = reject;
-          window.setTimeout(() => reject(new Error('Cover image timed out')), 8000);
+          window.setTimeout(() => reject(new Error('Cover image timed out')), 10000);
         });
-        const scale = Math.max(coverW / img.width, coverH / img.height);
-        const sw = coverW / scale, sh = coverH / scale;
-        const sx = (img.width - sw) / 2, sy = (img.height - sh) / 2;
-        ctx.drawImage(img, sx, sy, sw, sh, coverX, coverY, coverW, coverH);
-        coverDrawn = true;
+        coverLoaded = img.naturalWidth > 0;
       } catch {
-        // Keep a designed fallback cover rather than exporting an empty block.
+        coverLoaded = false;
       }
-    }
-    if (!coverDrawn) {
-      const coverBg = ctx.createLinearGradient(coverX, coverY, coverX + coverW, coverY + coverH);
-      coverBg.addColorStop(0, '#4c1d95');
-      coverBg.addColorStop(1, '#160b32');
-      ctx.fillStyle = coverBg;
-      ctx.fillRect(coverX, coverY, coverW, coverH);
-      ctx.strokeStyle = 'rgba(255,255,255,.55)';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(coverX + 22, coverY + 22, coverW - 44, coverH - 44);
-      ctx.fillStyle = '#d9c8ff';
-      ctx.font = '700 18px Arial';
-      ctx.fillText('A PALIXIA STORY', coverX + 48, coverY + 82);
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 40px Georgia';
-      const words = title.split(/\s+/);
-      let line = '', y = coverY + 245;
-      for (const word of words) {
-        const next = line ? line + ' ' + word : word;
-        if (ctx.measureText(next).width > coverW - 96 && line) {
-          ctx.fillText(line, coverX + 48, y); line = word; y += 52;
-        } else line = next;
-      }
-      if (line) ctx.fillText(line, coverX + 48, y);
-      ctx.fillStyle = '#e9ddff';
-      ctx.font = '22px Arial';
-      ctx.fillText('by ' + author, coverX + 48, coverY + coverH - 70, coverW - 96);
     }
 
-    // Title and author below the artwork.
-    ctx.fillStyle = '#d9c8ff';
-    ctx.font = '700 20px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('A STORY TO GET LOST IN', 540, 865);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 48px Georgia';
-    const words = title.split(/\s+/);
-    const maxWidth = 900;
-    let line = '', lines = [];
-    for (const word of words) {
-      const next = line ? line + ' ' + word : word;
-      if (ctx.measureText(next).width > maxWidth && line) {
-        lines.push(line); line = word;
-      } else line = next;
+    // Build the atmosphere from the actual cover so the poster and artwork feel like one design.
+    if (coverLoaded) {
+      const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+      const sw = canvas.width / scale, sh = canvas.height / scale;
+      ctx.save();
+      ctx.filter = 'blur(38px) brightness(.42) saturate(1.35)';
+      ctx.drawImage(img, (img.width - sw) / 2, (img.height - sh) / 2, sw, sh, 0, 0, 1080, 1350);
+      ctx.restore();
+    } else {
+      const fallback = ctx.createLinearGradient(0, 0, 1080, 1350);
+      fallback.addColorStop(0, '#160b32');
+      fallback.addColorStop(1, '#6d28d9');
+      ctx.fillStyle = fallback;
+      ctx.fillRect(0, 0, 1080, 1350);
     }
-    if (line) lines.push(line);
-    const shownLines = lines.slice(0, 2);
-    shownLines.forEach((value, index) => ctx.fillText(value, 540, 930 + index * 58));
-    ctx.fillStyle = '#e9ddff';
-    ctx.font = '26px Arial';
-    ctx.fillText('by ' + author, 540, 1060);
+
+    // Cinematic dark wash, edge lighting and soft vignette.
+    const wash = ctx.createLinearGradient(0, 0, 1080, 1350);
+    wash.addColorStop(0, 'rgba(12,7,25,.76)');
+    wash.addColorStop(.5, 'rgba(20,8,39,.42)');
+    wash.addColorStop(1, 'rgba(12,7,25,.88)');
+    ctx.fillStyle = wash;
+    ctx.fillRect(0, 0, 1080, 1350);
+    const glow = ctx.createRadialGradient(540, 620, 100, 540, 620, 720);
+    glow.addColorStop(0, 'rgba(205,164,255,.20)');
+    glow.addColorStop(1, 'rgba(205,164,255,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, 1080, 1350);
+
+    // Minimal brand header.
+    ctx.fillStyle = '#fff';
+    ctx.font = '800 34px Arial';
+    ctx.fillText('PALIXIA', 72, 92);
+    ctx.fillStyle = 'rgba(255,255,255,.76)';
+    ctx.font = '500 19px Arial';
+    ctx.fillText('INDEPENDENT STORIES. CURIOUS READERS.', 72, 126);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#eadcff';
+    ctx.font = '700 19px Arial';
+    ctx.fillText('A BOOK TO DISCOVER', 1008, 92);
     ctx.textAlign = 'left';
 
-    // Clear call-to-action footer.
-    ctx.fillStyle = 'rgba(255,255,255,.13)';
-    ctx.beginPath();
-    ctx.fillRect(82, 1120, 916, 112);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '700 30px Arial';
-    ctx.fillText('READ FOR FREE ON PALIXIA', 118, 1168);
-    ctx.fillStyle = '#e9ddff';
+    if (coverLoaded) {
+      // Keep the entire original cover visible, framed as a premium physical book.
+      const maxW = 650, maxH = 890;
+      const ratio = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
+      const coverW = img.naturalWidth * ratio;
+      const coverH = img.naturalHeight * ratio;
+      const x = (1080 - coverW) / 2;
+      const y = 178 + (890 - coverH) / 2;
+
+      // Soft cast shadow.
+      ctx.save();
+      ctx.shadowColor = 'rgba(0,0,0,.72)';
+      ctx.shadowBlur = 64;
+      ctx.shadowOffsetX = 18;
+      ctx.shadowOffsetY = 32;
+      ctx.fillStyle = '#160d24';
+      ctx.fillRect(x, y, coverW, coverH);
+      ctx.restore();
+
+      // Subtle visible spine to make the cover feel like a real book, not a flat tile.
+      ctx.save();
+      ctx.fillStyle = 'rgba(10,5,18,.76)';
+      ctx.beginPath();
+      ctx.moveTo(x - 13, y + 8);
+      ctx.lineTo(x, y);
+      ctx.lineTo(x, y + coverH);
+      ctx.lineTo(x - 13, y + coverH - 8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      ctx.drawImage(img, x, y, coverW, coverH);
+
+      // Fine highlight around the physical cover edge.
+      ctx.strokeStyle = 'rgba(255,255,255,.34)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, coverW, coverH);
+    } else {
+      // Honest fallback when no public cover image is available.
+      ctx.fillStyle = 'rgba(255,255,255,.08)';
+      ctx.fillRect(210, 250, 660, 760);
+      ctx.strokeStyle = 'rgba(255,255,255,.35)';
+      ctx.strokeRect(210, 250, 660, 760);
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center';
+      ctx.font = 'bold 54px Georgia';
+      ctx.fillText(title, 540, 600, 560);
+      ctx.font = '28px Arial';
+      ctx.fillText('by ' + author, 540, 690);
+      ctx.textAlign = 'left';
+    }
+
+    // Author and call-to-action sit in a clean footer, never fighting the cover artwork.
+    ctx.fillStyle = 'rgba(12,7,25,.64)';
+    ctx.fillRect(0, 1130, 1080, 220);
+    ctx.fillStyle = '#eadcff';
+    ctx.font = '700 20px Arial';
+    ctx.fillText('DISCOVER YOUR NEXT FAVOURITE STORY', 72, 1180);
+    ctx.fillStyle = '#fff';
+    ctx.font = '700 36px Georgia';
+    ctx.fillText('“' + title + '”', 72, 1230, 700);
+    ctx.fillStyle = 'rgba(255,255,255,.82)';
     ctx.font = '24px Arial';
-    ctx.fillText('Discover your next favourite story', 118, 1208);
+    ctx.fillText('by ' + author, 72, 1272);
     ctx.textAlign = 'right';
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '700 26px Arial';
-    ctx.fillText('palixia.com', 960, 1188);
+    ctx.fillStyle = '#fff';
+    ctx.font = '800 26px Arial';
+    ctx.fillText('READ FOR FREE', 1008, 1210);
+    ctx.fillStyle = '#eadcff';
+    ctx.font = '700 24px Arial';
+    ctx.fillText('palixia.com', 1008, 1252);
     ctx.textAlign = 'left';
 
     const link = document.createElement('a');
