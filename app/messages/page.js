@@ -29,29 +29,35 @@ export default function MessagesPage() {
 
   useEffect(() => { if (!loading) load(); }, [loading, load]);
 
-  async function openMessage(row) {
-    setSelected(row); setError('');
+  async function refreshReplies(row) {
     const { data, error: replyError } = await supabase.from('admin_message_replies')
       .select('id,sender_id,sender_is_admin,body,created_at')
-      .eq('message_id', row.admin_messages.id).order('created_at', { ascending: true });
+      .eq('message_id', row.admin_messages.id).eq('recipient_id', user.id).order('created_at', { ascending: true });
     if (replyError) setError('Could not load this conversation. Please refresh and try again.');
     else setReplies(data || []);
+  }
+
+  async function openMessage(row) {
+    setSelected(row); setError('');
+    await refreshReplies(row);
     if (!row.read_at) {
       const now = new Date().toISOString();
       const { error: updateError } = await supabase.from('admin_message_recipients').update({ read_at: now }).eq('id', row.id).eq('recipient_id', user.id);
-      if (!updateError) setItems(current => current.map(item => item.id === row.id ? { ...item, read_at: now } : item));
+      if (!updateError) {
+        setItems(current => current.map(item => item.id === row.id ? { ...item, read_at: now } : item));
+        setSelected(current => current?.id === row.id ? { ...current, read_at: now } : current);
+      }
     }
   }
 
   async function sendReply(e) {
     e.preventDefault(); if (!selected || !reply.trim()) return;
     setSending(true); setError('');
-    const { error: sendError } = await supabase.rpc('admin_reply_to_message', { p_message_id: selected.admin_messages.id, p_body: reply.trim() });
+    const { error: sendError } = await supabase.rpc('admin_reply_to_message', {
+      p_message_id: selected.admin_messages.id, p_body: reply.trim(), p_recipient_id: user.id
+    });
     if (sendError) setError(sendError.message || 'Your reply could not be sent.');
-    else {
-      const { data } = await supabase.from('admin_message_replies').select('id,sender_id,sender_is_admin,body,created_at').eq('message_id', selected.admin_messages.id).order('created_at', { ascending: true });
-      setReplies(data || []); setReply('');
-    }
+    else { await refreshReplies(selected); setReply(''); }
     setSending(false);
   }
 
@@ -62,7 +68,7 @@ export default function MessagesPage() {
     <div className="sechead"><h1 className="h1">Messages</h1></div>
     {error && <p className="notice" role="alert">{error}</p>}
     {selected ? <article className="panel stack" style={{ padding: '1.2rem', gap: '.9rem' }}>
-      <button type="button" className="btn ghost small" style={{ width: 'fit-content' }} onClick={() => { setSelected(null); setReplies([]); }}>← Back to messages</button>
+      <button type="button" className="btn ghost small" style={{ width: 'fit-content' }} onClick={() => { setSelected(null); setReplies([]); setError(''); }}>← Back to messages</button>
       <div><span className="badge">Official Palixia</span><h2 className="h2" style={{ marginTop: '.65rem' }}>{selected.admin_messages.subject}</h2><p className="fine">{dateLabel(selected.admin_messages.created_at)}</p></div>
       <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.75 }}>{selected.admin_messages.body}</div>
       <hr style={{ border: 0, borderTop: '1px solid var(--line)', width: '100%' }} />
@@ -70,7 +76,7 @@ export default function MessagesPage() {
       {replies.map(item => <div key={item.id} className="panel" style={{ padding: '.85rem', background: item.sender_is_admin ? 'var(--soft)' : 'var(--surface)' }}>
         <b>{item.sender_is_admin ? 'Palixia' : 'You'}</b><p className="fine">{dateLabel(item.created_at)}</p><p style={{ whiteSpace: 'pre-wrap', lineHeight: 1.65 }}>{item.body}</p>
       </div>)}
-      {!replies.length && <p className="muted">You can reply to this message below.</p>}
+      {!replies.length && <p className="muted">You can reply directly to this Palixia message.</p>}
       <form className="stack" onSubmit={sendReply}>
         <label htmlFor="message-reply">Your reply</label>
         <textarea id="message-reply" className="in" rows={4} maxLength={5000} value={reply} onChange={e => setReply(e.target.value)} placeholder="Write a reply to Palixia…" required />
