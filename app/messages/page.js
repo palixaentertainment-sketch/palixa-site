@@ -69,7 +69,7 @@ export default function MessagesPage() {
     {selected ? <div className="px-chat-screen">
       <header className="px-chat-header">
         <button type="button" className="px-chat-back" onClick={() => { setSelected(null); setReplies([]); setReply(''); setError(''); }} aria-label="Back to inbox">‹</button>
-        <div className="px-brand-avatar"><img src="/brand/palixa-logo.png" alt="Palixia" /></div>
+        <div className="px-brand-avatar"><img src="/brand/palixa-logo-transparent.svg" alt="Palixia" /></div>
         <div className="px-chat-person"><b>Palixia</b><span><i/> Official account</span></div>
         <span className="px-private-mark" aria-label="Private conversation">🔒</span>
       </header>
@@ -83,7 +83,7 @@ export default function MessagesPage() {
         </article>
         <div className="px-chat-divider"><span>REPLIES</span></div>
         {replies.map(item => <div key={item.id} className={'px-chat-row ' + (item.sender_is_admin ? 'px-from-team' : 'px-from-user')}>
-          {item.sender_is_admin && <div className="px-mini-avatar"><img src="/brand/palixa-logo.png" alt="Palixia" /></div>}
+          {item.sender_is_admin && <div className="px-mini-avatar"><img src="/brand/palixa-logo-transparent.svg" alt="Palixia" /></div>}
           <div className="px-chat-message">
             <div className="px-chat-bubble">{item.body}</div>
             <time>{timeLabel(item.created_at)}</time>
@@ -109,7 +109,7 @@ export default function MessagesPage() {
       {error && <p className="px-error" role="alert">{error}</p>}
       {busy ? <p className="px-loading">Loading messages…</p> : !items.length ? <div className="px-empty"><div className="px-empty-icon">✉</div><h2>Your inbox is quiet</h2><p>Messages from the Palixia team will appear here.</p></div> :
         <div className="px-message-list">{items.map(row => <button key={row.id} type="button" onClick={() => openMessage(row)} className={'px-message-row ' + (!row.read_at ? 'is-unread' : '')}>
-          <div className="px-brand-avatar">P</div><div className="px-row-content">
+          <div className="px-brand-avatar"><img src="/brand/palixa-logo-transparent.svg" alt="Palixia" /></div><div className="px-row-content">
             <div className="px-row-top"><b>Palixia <span className="px-verified">✓</span></b><time>{dateLabel(row.admin_messages.created_at)}</time></div>
             <strong>{row.admin_messages.subject}</strong><p>{row.admin_messages.body.slice(0,110)}{row.admin_messages.body.length>110?'…':''}</p>
           </div>{!row.read_at && <span className="px-unread-dot" aria-label="Unread"/>}
