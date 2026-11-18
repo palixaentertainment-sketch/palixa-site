@@ -27,6 +27,8 @@ drop policy if exists "admins read all admin messages" on public.admin_messages;
 create policy "admins read all admin messages" on public.admin_messages for select to authenticated using (public.is_admin());
 drop policy if exists "users read own message receipts" on public.admin_message_recipients;
 create policy "users read own message receipts" on public.admin_message_recipients for select to authenticated using (recipient_id=auth.uid());
+drop policy if exists "admins read all message receipts" on public.admin_message_recipients;
+create policy "admins read all message receipts" on public.admin_message_recipients for select to authenticated using (public.is_admin());
 drop policy if exists "users mark own messages read" on public.admin_message_recipients;
 create policy "users mark own messages read" on public.admin_message_recipients for update to authenticated
 using (recipient_id=auth.uid()) with check (recipient_id=auth.uid());
