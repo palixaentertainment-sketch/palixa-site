@@ -4,49 +4,55 @@ import Link from 'next/link';
 import { supabase, configured } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 
-function dateLabel(value) {
-  return new Date(value).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
-}
+function dateLabel(value) { return new Date(value).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }); }
 
 export default function MessagesPage() {
   const { user, loading } = useAuth();
   const [items, setItems] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [replies, setReplies] = useState([]);
+  const [reply, setReply] = useState('');
   const [busy, setBusy] = useState(true);
+  const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
 
   const load = useCallback(async () => {
     if (!user || !configured) { setItems([]); setBusy(false); return; }
     setBusy(true);
-    const { data, error: queryError } = await supabase
-      .from('admin_message_recipients')
+    const { data, error: queryError } = await supabase.from('admin_message_recipients')
       .select('id,read_at,created_at,admin_messages!admin_message_recipients_message_id_fkey(id,subject,body,created_at)')
-      .eq('recipient_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(100);
-    if (queryError) {
-      setError('Messages are not enabled yet. Ask the Palixia administrator to run supabase/admin-messages.sql in the Supabase SQL Editor.');
-      setItems([]);
-    } else {
-      setError('');
-      setItems((data || []).filter(row => row.admin_messages));
-    }
+      .eq('recipient_id', user.id).order('created_at', { ascending: false }).limit(100);
+    if (queryError) { setError('Messages are not enabled yet. Please contact Palixia support.'); setItems([]); }
+    else { setError(''); setItems((data || []).filter(row => row.admin_messages)); }
     setBusy(false);
   }, [user]);
 
   useEffect(() => { if (!loading) load(); }, [loading, load]);
 
   async function openMessage(row) {
-    setSelected(row);
+    setSelected(row); setError('');
+    const { data, error: replyError } = await supabase.from('admin_message_replies')
+      .select('id,sender_id,sender_is_admin,body,created_at')
+      .eq('message_id', row.admin_messages.id).order('created_at', { ascending: true });
+    if (replyError) setError('Could not load this conversation. Please refresh and try again.');
+    else setReplies(data || []);
     if (!row.read_at) {
       const now = new Date().toISOString();
-      const { error: updateError } = await supabase.from('admin_message_recipients')
-        .update({ read_at: now }).eq('id', row.id).eq('recipient_id', user.id);
-      if (!updateError) {
-        setItems(current => current.map(item => item.id === row.id ? { ...item, read_at: now } : item));
-        setSelected(current => current && current.id === row.id ? { ...current, read_at: now } : current);
-      }
+      const { error: updateError } = await supabase.from('admin_message_recipients').update({ read_at: now }).eq('id', row.id).eq('recipient_id', user.id);
+      if (!updateError) setItems(current => current.map(item => item.id === row.id ? { ...item, read_at: now } : item));
     }
+  }
+
+  async function sendReply(e) {
+    e.preventDefault(); if (!selected || !reply.trim()) return;
+    setSending(true); setError('');
+    const { error: sendError } = await supabase.rpc('admin_reply_to_message', { p_message_id: selected.admin_messages.id, p_body: reply.trim() });
+    if (sendError) setError(sendError.message || 'Your reply could not be sent.');
+    else {
+      const { data } = await supabase.from('admin_message_replies').select('id,sender_id,sender_is_admin,body,created_at').eq('message_id', selected.admin_messages.id).order('created_at', { ascending: true });
+      setReplies(data || []); setReply('');
+    }
+    setSending(false);
   }
 
   if (loading) return <section className="stack"><h1 className="h1">Messages</h1><p className="muted">Loading…</p></section>;
@@ -55,25 +61,27 @@ export default function MessagesPage() {
   return <section className="stack" style={{ maxWidth: 820, margin: '0 auto', gap: '1rem' }}>
     <div className="sechead"><h1 className="h1">Messages</h1></div>
     {error && <p className="notice" role="alert">{error}</p>}
-    {selected ? <article className="panel stack" style={{ padding: '1.2rem', gap: '.85rem' }}>
-      <button type="button" className="btn ghost small" style={{ justifySelf: 'start', width: 'fit-content' }} onClick={() => setSelected(null)}>← Back to messages</button>
+    {selected ? <article className="panel stack" style={{ padding: '1.2rem', gap: '.9rem' }}>
+      <button type="button" className="btn ghost small" style={{ width: 'fit-content' }} onClick={() => { setSelected(null); setReplies([]); }}>← Back to messages</button>
       <div><span className="badge">Official Palixia</span><h2 className="h2" style={{ marginTop: '.65rem' }}>{selected.admin_messages.subject}</h2><p className="fine">{dateLabel(selected.admin_messages.created_at)}</p></div>
       <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.75 }}>{selected.admin_messages.body}</div>
+      <hr style={{ border: 0, borderTop: '1px solid var(--line)', width: '100%' }} />
+      <h3 className="h2">Conversation</h3>
+      {replies.map(item => <div key={item.id} className="panel" style={{ padding: '.85rem', background: item.sender_is_admin ? 'var(--soft)' : 'var(--surface)' }}>
+        <b>{item.sender_is_admin ? 'Palixia' : 'You'}</b><p className="fine">{dateLabel(item.created_at)}</p><p style={{ whiteSpace: 'pre-wrap', lineHeight: 1.65 }}>{item.body}</p>
+      </div>)}
+      {!replies.length && <p className="muted">You can reply to this message below.</p>}
+      <form className="stack" onSubmit={sendReply}>
+        <label htmlFor="message-reply">Your reply</label>
+        <textarea id="message-reply" className="in" rows={4} maxLength={5000} value={reply} onChange={e => setReply(e.target.value)} placeholder="Write a reply to Palixia…" required />
+        <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}><small className="muted">{reply.length}/5000</small><button className="btn" disabled={sending || !reply.trim()}>{sending ? 'Sending…' : 'Send reply'}</button></div>
+      </form>
     </article> : <>
       {busy && <p className="muted">Loading messages…</p>}
-      {!busy && !error && items.length === 0 && <div className="empty" style={{ padding: '3rem 1rem', textAlign: 'center' }}>
-        <div aria-hidden="true" style={{ color: 'var(--accent)', fontSize: '2.4rem', marginBottom: '.75rem' }}>✉</div>
-        <h2 className="h2">You have no messages yet.</h2>
-        <p className="muted">Messages from the Palixia team will appear here.</p>
-      </div>}
-      <div className="stack" style={{ gap: '.55rem' }}>
-        {items.map(row => <button key={row.id} type="button" onClick={() => openMessage(row)} className="panel" style={{ display: 'flex', width: '100%', alignItems: 'center', gap: '.85rem', padding: '1rem', textAlign: 'left', border: '1px solid var(--line)', borderRadius: 12, background: row.read_at ? 'var(--surface)' : 'var(--soft)', color: 'var(--fg)', cursor: 'pointer' }}>
-          <span aria-hidden="true" style={{ color: 'var(--accent)', fontSize: '1.5rem' }}>✉</span>
-          <span style={{ minWidth: 0, flex: 1 }}><b style={{ display: 'block' }}>Palixia</b><span style={{ display: 'block', fontWeight: row.read_at ? 500 : 800 }}>{row.admin_messages.subject}</span><small className="muted">{row.admin_messages.body.slice(0, 110)}{row.admin_messages.body.length > 110 ? '…' : ''}</small><small className="muted" style={{ display: 'block', marginTop: '.25rem' }}>{dateLabel(row.admin_messages.created_at)}</small></span>
-          {!row.read_at && <span aria-label="Unread" style={{ width: 9, height: 9, flex: '0 0 9px', borderRadius: '50%', background: 'var(--accent)' }} />}
-          <span aria-hidden="true" className="muted">›</span>
-        </button>)}
-      </div>
+      {!busy && !error && !items.length && <div className="empty" style={{ padding: '3rem 1rem', textAlign: 'center' }}><div aria-hidden="true" style={{ color: 'var(--accent)', fontSize: '2.4rem' }}>✉</div><h2 className="h2">You have no messages yet.</h2><p className="muted">Messages from the Palixia team will appear here.</p></div>}
+      <div className="stack" style={{ gap: '.55rem' }}>{items.map(row => <button key={row.id} type="button" onClick={() => openMessage(row)} className="panel" style={{ display: 'flex', width: '100%', alignItems: 'center', gap: '.85rem', padding: '1rem', textAlign: 'left', border: '1px solid var(--line)', borderRadius: 12, background: row.read_at ? 'var(--surface)' : 'var(--soft)', color: 'var(--fg)', cursor: 'pointer' }}>
+        <span aria-hidden="true" style={{ color: 'var(--accent)', fontSize: '1.5rem' }}>✉</span><span style={{ minWidth: 0, flex: 1 }}><b style={{ display: 'block' }}>Palixia</b><span style={{ display: 'block', fontWeight: row.read_at ? 500 : 800 }}>{row.admin_messages.subject}</span><small className="muted">{row.admin_messages.body.slice(0, 110)}{row.admin_messages.body.length > 110 ? '…' : ''}</small><small className="muted" style={{ display: 'block', marginTop: '.25rem' }}>{dateLabel(row.admin_messages.created_at)}</small></span>{!row.read_at && <span aria-label="Unread" style={{ width: 9, height: 9, flex: '0 0 9px', borderRadius: '50%', background: 'var(--accent)' }} />}<span aria-hidden="true" className="muted">›</span>
+      </button>)}</div>
     </>}
   </section>;
 }
