@@ -101,7 +101,7 @@ export default function PromoKit({ book, authorName }) {
       ctx.fillText('A PALIXIA STORY', coverX + 48, coverY + 82);
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 40px Georgia';
-      const words = title.split(/\\s+/);
+      const words = title.split(/\s+/);
       let line = '', y = coverY + 245;
       for (const word of words) {
         const next = line ? line + ' ' + word : word;
@@ -122,7 +122,7 @@ export default function PromoKit({ book, authorName }) {
     ctx.fillText('A STORY TO GET LOST IN', 540, 865);
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 48px Georgia';
-    const words = title.split(/\\s+/);
+    const words = title.split(/\s+/);
     const maxWidth = 900;
     let line = '', lines = [];
     for (const word of words) {
