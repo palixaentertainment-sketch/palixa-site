@@ -71,8 +71,7 @@ export default function PromoKit({ book, authorName }) {
     if (book.cover_url) {
       try {
         const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.src = book.cover_url;
+        img.src = '/api/promo-cover?url=' + encodeURIComponent(book.cover_url);
         await new Promise((resolve, reject) => {
           img.onload = resolve;
           img.onerror = reject;
@@ -143,7 +142,6 @@ export default function PromoKit({ book, authorName }) {
     ctx.fillStyle = 'rgba(255,255,255,.13)';
     ctx.beginPath();
     ctx.fillRect(82, 1120, 916, 112);
-    ctx.fill();
     ctx.fillStyle = '#ffffff';
     ctx.font = '700 30px Arial';
     ctx.fillText('READ FOR FREE ON PALIXIA', 118, 1168);
