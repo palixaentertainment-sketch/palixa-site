@@ -27,13 +27,21 @@ function FinancePanel() {
   const [actionError, setActionError] = useState('');
   const [releaseBusy, setReleaseBusy] = useState(false);
   const [releaseMessage, setReleaseMessage] = useState('');
+  const [refundRows, setRefundRows] = useState([]);
+  const [refundReference, setRefundReference] = useState('');
+  const [providerRefundReference, setProviderRefundReference] = useState('');
+  const [refundNote, setRefundNote] = useState('');
+  const [refundBusy, setRefundBusy] = useState(false);
+  const [refundMessage, setRefundMessage] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
     setError('');
-    const [{ data: result, error: rpcError }, { data: rows, error: rowsError }] = await Promise.all([supabase.rpc('admin_finance_overview'), supabase.rpc('admin_list_withdrawal_requests')]);
+    const [{ data: result, error: rpcError }, { data: rows, error: rowsError }, { data: refunds, error: refundsError }] = await Promise.all([supabase.rpc('admin_finance_overview'), supabase.rpc('admin_list_withdrawal_requests'), supabase.rpc('admin_list_spark_refunds')]);
     if (rowsError) setActionError('Withdrawal requests could not be loaded. Apply the withdrawal-management migration first.');
     else setWithdrawalRows(Array.isArray(rows) ? rows : []);
+    if (refundsError) setActionError('Refund records could not be loaded. Apply the manual Sparks refunds migration first.');
+    else setRefundRows(Array.isArray(refunds) ? refunds : []);
     if (rpcError) {
       setData(null);
       setError(rpcError.message?.includes('admin_finance_overview')
@@ -60,6 +68,31 @@ function FinancePanel() {
       return;
     }
     setReleaseMessage(`${number(result?.released_entries)} entries released · ${naira(result?.released_amount_kobo)} now available.`);
+    await load();
+  }
+
+  async function recordSparkRefund(event) {
+    event.preventDefault();
+    if (!refundReference.trim() || !providerRefundReference.trim()) return;
+    const confirmed = window.confirm('Have you already completed this refund in Paystack and confirmed that it succeeded? Palixia will only record the completed refund and reverse the unused Sparks.');
+    if (!confirmed) return;
+    setRefundBusy(true);
+    setRefundMessage('');
+    setActionError('');
+    const { data: result, error: refundError } = await supabase.rpc('admin_record_spark_refund', {
+      p_paystack_reference: refundReference.trim(),
+      p_paystack_refund_reference: providerRefundReference.trim(),
+      p_admin_note: refundNote.trim() || null,
+    });
+    setRefundBusy(false);
+    if (refundError) {
+      setActionError(refundError.message || 'The refund could not be recorded.');
+      return;
+    }
+    setRefundMessage('Refund recorded: ' + naira(result?.amount_kobo) + ' · ' + number(result?.sparks_reversed) + ' Sparks reversed.');
+    setRefundReference('');
+    setProviderRefundReference('');
+    setRefundNote('');
     await load();
   }
 
@@ -143,6 +176,36 @@ function FinancePanel() {
             <Stat label="Rejected / cancelled" value={number(withdrawals.rejected_count) + ' / ' + number(withdrawals.cancelled_count)} />
             <Stat label="Open request value" value={naira(withdrawals.requested_amount_kobo)} detail="Requested, under review and approved" />
           </div>
+        </section>
+
+
+        <section className="stack">
+          <h2 className="h2">Record a completed Paystack refund</h2>
+          <p className="fine">First issue the refund manually in your Paystack dashboard. Only submit this form after Paystack confirms the refund succeeded. Palixia does not initiate or send the refund.</p>
+          <form className="stack" onSubmit={recordSparkRefund}>
+            <div className="field">
+              <label htmlFor="refund-purchase-reference">Original Palixia Paystack transaction reference</label>
+              <input id="refund-purchase-reference" className="in" value={refundReference} onChange={e => setRefundReference(e.target.value)} required autoComplete="off" placeholder="PLXSPK_…" />
+            </div>
+            <div className="field">
+              <label htmlFor="refund-provider-reference">Paystack refund reference</label>
+              <input id="refund-provider-reference" className="in" value={providerRefundReference} onChange={e => setProviderRefundReference(e.target.value)} required autoComplete="off" placeholder="Reference returned by Paystack" />
+            </div>
+            <div className="field">
+              <label htmlFor="refund-admin-note">Admin note (optional)</label>
+              <textarea id="refund-admin-note" className="in" rows={2} value={refundNote} onChange={e => setRefundNote(e.target.value)} placeholder="Reason / support case reference" />
+            </div>
+            <div className="row" style={{flexWrap:'wrap',gap:'.5rem',alignItems:'center'}}>
+              <button className="btn" type="submit" disabled={refundBusy}>{refundBusy ? 'Recording…' : 'Record confirmed refund'}</button>
+              <span className="fine">Only full refunds of unused Sparks are supported automatically.</span>
+            </div>
+          </form>
+          {refundMessage && <p className="msg-ok" role="status">{refundMessage}</p>}
+          <h3 className="h2">Recent recorded refunds</h3>
+          <div className="tablewrap"><table><thead><tr><th>Date</th><th>Reader ID</th><th>Original reference</th><th>Paystack refund reference</th><th>Amount</th><th>Sparks reversed</th></tr></thead><tbody>
+            {refundRows.map(row => <tr key={row.id}><td>{date(row.created_at)}</td><td><code>{row.reader_id}</code></td><td><code>{row.paystack_reference}</code></td><td><code>{row.paystack_refund_reference}</code></td><td>{naira(row.amount_kobo)}</td><td>{number(row.sparks_amount)}</td></tr>)}
+            {!refundRows.length && <tr><td colSpan="6">No refunds recorded.</td></tr>}
+          </tbody></table></div>
         </section>
 
         <section className="stack">
