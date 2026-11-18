@@ -7,6 +7,7 @@ import { supabase, configured } from '@/lib/supabase';
 import Avatar from '@/components/Avatar';
 import Logo from '@/components/Logo';
 import NotificationsBell from '@/components/NotificationsBell';
+import MessagesIcon from '@/components/MessagesIcon';
 import ThemeToggle from '@/components/ThemeToggle';
 import { openInstallApp } from '@/components/InstallAppPrompt';
 
@@ -100,6 +101,7 @@ export default function Header() {
           {!loading && user && (
             <>
               <NotificationsBell user={user} />
+              <MessagesIcon user={user} />
               <Link className="authlinks linkbtn" href="/library">Library</Link>
               <Link className="authlinks linkbtn" href="/offline">Offline books</Link>
               {isAuthor && <Link className="authlinks linkbtn" href="/dashboard">Dashboard</Link>}
@@ -114,6 +116,7 @@ export default function Header() {
                   <Link href="/offline">My Books · Offline</Link>
                   {isAuthor ? <Link href="/dashboard">Author dashboard</Link> : <Link href="/profile#author">Become an author</Link>}
                   {isAdmin && <Link href="/admin">Admin dashboard</Link>}
+                  {isAdmin && <Link href="/admin/messages">Send Palixia Messages</Link>}
                   {isAdmin && <Link href="/admin/fridays">Manage Palixia Fridays</Link>}
                   {isAdmin && <Link href="/admin/newsletter">Palixia Newsletter</Link>}
                   <button type="button" onClick={signOut}>Sign out</button>
