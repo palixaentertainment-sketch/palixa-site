@@ -25,8 +25,10 @@ export async function POST(request) {
   if (!supabaseUrl || !anonKey || !serviceKey || !paystackSecret) {
     return fail('Sparks payments are not configured on the server.', 503);
   }
-  if (process.env.SPARKS_ADMIN_ONLY !== 'true' || process.env.PAYSTACK_TEST_MODE !== 'true' || !paystackSecret.startsWith('sk_test_')) {
-    return fail('Sparks testing is not enabled. Admin-only Paystack test mode is required.', 503);
+  const testMode = process.env.PAYSTACK_TEST_MODE === 'true';
+  const secretMatchesMode = testMode ? paystackSecret.startsWith('sk_test_') : paystackSecret.startsWith('sk_live_');
+  if (process.env.SPARKS_ADMIN_ONLY !== 'true' || !secretMatchesMode) {
+    return fail('Sparks checkout is not configured for the selected admin-only Paystack mode.', 503);
   }
 
   const authHeader = request.headers.get('authorization') || '';
@@ -87,7 +89,7 @@ export async function POST(request) {
           purpose: 'palixia_sparks_purchase',
           reader_id: userData.user.id,
           sparks_amount: pack.sparks,
-          test_mode: true,
+          test_mode: testMode,
         },
       }),
       cache: 'no-store',
