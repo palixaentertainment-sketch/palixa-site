@@ -1604,3 +1604,137 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 .coming-soon-dialog-main > img { width:100%; aspect-ratio:2/3; object-fit:cover; border-radius:6px; background:var(--soft); }
 .coming-soon-description { color:var(--muted); white-space:pre-line; overflow-wrap:anywhere; }
 @media(max-width:380px) { .coming-soon-dialog-main { grid-template-columns:5.5rem minmax(0,1fr); gap:.75rem; } .coming-soon-dialog { padding:1rem; } }
+
+
+/* Community mobile-first layout refresh.
+   Scoped to the Community route so desktop and other pages keep their existing layout. */
+.community {
+  width: min(100%, 900px);
+  min-width: 0;
+  margin-inline: auto;
+}
+.community > *,
+.community-post,
+.community-compose,
+.community-polls { min-width: 0; }
+.community-post-image-link { width: 100%; }
+.community-post-image {
+  max-width: 100%;
+  height: auto;
+}
+.community-post-body,
+.community-comment,
+.community-reply { overflow-wrap: anywhere; }
+
+@media (max-width: 640px) {
+  .community {
+    width: 100%;
+    gap: 1rem;
+    padding-inline: 0;
+  }
+  .community-hero {
+    padding: 1.15rem;
+    border-radius: 14px;
+    gap: .6rem;
+  }
+  .community-hero .h1 {
+    font-size: clamp(1.8rem, 8vw, 2.35rem);
+    line-height: 1.08;
+  }
+  .community-hero > p:last-child {
+    font-size: .96rem;
+    line-height: 1.55;
+  }
+  .community-hero .row { margin-top: .35rem !important; }
+  .community-compose,
+  .community-post {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 14px;
+    gap: .85rem;
+  }
+  .community-compose .h2,
+  .community-feed-head .h2 { font-size: 1.25rem; }
+  .community-compose-head,
+  .community-post-head { gap: .65rem; }
+  .community-post-head .avatar { flex: 0 0 auto; }
+  .community-post-by b { font-size: .96rem; }
+  .community-post-by .fine { font-size: .76rem; line-height: 1.35; }
+  .community-post-body {
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+  .community-textarea {
+    min-height: 6.5rem;
+    font-size: 1rem;
+    line-height: 1.55;
+  }
+  .community-image-picker { gap: .65rem; }
+  .community-image-preview,
+  .community-post-image-link { width: 100%; }
+  .community-image-preview img,
+  .community-post-image {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    max-height: 68vh;
+    height: auto;
+    object-fit: contain;
+    border-radius: 10px;
+  }
+  .community-book-link {
+    align-items: flex-start;
+    padding: .85rem;
+    font-size: .9rem;
+  }
+  .community-post-actions {
+    gap: .35rem .9rem;
+    padding-top: .8rem;
+  }
+  .community-post-actions button {
+    min-height: 2.5rem;
+    font-size: .84rem;
+  }
+  .community-categories {
+    display: flex;
+    width: 100%;
+    gap: .5rem;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: .15rem .05rem .5rem;
+  }
+  .community-categories::-webkit-scrollbar { display: none; }
+  .community-categories .chip {
+    min-height: 2.45rem;
+    padding: .55rem .85rem;
+    font-size: .82rem;
+    white-space: nowrap;
+  }
+  .community-feed-head { align-items: center; gap: .5rem; }
+  .community-feed-head .fine { white-space: nowrap; }
+  .community-compose-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: .65rem;
+  }
+  .community-field { width: 100%; }
+  .community-compose-controls .btn { width: 100%; min-height: 2.8rem; }
+  .community-reply-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: .5rem;
+  }
+  .community-reply-form .in { width: 100%; min-height: 2.7rem; }
+  .community-reply-form .btn { min-height: 2.7rem; }
+  .community-comment { padding-left: .7rem; }
+  .community-reply { margin-left: .25rem; padding-left: .65rem; }
+  .community-polls { min-width: 0; }
+  .community-poll-create,
+  .community-poll-card,
+  .community-poll-empty { padding: .9rem; border-radius: 13px; }
+  .community-poll-create-actions { gap: .5rem; }
+  .community-poll-create-actions .btn:last-child { margin-left: 0; }
+}
