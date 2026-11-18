@@ -145,11 +145,10 @@ export async function POST(request) {
     return fail('Payment details did not match this Sparks purchase. Please contact support with your reference.', 409);
   }
 
-  // Paystack has been independently verified above. Credit through the
-  // server-side service-role client: the database function intentionally
-  // rejects ordinary authenticated-user calls and only trusts this server
-  // path (or an active admin during the existing test phase).
-  const { data: posted, error: postError } = await admin.rpc('post_verified_spark_purchase', {
+  // Paystack has been independently verified above and this route has already
+  // confirmed the caller is an active Palixia admin. Invoke the guarded RPC
+  // with that admin's JWT so auth.uid()/auth.role() match the function policy.
+  const { data: posted, error: postError } = await userClient.rpc('post_verified_spark_purchase', {
     p_reference: reference,
     p_amount_kobo: transaction.amount,
     p_currency: transaction.currency,
