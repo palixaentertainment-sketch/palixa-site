@@ -385,7 +385,7 @@ function EarningsWallet() {
         </div>)}
       </section>
     </div>
-
+  );
 }
 
 export default function AuthorWalletPage() {
