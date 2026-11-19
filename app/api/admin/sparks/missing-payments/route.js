@@ -81,7 +81,7 @@ export async function GET(request) {
         const v = payload?.data;
         const sparks = Number(v?.metadata?.sparks_amount);
         const valid = res.ok && payload?.status && v?.status === 'success' && v?.reference === tx.reference &&
-          v?.currency === 'NGN' && v?.metadata?.purpose === 'palixia_sparks_purchase' &&
+          v?.currency === 'NGN' && v?.metadata?.purpose === 'palixia_sparks_purchase' && v?.metadata?.test_mode === testMode &&
           typeof v?.metadata?.reader_id === 'string' && v.metadata.reader_id.length > 0 &&
           PACKAGE_MAP.get(sparks) === Number(v.amount) &&
           (testMode || sparks === 100);
