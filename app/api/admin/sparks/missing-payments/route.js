@@ -63,17 +63,17 @@ export async function GET(request) {
     /^PLXSPK_[a-f0-9]{32}$/i.test(String(tx.reference || ''))
   );
   const candidateRefs = [...new Set(candidates.map(tx => tx.reference))];
-  const existingRefs = new Set();
+  const existingStatuses = new Map();
   if (candidateRefs.length) {
-    const { data, error } = await admin.from('spark_purchases').select('paystack_reference').in('paystack_reference', candidateRefs);
+    const { data, error } = await admin.from('spark_purchases').select('paystack_reference,status').in('paystack_reference', candidateRefs);
     if (error) return fail('Palixia purchase records could not be checked.', 500);
-    for (const row of data || []) existingRefs.add(row.paystack_reference);
+    for (const row of data || []) existingStatuses.set(row.paystack_reference, row.status);
   }
 
-  const missing = candidates.filter(tx => !existingRefs.has(tx.reference));
+  const recoverable = candidates.filter(tx => !existingStatuses.has(tx.reference) || existingStatuses.get(tx.reference) === 'failed');
   const verified = [];
-  for (let i = 0; i < missing.length; i += 5) {
-    const batch = missing.slice(i, i + 5);
+  for (let i = 0; i < recoverable.length; i += 5) {
+    const batch = recoverable.slice(i, i + 5);
     const results = await Promise.all(batch.map(async tx => {
       try {
         const res = await fetch('https://api.paystack.co/transaction/verify/' + encodeURIComponent(tx.reference), { headers: { Authorization: 'Bearer ' + secret }, cache: 'no-store' });
@@ -86,7 +86,7 @@ export async function GET(request) {
           PACKAGE_MAP.get(sparks) === Number(v.amount) &&
           (testMode || sparks === 100);
         if (!valid) return null;
-        return { reference: v.reference, amountKobo: Number(v.amount), sparks, paidAt: v.paid_at || v.created_at || null };
+        return { reference: v.reference, amountKobo: Number(v.amount), sparks, paidAt: v.paid_at || v.created_at || null, recordStatus: existingStatuses.get(v.reference) || 'missing' };
       } catch { return null; }
     }));
     verified.push(...results.filter(Boolean));
