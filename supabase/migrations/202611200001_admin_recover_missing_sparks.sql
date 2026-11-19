@@ -33,6 +33,7 @@ declare
   v_purchase public.spark_purchases%rowtype;
   v_profile_status text;
   v_expected_amount bigint;
+  v_audit_id uuid;
   v_credited boolean := false;
 begin
   -- This RPC is executable only by the trusted service role. The API route
@@ -74,13 +75,16 @@ begin
      or v_purchase.amount_kobo <> p_amount_kobo
      or v_purchase.sparks_amount <> p_sparks_amount
      or v_purchase.currency <> 'NGN'
-     or v_purchase.status not in ('pending','paid') then
+     or v_purchase.status not in ('pending','failed','paid') then
     raise exception 'Purchase record conflicts with verified Paystack transaction'
       using errcode = '23514';
   end if;
 
-  if v_purchase.status = 'pending' then
-    update public.spark_purchases set status = 'paid', paid_at = now()
+  -- A failed row can result from an initialization timeout after Paystack
+  -- accepted the transaction. It is safe to restore only after this route's
+  -- independent Paystack verification has confirmed success.
+  if v_purchase.status in ('pending','failed') then
+    update public.spark_purchases set status = 'paid', paid_at = coalesce(paid_at, now())
     where id = v_purchase.id;
     insert into public.reader_spark_ledger (
       reader_id, entry_type, sparks_amount, purchase_id, reference, description
@@ -94,7 +98,17 @@ begin
   insert into public.spark_recovery_audit (
     paystack_reference, reader_id, amount_kobo, sparks_amount, recovered_by
   ) values (p_reference, p_reader_id, p_amount_kobo, p_sparks_amount, v_admin_id)
-  on conflict (paystack_reference) do nothing;
+  on conflict (paystack_reference) do update
+    set paystack_reference = excluded.paystack_reference
+    where spark_recovery_audit.reader_id = excluded.reader_id
+      and spark_recovery_audit.amount_kobo = excluded.amount_kobo
+      and spark_recovery_audit.sparks_amount = excluded.sparks_amount
+  returning id into v_audit_id;
+
+  if v_audit_id is null then
+    raise exception 'Recovery audit record conflicts with verified purchase details'
+      using errcode = '23514';
+  end if;
 
   return jsonb_build_object(
     'success', true, 'credited', v_credited, 'reader_id', p_reader_id,
