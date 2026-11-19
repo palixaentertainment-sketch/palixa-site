@@ -21,19 +21,23 @@ create or replace function public.admin_recover_verified_spark_purchase(
   p_reference text,
   p_reader_id uuid,
   p_amount_kobo bigint,
-  p_sparks_amount integer
+  p_sparks_amount integer,
+  p_admin_id uuid
 ) returns jsonb
 language plpgsql
 security definer
 set search_path = public, pg_temp
 as $$
 declare
-  v_admin_id uuid := auth.uid();
+  v_admin_id uuid := p_admin_id;
   v_purchase public.spark_purchases%rowtype;
   v_profile_status text;
   v_expected_amount bigint;
   v_credited boolean := false;
 begin
+  -- This RPC is executable only by the trusted service role. The API route
+  -- independently authenticates the session, verifies Paystack, and passes
+  -- the authenticated admin ID for this database-side role check.
   if v_admin_id is null or not exists (
     select 1 from public.profiles
     where id = v_admin_id and role = 'admin' and status = 'active'
@@ -100,7 +104,7 @@ begin
 end;
 $$;
 
-revoke all on function public.admin_recover_verified_spark_purchase(text, uuid, bigint, integer) from public, anon;
-grant execute on function public.admin_recover_verified_spark_purchase(text, uuid, bigint, integer) to authenticated;
+revoke all on function public.admin_recover_verified_spark_purchase(text, uuid, bigint, integer, uuid) from public, anon, authenticated;
+grant execute on function public.admin_recover_verified_spark_purchase(text, uuid, bigint, integer, uuid) to service_role;
 
 notify pgrst, 'reload schema';
