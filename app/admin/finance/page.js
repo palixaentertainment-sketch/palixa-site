@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Guard from '@/components/Guard';
 import { supabase } from '@/lib/supabase';
+import SparksReconciliationPanel from './SparksReconciliationPanel';
 
 function naira(kobo) {
   return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 2 }).format(Number(kobo || 0) / 100);
@@ -207,6 +208,8 @@ function FinancePanel() {
             {!refundRows.length && <tr><td colSpan="6">No refunds recorded.</td></tr>}
           </tbody></table></div>
         </section>
+
+        <SparksReconciliationPanel />
 
         <section className="stack">
           <h2 className="h2">Recent Sparks purchases</h2>
