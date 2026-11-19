@@ -249,6 +249,43 @@ function EarningsWallet() {
         .wallet-form-grid { display:grid;gap:.85rem; }
         .terms-list { padding-left:1.2rem;list-style:disc;display:grid;gap:.5rem; }
         .terms-list li { padding-left:.15rem; }
+        :global(:root[data-theme="dark"]) .metric,
+        :global(:root[data-theme="dark"]) .wallet-card {
+          background:var(--surface);
+          color:var(--fg);
+          border-color:var(--line);
+        }
+        :global(:root[data-theme="dark"]) .wallet-card.soft {
+          background:#211831;
+          color:var(--fg);
+          border-color:#44345e;
+        }
+        :global(:root[data-theme="dark"]) .info-banner {
+          background:linear-gradient(120deg,#241936,#191326);
+          border-color:#493663;
+          color:var(--fg);
+        }
+        :global(:root[data-theme="dark"]) .info-banner > .wallet-section-title > b,
+        :global(:root[data-theme="dark"]) .wallet-card h2,
+        :global(:root[data-theme="dark"]) .wallet-card b {
+          color:var(--fg);
+        }
+        :global(:root[data-theme="dark"]) .wallet-card .in {
+          background:#100c18;
+          color:var(--fg);
+          border-color:var(--line);
+        }
+        :global(:root[data-theme="dark"]) .wallet-card .in option {
+          background:#191326;
+          color:#eee8fb;
+        }
+        :global(:root[data-theme="dark"]) .activity-row {
+          border-color:var(--line);
+        }
+        :global(:root[data-theme="dark"]) .balance-actions .btn:not(.ghost) {
+          background:#f4edff;
+          color:#32105f;
+        }
         @media(min-width:700px) {
           .balance-card { padding:1.8rem 2rem; }
           .balance-inner { grid-template-columns:minmax(0,1fr) auto;align-items:end; }
