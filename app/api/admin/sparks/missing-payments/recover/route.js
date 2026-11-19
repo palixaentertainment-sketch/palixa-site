@@ -60,11 +60,14 @@ export async function POST(request) {
     return fail('Verified transaction metadata or package does not match the permitted Sparks purchase.', 409);
   }
 
-  const { data: recovered, error: recoveryError } = await userClient.rpc('admin_recover_verified_spark_purchase', {
+  // Only the trusted server client can execute the recovery RPC. The RPC
+  // also checks the authenticated admin ID against the active admin profile.
+  const { data: recovered, error: recoveryError } = await admin.rpc('admin_recover_verified_spark_purchase', {
     p_reference: reference,
     p_reader_id: metadata.reader_id,
     p_amount_kobo: expectedAmount,
     p_sparks_amount: sparks,
+    p_admin_id: auth.user.id,
   });
   if (recoveryError || !recovered?.success) {
     console.error('[Sparks admin recovery] RPC failed', { reference, code: recoveryError?.code || null, message: recoveryError?.message || null });
