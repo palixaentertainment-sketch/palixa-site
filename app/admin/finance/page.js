@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Guard from '@/components/Guard';
 import { supabase } from '@/lib/supabase';
+import SparksReconciliationPanel from './SparksReconciliationPanel';
 
 function naira(kobo) {
   return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 2 }).format(Number(kobo || 0) / 100);
@@ -144,6 +145,8 @@ function FinancePanel() {
             <Stat label="Open request value" value={naira(withdrawals.requested_amount_kobo)} detail="Requested, under review and approved" />
           </div>
         </section>
+
+        <SparksReconciliationPanel />
 
         <section className="stack">
           <h2 className="h2">Recent Sparks purchases</h2>
