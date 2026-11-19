@@ -115,7 +115,7 @@ export async function GET(request) {
     let status;
     if (!verified?.ok || !tx) status = verified?.verifyError ? 'verification_error' : 'not_found';
     else if (tx.reference !== purchase.paystack_reference) status = 'reference_mismatch';
-    else if (tx.status === 'success' && (Number(tx.amount) !== Number(purchase.amount_kobo) || tx.currency !== purchase.currency || Number(tx.metadata?.sparks_amount) !== Number(purchase.sparks_amount) || tx.metadata?.reader_id !== purchase.reader_id || tx.metadata?.purpose !== 'palixia_sparks_purchase' || packages.get(Number(purchase.sparks_amount)) !== Number(purchase.amount_kobo)) status = 'amount_mismatch';
+    else if (tx.status === 'success' && (Number(tx.amount) !== Number(purchase.amount_kobo) || tx.currency !== purchase.currency || Number(tx.metadata?.sparks_amount) !== Number(purchase.sparks_amount) || tx.metadata?.reader_id !== purchase.reader_id || tx.metadata?.purpose !== 'palixia_sparks_purchase' || packages.get(Number(purchase.sparks_amount)) !== Number(purchase.amount_kobo))) status = 'amount_mismatch';
     else if (tx.status === 'success' && purchase.status === 'refunded') status = 'refunded';
     else if (tx.status === 'success' && (purchase.status !== 'paid' || purchaseCredits.length === 0)) status = 'uncredited';
     else if (tx.status === 'success' && purchase.status === 'paid' && purchaseCredits.length === 1 && Number(purchaseCredits[0].sparks_amount) === Number(purchase.sparks_amount)) status = 'matched';
