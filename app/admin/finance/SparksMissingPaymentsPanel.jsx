@@ -64,7 +64,7 @@ export default function SparksMissingPaymentsPanel() {
   return (
     <section className="stack">
       <h2 className="h2">Missing Paystack payments</h2>
-      <p className="fine">Scan for successful, independently verified Sparks payments without a matching purchase record. Scanning is read-only. Recovery re-verifies Paystack and credits the verified buyer exactly once.</p>
+      <p className="fine">Scan for successful, independently verified Sparks payments with no purchase record or a failed purchase record. Scanning is read-only. Recovery re-verifies Paystack and credits the verified buyer exactly once.</p>
       <div className="row" style={{ flexWrap: 'wrap', gap: '.6rem', alignItems: 'center' }}>
         <label className="fine" htmlFor="spark-missing-days">Period</label>
         <select id="spark-missing-days" className="in" style={{ width: 'auto' }} value={days} onChange={e => setDays(Number(e.target.value))}>
@@ -80,8 +80,8 @@ export default function SparksMissingPaymentsPanel() {
           <div className="stat"><span className="mono">Verified missing records</span><b>{Number(report.candidates || 0).toLocaleString('en-NG')}</b><span className="fine">Review before recovering</span></div>
         </div>
         <p className="fine">Scan completed {new Date(report.generatedAt).toLocaleString()}.</p>
-        {report.rows.length > 0 ? <div className="tablewrap"><table><thead><tr><th>Paystack reference</th><th>Amount</th><th>Sparks</th><th>Paid</th><th>Action</th></tr></thead><tbody>
-          {report.rows.map(row => <tr key={row.reference}><td><code>{row.reference}</code></td><td>{money(row.amountKobo)}</td><td>{Number(row.sparks).toLocaleString('en-NG')}</td><td>{row.paidAt ? new Date(row.paidAt).toLocaleString() : '—'}</td><td><button className="btn small" type="button" disabled={busy || Boolean(recovering)} onClick={() => recover(row.reference)}>{recovering === row.reference ? 'Recovering…' : 'Recover'}</button></td></tr>)}
+        {report.rows.length > 0 ? <div className="tablewrap"><table><thead><tr><th>Paystack reference</th><th>Record</th><th>Amount</th><th>Sparks</th><th>Paid</th><th>Action</th></tr></thead><tbody>
+          {report.rows.map(row => <tr key={row.reference}><td><code>{row.reference}</code></td><td>{row.recordStatus === 'failed' ? 'Failed record' : 'Missing record'}</td><td>{money(row.amountKobo)}</td><td>{Number(row.sparks).toLocaleString('en-NG')}</td><td>{row.paidAt ? new Date(row.paidAt).toLocaleString() : '—'}</td><td><button className="btn small" type="button" disabled={busy || Boolean(recovering)} onClick={() => recover(row.reference)}>{recovering === row.reference ? 'Recovering…' : 'Recover'}</button></td></tr>)}
         </tbody></table></div> : <p className="fine">No verified missing Sparks payments found in the scanned period.</p>}
       </>}
     </section>
