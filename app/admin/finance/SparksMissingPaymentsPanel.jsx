@@ -77,7 +77,7 @@ export default function SparksMissingPaymentsPanel() {
       {report && <>
         <div className="stats">
           <div className="stat"><span className="mono">Paystack transactions scanned</span><b>{Number(report.transactionsScanned || 0).toLocaleString('en-NG')}</b><span className="fine">{report.truncated ? 'Scan reached its page limit; older records may not be included.' : 'Date range scanned'}</span></div>
-          <div className="stat"><span className="mono">Verified missing records</span><b>{Number(report.candidates || 0).toLocaleString('en-NG')}</b><span className="fine">Review before recovering</span></div>
+          <div className="stat"><span className="mono">Recoverable records</span><b>{Number(report.candidates || 0).toLocaleString('en-NG')}</b><span className="fine">Review before recovering</span></div>
         </div>
         <p className="fine">Scan completed {new Date(report.generatedAt).toLocaleString()}.</p>
         {report.rows.length > 0 ? <div className="tablewrap"><table><thead><tr><th>Paystack reference</th><th>Record</th><th>Amount</th><th>Sparks</th><th>Paid</th><th>Action</th></tr></thead><tbody>
