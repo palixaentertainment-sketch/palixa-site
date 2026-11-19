@@ -75,12 +75,13 @@ function SparksWallet() {
     <main className="wrap page sparks-page">
       <div className="sparks-heading">
         <Link href="/profile" className="sparks-back">← Profile</Link>
-        <span className="sparks-eyebrow">PALIXIA SPARKS WALLET</span>
+        <span className="sparks-eyebrow">PALIXIA · READER WALLET</span>
         <h1 className="h1">Your Sparks</h1>
-        <p className="muted">Manage your Sparks balance and keep track of your support activity.</p>
+        <p className="muted">Your reader wallet for celebrating the stories and authors you love.</p>
       </div>
 
-      <section className="sparks-balance">
+      <section className="sparks-reader-overview">
+        <section className="sparks-balance">
         <div className="sparks-balance-top">
           <span className="sparks-label">YOUR AVAILABLE BALANCE</span>
           <span className="sparks-private">ACCOUNT BALANCE</span>
@@ -90,14 +91,22 @@ function SparksWallet() {
         <div className="sparks-balance-foot"><span>✦</span> Your wallet activity is private to your account.</div>
         <span className="sparks-orbit sparks-orbit-one" aria-hidden="true" />
         <span className="sparks-orbit sparks-orbit-two" aria-hidden="true" />
+        </section>
+        <aside className="sparks-reader-prompt">
+          <span className="sparks-reader-prompt-icon" aria-hidden="true">✦</span>
+          <span className="sparks-eyebrow">MAKE A STORY'S DAY</span>
+          <h2>Found a story you love?</h2>
+          <p>Send Sparks to show an author that their words matter. Your support activity is saved here, so you can keep track of every gift.</p>
+          <Link href="/discover" className="btn">Discover stories <span aria-hidden="true">→</span></Link>
+        </aside>
       </section>
 
-      <section className="sparks-topup">
+      <section className="sparks-topup" id="add-sparks">
         <div className="sparks-section-head">
-          <div><span className="sparks-eyebrow">ADD TO YOUR WALLET</span><h2 className="h2">Add Sparks</h2></div>
+          <div><span className="sparks-eyebrow">TOP UP YOUR READER WALLET</span><h2 className="h2">Get more Sparks</h2></div>
           <span className="sparks-topup-icon">✧</span>
         </div>
-        <p className="muted">Choose a package to add Sparks to your wallet. Use them to show appreciation for authors.</p>
+        <p className="muted">Choose a Sparks package when top-ups become available. Every Spark gives you a simple way to celebrate an author and their work.</p>
         {adminTesting ? (
           <>
             <div className="sparks-packages">
@@ -125,9 +134,9 @@ function SparksWallet() {
       </section>
 
       <section className="sparks-history">
-        <div className="sparks-section-head"><div><span className="sparks-eyebrow">YOUR WALLET ACTIVITY</span><h2 className="h2">Transaction history</h2></div><span className="sparks-history-count">{history.length} recent</span></div>
+        <div className="sparks-section-head"><div><span className="sparks-eyebrow">YOUR GIFTING RECORD</span><h2 className="h2">Sparks activity</h2></div><span className="sparks-history-count">{history.length} recent</span></div>
         {loading ? <div className="sparks-empty">Loading your activity…</div> : history.length === 0 ? (
-          <div className="sparks-empty"><span className="sparks-empty-icon">✧</span><b>Your story starts here</b><p>Your Sparks transactions will appear here once you top up or support an author.</p></div>
+          <div className="sparks-empty"><span className="sparks-empty-icon">✧</span><b>Your story starts here</b><p>Your top-ups and gifts to authors will appear here. Once you start supporting stories, this becomes your personal gifting record.</p></div>
         ) : (
           <div className="sparks-transactions">
             {history.map((entry) => {
@@ -142,7 +151,7 @@ function SparksWallet() {
         )}
       </section>
 
-      <section className="sparks-explainer"><span className="sparks-explainer-mark">✦</span><div><b>What are Sparks?</b><p>Sparks are Palixia credits that let readers show appreciation for authors and their stories. Your balance and transaction history stay private to your account.</p></div></section>
+      <section className="sparks-explainer"><span className="sparks-explainer-mark">✦</span><div><b>A little support goes a long way</b><p>Sparks are reader credits you can gift to authors whose stories mean something to you. Your wallet balance and gifting history are private to your account.</p></div></section>
     </main>
   );
 }
