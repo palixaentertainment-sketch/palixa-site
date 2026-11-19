@@ -1,3 +1,106 @@
+
+/* Reader Sparks wallet: gifting-first layout, distinct from author earnings. */
+.sparks-reader-overview {
+  display:grid;
+  grid-template-columns:minmax(0,1.35fr) minmax(15rem,.85fr);
+  gap:.9rem;
+  align-items:stretch;
+}
+.sparks-reader-overview .sparks-balance {
+  min-height:100%;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:1.6rem;
+}
+.sparks-reader-prompt {
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  gap:.65rem;
+  padding:1.35rem;
+  border:1px solid var(--line);
+  border-radius:17px;
+  background:linear-gradient(155deg,#fbf8ff 0%,#f1eafb 100%);
+}
+.sparks-reader-prompt-icon {
+  display:grid;
+  place-items:center;
+  width:2.65rem;
+  height:2.65rem;
+  margin-bottom:.15rem;
+  border-radius:13px;
+  background:#e6d8fa;
+  color:#6029a6;
+  font-size:1.4rem;
+}
+.sparks-reader-prompt h2 {
+  margin:0;
+  color:#30213f;
+  font-size:1.25rem;
+  letter-spacing:-.025em;
+  line-height:1.2;
+}
+.sparks-reader-prompt p {
+  margin:0 0 .35rem;
+  color:#6e617b;
+  font-size:.87rem;
+  line-height:1.6;
+}
+.sparks-reader-prompt .btn {
+  display:inline-flex;
+  align-items:center;
+  gap:.55rem;
+  min-height:2.7rem;
+  border-radius:10px;
+}
+.sparks-topup { scroll-margin-top:6rem; }
+.sparks-topup .sparks-section-head .h2,
+.sparks-history .sparks-section-head .h2 { letter-spacing:-.025em; }
+@media(max-width:42rem) {
+  .sparks-reader-overview { grid-template-columns:minmax(0,1fr); gap:.75rem; }
+  .sparks-reader-overview .sparks-balance { min-height:205px; }
+  .sparks-reader-prompt { padding:1.1rem; }
+}
+:root[data-theme="dark"] .sparks-reader-prompt {
+  background:linear-gradient(155deg,#21172f 0%,#2a1c3d 100%);
+  border-color:#49365e;
+}
+:root[data-theme="dark"] .sparks-reader-prompt h2 { color:#f3ecfc; }
+:root[data-theme="dark"] .sparks-reader-prompt p { color:#c4b6d4; }
+:root[data-theme="dark"] .sparks-reader-prompt-icon {
+  background:#3c2858;
+  color:#d8c0ff;
+}
+:root[data-theme="dark"] .sparks-topup,
+:root[data-theme="dark"] .sparks-transactions,
+:root[data-theme="dark"] .sparks-package,
+:root[data-theme="dark"] .sparks-empty {
+  background:var(--surface);
+  color:var(--fg);
+  border-color:var(--line);
+}
+:root[data-theme="dark"] .sparks-coming {
+  background:#21172f;
+  border-color:#49365e;
+}
+:root[data-theme="dark"] .sparks-coming small { color:#c4b6d4; }
+:root[data-theme="dark"] .sparks-explainer {
+  background:#21172f;
+  border-color:#49365e;
+}
+:root[data-theme="dark"] .sparks-explainer p { color:#c4b6d4; }
+:root[data-theme="dark"] .sparks-transaction-icon.credit {
+  background:#3c2858;
+  color:#e0ccff;
+}
+:root[data-theme="dark"] .sparks-transaction-icon.debit {
+  background:#30263c;
+  color:#c4b6d4;
+}
+:root[data-theme="dark"] .sparks-package .btn { color:#fff; }
+
 /* Palixia design system: white and purple, literary display type, mobile first. */
 :root {
   --bg: #ffffff;
