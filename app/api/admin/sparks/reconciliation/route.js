@@ -112,7 +112,7 @@ export async function GET(request) {
           cache: 'no-store',
         });
         const payload = await response.json().catch(() => null);
-        return { reference, ok: response.ok && payload?.status, transaction: payload?.data || null };
+        return { reference, ok: response.ok && payload?.status, transaction: payload?.data || null, verifyError: !response.ok && response.status !== 404 };
       } catch {
         return { reference, ok: false, transaction: null, verifyError: true };
       }
