@@ -85,12 +85,10 @@ export async function POST(request) {
   // accepts pending rows, so recover failed rows atomically through the audited
   // service-role RPC after this route has independently verified Paystack.
   if (existingPurchase?.status === 'failed') {
-    const { data: recovered, error: recoveryError } = await admin.rpc('admin_recover_verified_spark_purchase', {
+    const { data: recovered, error: recoveryError } = await userClient.rpc('recover_verified_spark_purchase_public', {
       p_reference: reference,
-      p_reader_id: userData.user.id,
       p_amount_kobo: transaction.amount,
       p_sparks_amount: existingPurchase.sparks_amount,
-      p_admin_id: userData.user.id,
     });
 
     if (recoveryError || !recovered?.success) {
