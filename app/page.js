@@ -220,12 +220,12 @@ export default function Home() {
         <div className="homehero-copy">
           <span className="home-eyebrow">A HOME FOR INDEPENDENT STORIES</span>
           <h1>Every story deserves a reader.</h1>
-          <p>Discover original stories from independent authors around the world. Find new voices, explore different worlds, and share stories of your own.</p>
+          <p>Discover original stories from independent authors around the world. Find your next favourite, keep your place as you read, and follow the writers you love.</p>
           <div className="row homehero-actions">
-            <Link className="btn" href="/discover">Explore stories</Link>
+            <Link className="btn" href="/discover">Find your next read</Link>
             <PublishLink className="btn ghost">Publish your story</PublishLink>
           </div>
-          <p className="homehero-free-note">Read for free. Publish for free. Earn through reader support — coming soon.</p>
+          <p className="homehero-free-note">Read for free. Save stories and track your progress with a free account. Publishing is free too.</p>
         </div>
         <div className="homehero-art" aria-hidden="true">
           <div className="hero-book hero-book-back"><span>NEW WORLDS</span><b>Find a story<br />that stays.</b></div>
