@@ -335,7 +335,7 @@ function EarningsWallet() {
 
       <section className="info-banner">
         <div className="wallet-section-title"><b>Readers will be able to support your stories with Sparks</b><span className="badge">90% to authors</span></div>
-        <p>With Sparks, readers will be able to support the authors whose stories they enjoy. Authors receive 90% of eligible support, while Palixia retains 10%. Public tipping and withdrawals remain closed until launch is announced.</p>
+        <p>Sparks are Palixia’s reader-to-author support feature. Authors receive 90% of eligible support and Palixia retains 10%. The feature is in pre-launch preparation for everyone; sending support and withdrawals are not open yet.</p>
       </section>
 
       <section className="wallet-card">
