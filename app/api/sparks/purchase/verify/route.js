@@ -84,6 +84,37 @@ export async function POST(request) {
     return fail('We could not check the Sparks purchase record. Please contact support.', 500);
   }
 
+  // Corrective recovery: a successful Paystack transaction may correspond to a
+  // local purchase row marked failed after a timeout. The normal credit RPC only
+  // accepts pending rows, so recover failed rows atomically through the audited
+  // service-role RPC after this route has independently verified Paystack.
+  if (existingPurchase?.status === 'failed') {
+    const { data: recovered, error: recoveryError } = await admin.rpc('admin_recover_verified_spark_purchase', {
+      p_reference: reference,
+      p_reader_id: userData.user.id,
+      p_amount_kobo: transaction.amount,
+      p_sparks_amount: existingPurchase.sparks_amount,
+      p_admin_id: userData.user.id,
+    });
+
+    if (recoveryError || !recovered?.success) {
+      console.error('[Sparks verify] Failed-purchase recovery RPC failed', {
+        reference,
+        userId: userData.user.id,
+        code: recoveryError?.code || null,
+        message: recoveryError?.message || null,
+      });
+      return fail('Paystack confirmed your payment, but Sparks could not be recovered automatically. Please contact support with your reference.', 500);
+    }
+
+    return NextResponse.json({
+      status: 'success',
+      credited: Boolean(recovered.credited),
+      sparks: recovered.sparks_amount,
+      message: recovered.credited ? 'Your Sparks have been recovered and added.' : 'This purchase was already credited.',
+    });
+  }
+
   let purchase = existingPurchase;
 
   // Recovery path: if the original pending row was not saved, reconstruct it
