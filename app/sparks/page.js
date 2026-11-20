@@ -111,7 +111,9 @@ function SparksWallet() {
           <>
             <div className="sparks-packages">
               {(adminTestMode === 'live' ? [100] : PACKAGES).map((amount) => (
-                <div className="sparks-package" key={amount}>
+                <div className={`sparks-package ${amount === 500 ? 'sparks-package-featured' : ''}`} key={amount}>
+                  {amount === 500 ? <span className="sparks-package-popular">POPULAR</span> : null}
+                  <span className="sparks-package-name">{amount === 100 ? 'Starter' : amount === 200 ? 'Reader' : amount === 300 ? 'Fan' : amount === 500 ? 'Super fan' : 'Mega fan'}</span>
                   <span className="sparks-package-amount">{amount.toLocaleString('en-NG')}</span>
                   <span className="sparks-package-unit">SPARKS</span>
                   <span className="sparks-package-price">₦{amount.toLocaleString('en-NG')}</span>
