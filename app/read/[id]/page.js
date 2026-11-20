@@ -189,8 +189,12 @@ export default function Reader() {
     );
   }
 
-  // Let visitors read the first three published chapters before asking them to join.
-  if (!user && ch.chapter_number > 3 && ch.status === 'published' && book.status === 'published') {
+  // Campus Gist is a signup-required title; all other books keep the existing
+  // three-chapter preview policy.
+  const campusGistId = '844c0448-6cf3-45bd-a7c1-1aa8d1f6305c';
+  const isCampusGist = book.id === campusGistId;
+  const requiresSignup = isCampusGist || ch.chapter_number > 3;
+  if (!user && requiresSignup && ch.status === 'published' && book.status === 'published') {
     const bookHref = '/book/' + book.id;
     const chapterHref = '/read/' + id;
     return (
@@ -202,9 +206,9 @@ export default function Reader() {
           className="panel stack"
           style={{ width: '100%', maxWidth: '27rem', padding: 'clamp(1.25rem, 5vw, 2rem)', borderRadius: '1rem', boxShadow: '0 20px 70px rgba(0,0,0,.28)', background: 'var(--surface, #fff)', color: 'var(--fg, #21182e)' }}
         >
-          <p className="mono">YOUR NEXT STORY STARTS HERE</p>
-          <h1 id="palixia-signup-title" className="h1" style={{ margin: 0 }}>Enjoying the story?</h1>
-          <p>You’ve reached the end of the free preview. Create a free Palixia account to continue reading, follow your favourite authors, and discover more stories.</p>
+          <p className="mono">{isCampusGist ? 'CAMPUS GIST · PALIXIA' : 'YOUR NEXT STORY STARTS HERE'}</p>
+          <h1 id="palixia-signup-title" className="h1" style={{ margin: 0 }}>{isCampusGist ? 'The gist doesn’t stop here.' : 'Enjoying the story?'}</h1>
+          <p>{isCampusGist ? 'Secrets are already spreading across Unity Heights. Create a free Palixia account to read Campus Gist and uncover what happens next.' : 'You’ve reached the end of the free preview. Create a free Palixia account to continue reading, follow your favourite authors, and discover more stories.'}</p>
           <div className="stack" style={{ gap: '.65rem' }}>
             <Link className="btn" href={'/signup?next=' + encodeURIComponent(chapterHref)} style={{ justifyContent: 'center' }}>Create a free account</Link>
             <Link className="btn ghost" href={'/login?next=' + encodeURIComponent(chapterHref)} style={{ justifyContent: 'center' }}>Log in</Link>
