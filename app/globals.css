@@ -2236,3 +2236,58 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
   .sparks-packages { grid-template-columns:minmax(0,1fr); }
 }
 @media(prefers-reduced-motion:reduce) { .sparks-package .btn { transition:none; } }
+
+
+/* Palixia Help Centre */
+.help-centre { gap: 2rem; }
+.help-hero {
+  display:grid;
+  justify-items:start;
+  gap:.9rem;
+  padding:clamp(1.4rem,4vw,2.6rem);
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:linear-gradient(135deg,#faf7ff 0%,#f0e9fc 100%);
+}
+.help-hero .h1 { max-width:18ch; }
+.help-hero > p:not(.mono) { max-width:42rem; line-height:1.7; }
+.help-sections { display:grid; gap:1.6rem; }
+.help-category { display:grid; gap:.75rem; }
+.help-faq-list { display:grid; border:1px solid var(--line); border-radius:14px; overflow:hidden; background:var(--bg); }
+.help-faq { border-bottom:1px solid var(--line); }
+.help-faq:last-child { border-bottom:0; }
+.help-faq summary {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:1rem;
+  padding:1rem 1.1rem;
+  font-weight:650;
+  cursor:pointer;
+  list-style:none;
+}
+.help-faq summary::-webkit-details-marker { display:none; }
+.help-faq summary span { color:var(--accent); font-size:1.25rem; flex:none; }
+.help-faq[open] summary span { transform:rotate(45deg); }
+.help-faq > p { padding:0 1.1rem 1.1rem; max-width:58rem; color:var(--muted); line-height:1.75; }
+.help-contact-card {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:1.25rem;
+  padding:1.4rem;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:var(--surface);
+}
+.help-contact-card > div { display:grid; gap:.55rem; }
+.help-contact-card .muted { max-width:42rem; line-height:1.65; }
+:root[data-theme="dark"] .help-hero {
+  background:linear-gradient(135deg,#21172f 0%,#2a1c3d 100%);
+  border-color:#49365e;
+}
+:root[data-theme="dark"] .help-faq-list { background:var(--surface); }
+@media(max-width:42rem) {
+  .help-contact-card { align-items:stretch; flex-direction:column; }
+  .help-contact-card .btn { width:100%; }
+}
