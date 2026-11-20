@@ -415,7 +415,7 @@ function EarningsWallet() {
               {stories.map((story) => <option key={story.id} value={story.id}>{story.title}</option>)}
             </select>
           </label>
-          {selectedStoryId && <p className="fine" style={{overflowWrap:'anywhere'}}>{typeof window !== 'undefined' ? window.location.origin : 'https://www.palixia.com'}/book/{selectedStoryId}</p>}
+          {selectedStoryId && <p className="fine" style={{overflowWrap:'anywhere'}}>{(typeof window !== 'undefined' ? window.location.origin : 'https://www.palixia.com') + '/book/' + selectedStoryId}</p>}
           <div className="row"><button className="btn" type="button" disabled={!selectedStoryId} onClick={copyStoryInviteLink}>Copy story link</button></div>
           {copyMessage && <p className="fine" role="status" aria-live="polite">{copyMessage}</p>}
         </>}
@@ -466,9 +466,15 @@ function EarningsWallet() {
           </form>
         </div>
         <p className="fine">Submitting creates a request for review; it does not send money. You will be notified after it is reviewed.</p>
-        {loading ? <p className="fine">Loading requests…</p> : requests.length === 0 ? <p className="fine">No withdrawal requests yet.</p> : requests.map((request) => <div className="activity-row" key={request.id}>
-          <div className="activity-copy"><b>{naira(request.amount_kobo)}</b><span className="fine">{new Date(request.requested_at).toLocaleDateString()} · {request.status.replaceAll('_', ' ')}</span>{request.admin_note && <span className="fine">{request.admin_note}</span></div>
-        </div>)}
+        {loading ? <p className="fine">Loading requests…</p> : requests.length === 0 ? <p className="fine">No withdrawal requests yet.</p> : requests.map((request) => (
+          <div className="activity-row" key={request.id}>
+            <div className="activity-copy">
+              <b>{naira(request.amount_kobo)}</b>
+              <span className="fine">{new Date(request.requested_at).toLocaleDateString()} · {request.status.replaceAll('_', ' ')}</span>
+              {request.admin_note && <span className="fine">{request.admin_note}</span>}
+            </div>
+          </div>
+        ))}
       </section>
     </div>
   );
