@@ -22,8 +22,7 @@ export async function POST(request) {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const paystackSecret = process.env.PAYSTACK_SECRET_KEY;
   if (!supabaseUrl || !anonKey || !serviceKey || !paystackSecret) return fail('Sparks payments are not configured.', 503);
-  // Keep checkout restricted to active admins while allowing an explicitly selected
-  // Paystack test or live environment for a controlled smoke test.
+  // Require the Paystack secret to match the configured environment.
   const configuredTestMode = process.env.PAYSTACK_TEST_MODE === 'true';
   const secretIsTest = paystackSecret.startsWith('sk_test_');
   const secretMatchesMode = configuredTestMode ? secretIsTest : paystackSecret.startsWith('sk_live_');
@@ -43,8 +42,6 @@ export async function POST(request) {
   if (authError || !userData?.user?.id) return fail('Your session has expired. Please sign in again.', 401);
 
   const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
-  const { data: profile, error: profileError } = await admin.from('profiles').select('role,status').eq('id', userData.user.id).maybeSingle();
-  if (profileError || profile?.role !== 'admin' || profile?.status !== 'active') return fail('Sparks is currently available to Palixia admins only.', 403);
 
   let body;
   try { body = await request.json(); } catch { return fail('Invalid request body.'); }
@@ -71,7 +68,6 @@ export async function POST(request) {
 
   const verifiedPackage = validateVerifiedSparkTransaction(transaction, userData.user.id, secretIsTest);
   if (!verifiedPackage) return fail('Paystack transaction details do not match a supported Sparks package.', 409);
-  if (!secretIsTest && verifiedPackage.sparks !== 100) return fail('The live admin smoke test is limited to the ₦100 package.', 403);
 
   const { data: existingPurchase, error: purchaseLookupError } = await admin
     .from('spark_purchases')
@@ -134,9 +130,7 @@ export async function POST(request) {
 
     if (!recoverable) return fail('We could not find a matching Palixia purchase for this Paystack transaction. Please contact support with your reference.', 404);
 
-    // Use the authenticated, narrowly scoped SECURITY DEFINER RPC rather
-    // than a direct service-role table insert. This avoids depending on
-    // service-role table grants while keeping recovery admin-only.
+    // Use the authenticated, narrowly scoped SECURITY DEFINER RPC rather than a direct service-role insert.
     const { data: restoredPurchase, error: recoveryError } = await userClient.rpc('recover_verified_spark_purchase', {
       p_reference: reference,
       p_amount_kobo: pack.amountKobo,
@@ -176,17 +170,14 @@ export async function POST(request) {
     return fail('Payment details did not match this Sparks purchase. Please contact support with your reference.', 409);
   }
 
-  // Paystack has been independently verified above and this route has already
-  // confirmed the caller is an active Palixia admin. Invoke the guarded RPC
-  // with that admin's JWT so auth.uid()/auth.role() match the function policy.
+  // Paystack is independently verified above; invoke the guarded credit RPC with the authenticated user's JWT.
   const { data: posted, error: postError } = await userClient.rpc('post_verified_spark_purchase', {
     p_reference: reference,
     p_amount_kobo: transaction.amount,
     p_currency: transaction.currency,
   });
   if (postError) {
-    // This route is admin-only. Return the database diagnostic to the verified
-    // admin so the failure can be investigated without exposing it publicly.
+    // Return a generic failure to the buyer; keep diagnostics in server logs.
     const diagnosticId = request.headers.get('x-vercel-id') || `sparks-${Date.now()}`;
     console.error('[Sparks verify] Credit posting failed', {
       diagnosticId,
