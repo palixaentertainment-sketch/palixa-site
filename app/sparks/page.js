@@ -130,7 +130,7 @@ function SparksWallet() {
             )}
           </>
         ) : (
-          <div className="sparks-coming"><span>✦</span><div><b>Sparks are being prepared for everyone</b><small>Reader-to-author support is coming to Palixia. Top-ups and sending are not open yet.</small></div><span className="badge">Coming soon</span></div>
+          <div className="sparks-coming"><span>✦</span><div><b>Sparks are being prepared for everyone</b><small>Reader-to-author support is coming to Palixia. Top-ups and sending are not open yet.</small></div><span className="badge">Pre-launch</span></div>
         )}
         {notice ? <p role="alert" className="notice">{notice}</p> : null}
       </section>
