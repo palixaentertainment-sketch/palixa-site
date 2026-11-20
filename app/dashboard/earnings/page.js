@@ -370,8 +370,8 @@ function EarningsWallet() {
       </section>
 
       <section className="wallet-card soft">
-        <div className="wallet-section-title"><h2 className="h2">Get ready for Sparks</h2><span className="badge">Live</span></div>
-        <p className="muted">Help readers find your work and support you with Sparks. Share a direct link to a published story.</p>
+        <div className="wallet-section-title"><h2 className="h2">Share your stories</h2><span className="badge">Live</span></div>
+        <p className="muted">Help readers discover your work and support you with Sparks. Share a direct link to a published story.</p>
         {stories.length === 0 ? <p className="fine">Publish a story to create its shareable invite link.</p> : <>
           <label className="stack" style={{gap:'.35rem'}}><span className="fine">Choose a published story</span>
             <select className="in" value={selectedStoryId} onChange={(event) => { setSelectedStoryId(event.target.value); setCopyMessage(''); }}>
