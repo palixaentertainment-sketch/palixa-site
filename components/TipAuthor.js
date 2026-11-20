@@ -10,6 +10,5 @@ export default function TipAuthor({ authorName, compact = false }) {
       </p>
       <Link className={compact ? 'btn ghost small' : 'btn ghost'} href="/sparks">Learn about Sparks <span aria-hidden="true">→</span></Link>
     </div>
-  </div>
-);
+  );
 }
