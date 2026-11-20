@@ -40,7 +40,7 @@ function SignupForm() {
     setErr('');
     if (!configured) { setErr('Palixia is not connected to its database yet. See README.md.'); return; }
     const u = username.trim().toLowerCase();
-    if (!name.trim()) { setErr('Enter your full name.'); return; }
+    if (kind === 'author' && !name.trim()) { setErr('Enter your full name.'); return; }
     if (!validUsername(u)) { setErr('Choose a username of 3 to 24 letters, numbers or underscores.'); return; }
     if (!/^\S+@\S+\.\S+$/.test(email.trim())) { setErr('Enter a valid email address.'); return; }
     if (password.length < 8) { setErr('Choose a password of at least 8 characters.'); return; }
@@ -51,7 +51,7 @@ function SignupForm() {
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
-      options: { data: { name: name.trim(), username: u, account: kind, bio: bio.trim(), country: country.trim() } },
+      options: { data: { name: name.trim() || u, username: u, account: kind, bio: bio.trim(), country: country.trim() } },
     });
     setBusy(false);
     if (error) { setErr(friendlyAuth(error)); return; }
@@ -73,6 +73,8 @@ function SignupForm() {
   return (
     <div className="stack authcol">
       <h1 className="h1">Create your account</h1>
+      {params.get('next')?.startsWith('/read/') && <p className="fine">Your story is waiting. Create a free account to continue reading, and we’ll take you right back to the chapter.</p>}
+      {params.get('next')?.startsWith('/book/') && <p className="fine">Create a free account to save this book, follow its author, and start reading.</p>}
       <GoogleButton returnTo={'/signup?' + (params.get('as') === 'author' ? 'as=author&' : '') + 'next=' + encodeURIComponent(safeNext(params.get('next'), '/'))} onError={setErr} />
       <form className="card" onSubmit={submit} noValidate>
         <div className="field">
@@ -83,13 +85,13 @@ function SignupForm() {
           </div>
         </div>
         <div className="field">
-          <label htmlFor="name">Full name</label>
+          <label htmlFor="name">{kind === 'author' ? 'Full name' : 'Display name (optional)'}</label>
           <input id="name" className="in" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} autoComplete="name" />
         </div>
         <div className="field">
           <label htmlFor="username">Username</label>
           <input id="username" className="in" value={username} onChange={(e) => setUsername(e.target.value)} maxLength={24} autoComplete="username" autoCapitalize="none" />
-          <span className="fine">Letters, numbers and underscores. This becomes your page address.</span>
+          <span className="fine">Letters, numbers and underscores. This becomes your public page address.</span>
         </div>
         <div className="field">
           <label htmlFor="email">Email</label>
