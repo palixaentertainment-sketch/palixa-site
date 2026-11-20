@@ -6,6 +6,7 @@ export const metadata = {
 const contacts = [
   { title: 'Reader support', description: 'Help with reading, your library, account access or general feedback.', subject: 'Reader support' },
   { title: 'Author support', description: 'Publishing questions, story management and author dashboard issues.', subject: 'Author support' },
+  { title: 'Payments and wallet support', description: 'Questions about a payment, transaction or wallet issue. Never include card details, passwords or one-time codes.', subject: 'Payments and wallet support' },
   { title: 'Privacy and account requests', description: 'Requests to access, correct or delete personal information or an account.', subject: 'Privacy or account request' },
   { title: 'Copyright reports', description: 'Report material that you believe infringes your copyright or other rights.', subject: 'Copyright report' },
   { title: 'Business enquiries', description: 'Partnerships, media enquiries and other opportunities.', subject: 'Business enquiry' },
