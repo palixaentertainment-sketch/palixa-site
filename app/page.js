@@ -225,7 +225,7 @@ export default function Home() {
             <Link className="btn" href="/discover">Find your next read</Link>
             <PublishLink className="btn ghost">Publish your story</PublishLink>
           </div>
-          <p className="homehero-free-note">Read for free. Save stories and track your progress with a free account. Publishing is free too.</p>
+          <p className="homehero-free-note">Read for free. Publishing is free too. And when Sparks opens, readers will be able to support the authors they love.</p>
         </div>
         <div className="homehero-art" aria-hidden="true">
           <div className="hero-book hero-book-back"><span>NEW WORLDS</span><b>Find a story<br />that stays.</b></div>
