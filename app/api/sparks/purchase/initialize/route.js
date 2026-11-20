@@ -27,8 +27,8 @@ export async function POST(request) {
   }
   const testMode = process.env.PAYSTACK_TEST_MODE === 'true';
   const secretMatchesMode = testMode ? paystackSecret.startsWith('sk_test_') : paystackSecret.startsWith('sk_live_');
-  if (process.env.SPARKS_ADMIN_ONLY !== 'true' || !secretMatchesMode) {
-    return fail('Sparks checkout is not configured for the selected admin-only Paystack mode.', 503);
+  if (!secretMatchesMode) {
+    return fail('Sparks checkout is not configured for the selected Paystack mode.', 503);
   }
 
   const authHeader = request.headers.get('authorization') || '';
