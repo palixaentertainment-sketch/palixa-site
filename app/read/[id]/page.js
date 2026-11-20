@@ -330,10 +330,10 @@ export default function Reader() {
             </p>
             <Link
               className="btn"
-              href={user ? '/discover' : '/signup?next=' + encodeURIComponent('/book/' + book.id)}
+              href={user ? '/sparks' : '/signup?next=' + encodeURIComponent('/sparks')}
               style={{ display: 'inline-flex', justifyContent: 'center' }}
             >
-              {user ? 'Discover more stories' : 'Create a free account'}
+              {user ? 'Get Sparks to support authors' : 'Create an account to support authors'}
             </Link>
           </section>
         )}
