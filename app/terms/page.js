@@ -43,7 +43,7 @@ export default function Terms() {
       <p>To report a concern, contact info@palixia.com and include the relevant username, book, chapter, post or link and a description of the issue.</p>
 
       <h2 className="h2">6. Free access and payment features</h2>
-      <p>Reading and publishing on Palixia are currently offered free of charge. Paid chapters, subscriptions and general reader-to-author payments are not currently available as public features. Sparks and related author-support and payout features are in pre-launch preparation and are not a promise that a payment feature is available to you now.</p>
+      <p>Reading and publishing on Palixia are free. Paid chapters and subscriptions are not currently available. Readers can support authors through Sparks. Author withdrawals are not open yet, and no payout date is promised until Palixia formally announces availability.</p>
       <p>If paid features become available, we will provide the applicable prices, payment terms, eligibility rules, fees, refund rules and payout conditions before you use them. Do not send money or payment details to anyone claiming to collect payment on Palixia's behalf outside an official Palixia payment flow.</p>
 
       <h2 className="h2">7. Third-party services and links</h2>
