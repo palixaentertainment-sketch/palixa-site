@@ -27,8 +27,8 @@ export async function POST(request) {
   }
   const testMode = process.env.PAYSTACK_TEST_MODE === 'true';
   const secretMatchesMode = testMode ? paystackSecret.startsWith('sk_test_') : paystackSecret.startsWith('sk_live_');
-  if (process.env.SPARKS_ADMIN_ONLY !== 'true' || !secretMatchesMode) {
-    return fail('Sparks checkout is not configured for the selected admin-only Paystack mode.', 503);
+  if (!secretMatchesMode) {
+    return fail('Sparks checkout is not configured for the selected Paystack mode.', 503);
   }
 
   const authHeader = request.headers.get('authorization') || '';
@@ -49,7 +49,6 @@ export async function POST(request) {
   const amountNaira = Number(body.amountNaira);
   const pack = PACKAGES.get(amountNaira);
   if (!Number.isInteger(amountNaira) || !pack) return fail('Choose one of the available Sparks packages.');
-  if (!testMode && amountNaira !== 100) return fail('The live admin smoke test is limited to the ₦100 package.', 403);
 
   const reference = `PLXSPK_${randomUUID().replace(/-/g, '')}`;
   const { error: insertError } = await userClient.rpc('create_pending_spark_purchase', {

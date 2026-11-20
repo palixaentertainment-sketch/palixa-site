@@ -326,14 +326,14 @@ export default function Reader() {
             <p className="mono" style={{ margin: '0 0 .4rem', color: 'var(--accent, #7042a5)' }}>SUPPORT INDEPENDENT STORIES</p>
             <h2 id="spark-prelaunch-title" style={{ margin: '0 0 .5rem', fontSize: '1.15rem' }}>Want to give this author a Spark? ⚡</h2>
             <p style={{ margin: '0 auto .9rem', maxWidth: '38rem', color: 'var(--muted, #6d6478)', lineHeight: 1.6 }}>
-              Sparks are being prepared for readers across Palixia. Soon, you’ll be able to support this author directly through the platform. Reading and publishing remain free.
+              You can now support this author with Sparks on Palixia. Reading and publishing remain free.
             </p>
             <Link
               className="btn"
-              href={user ? '/discover' : '/signup?next=' + encodeURIComponent('/book/' + book.id)}
+              href={user ? '/sparks' : '/signup?next=' + encodeURIComponent('/sparks')}
               style={{ display: 'inline-flex', justifyContent: 'center' }}
             >
-              {user ? 'Discover more stories' : 'Create a free account'}
+              {user ? 'Get Sparks to support authors' : 'Create an account to support authors'}
             </Link>
           </section>
         )}

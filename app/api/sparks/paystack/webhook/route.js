@@ -14,11 +14,10 @@ export async function POST(request) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!secret || !url || !serviceKey) return response(503);
-  // Keep webhook crediting restricted to active-admin purchases while allowing
-  // the configured Paystack test or live environment for a controlled smoke test.
+  // Require the Paystack secret to match the configured environment.
   const testMode = process.env.PAYSTACK_TEST_MODE === 'true';
   const secretMatchesMode = testMode ? secret.startsWith('sk_test_') : secret.startsWith('sk_live_');
-  if (process.env.SPARKS_ADMIN_ONLY !== 'true' || !secretMatchesMode) return response(503);
+  if (!secretMatchesMode) return response(503);
 
   const rawBody = await request.text();
   const signature = request.headers.get('x-paystack-signature') || '';
@@ -61,17 +60,9 @@ export async function POST(request) {
   const metadataReaderId = transaction.metadata?.reader_id;
   const verifiedPackage = validateVerifiedSparkTransaction(transaction, metadataReaderId, secretIsTest);
   if (!verifiedPackage) return response(400);
-  if (!secretIsTest && verifiedPackage.sparks !== 100) return response(400);
   const sparksAmount = verifiedPackage.sparks;
   const expectedAmount = verifiedPackage.amountKobo;
 
-  const { data: buyer, error: buyerError } = await admin
-    .from('profiles')
-    .select('role,status')
-    .eq('id', metadataReaderId)
-    .maybeSingle();
-  if (buyerError) return response(500);
-  if (buyer?.role !== 'admin' || buyer?.status !== 'active') return response(403);
 
   let { data: purchase, error: purchaseError } = await admin
     .from('spark_purchases')

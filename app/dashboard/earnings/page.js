@@ -307,7 +307,7 @@ function EarningsWallet() {
           <h1 className="h1">Your earnings</h1>
           <p className="muted" style={{marginTop:'.4rem'}}>A clear view of the support your stories receive.</p>
         </div>
-        <span className="badge">Sparks · Pre-launch</span>
+        <span className="badge">Sparks · Live</span>
       </div>
 
       <section className="balance-card" aria-label="Wallet balance overview">
@@ -334,14 +334,14 @@ function EarningsWallet() {
       </section>
 
       <section className="info-banner">
-        <div className="wallet-section-title"><b>Readers will be able to support your stories with Sparks</b><span className="badge">90% to authors</span></div>
-        <p>Sparks are Palixia’s reader-to-author support feature. Authors receive 90% of eligible support and Palixia retains 10%. The feature is in pre-launch preparation for everyone; sending support and withdrawals are not open yet.</p>
+        <div className="wallet-section-title"><b>Readers can now support your stories with Sparks</b><span className="badge">90% to authors</span></div>
+        <p>Sparks are live for reader support. Authors receive 90% of eligible support and Palixia retains 10%. Withdrawals remain closed while payouts are prepared.</p>
       </section>
 
       <section className="wallet-card">
         <div>
           <h2 className="h2">Payout bank account</h2>
-          <p className="muted" style={{marginTop:'.35rem'}}>Prepare your payout details securely before Sparks launches.</p>
+          <p className="muted" style={{marginTop:'.35rem'}}>Prepare your payout details securely for when withdrawals open.</p>
         </div>
         <p className="fine">Choose your bank and verify your account name. Your account number is encrypted before storage. Saving these details does not enable withdrawals or initiate a transfer.</p>
         <div className="wallet-form-grid">
@@ -370,8 +370,8 @@ function EarningsWallet() {
       </section>
 
       <section className="wallet-card soft">
-        <div className="wallet-section-title"><h2 className="h2">Get ready for Sparks</h2><span className="badge">Coming soon</span></div>
-        <p className="muted">Help readers find your work now. Share a direct link to a published story so your audience can discover it and be ready to support you when Sparks launches.</p>
+        <div className="wallet-section-title"><h2 className="h2">Get ready for Sparks</h2><span className="badge">Live</span></div>
+        <p className="muted">Help readers find your work and support you with Sparks. Share a direct link to a published story.</p>
         {stories.length === 0 ? <p className="fine">Publish a story to create its shareable invite link.</p> : <>
           <label className="stack" style={{gap:'.35rem'}}><span className="fine">Choose a published story</span>
             <select className="in" value={selectedStoryId} onChange={(event) => { setSelectedStoryId(event.target.value); setCopyMessage(''); }}>
@@ -392,7 +392,7 @@ function EarningsWallet() {
           <li>The planned payout cycle is monthly, during the first week of each month.</li>
           <li>The planned minimum withdrawal is ₦1,000. A verified Nigerian bank account in your name will be required.</li>
           <li>Initial payouts are planned by manual bank transfer. Saving or verifying bank details does not initiate a transfer.</li>
-          <li>Withdrawals are not currently open. These are planned terms only; no payout date is promised until Palixia formally announces that withdrawals are available.</li>
+          <li>Withdrawals are not currently open. No payout date is promised until Palixia formally announces availability.</li>
           <li>Pending earnings cannot be withdrawn or transferred. Accepting this agreement does not change earlier ledger entries.</li>
           <li>Palixia may verify earnings and account details before approving a payout. Any applicable fees or final operational conditions will be disclosed before withdrawals open.</li>
         </ul>
@@ -400,7 +400,7 @@ function EarningsWallet() {
         {agreementError && <p className="msg-err" role="alert">{agreementError}</p>}
         <button className="btn" type="button" disabled={!agreementConfirmed || accepting} onClick={acceptAgreement}>{accepting ? 'Saving…' : 'Accept Sparks terms'}</button>
       </section>}
-      {agreementAccepted && <p className="fine">Sparks author terms accepted. You receive 90% of eligible tip value; Palixia retains 10%. Withdrawals and public tipping remain closed until Palixia announces their launch.</p>}
+      {agreementAccepted && <p className="fine">Sparks author terms accepted. You receive 90% of eligible tip value; Palixia retains 10%. Withdrawals remain closed.</p>}
 
       {error && <p className="msg-err" role="alert">{error}</p>}
       <section className="wallet-card" id="earnings-activity">
