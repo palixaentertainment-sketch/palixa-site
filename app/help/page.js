@@ -32,7 +32,7 @@ const faqs = [
   {
     category: 'Payments and author support',
     items: [
-      ['How can readers support authors?', 'Palixia is preparing reader-to-author support through Palixia Sparks. We will announce when the feature is officially available. Do not send money outside the platform on the assumption that a Palixia payment has been made.'],
+      ['How can readers support authors?', 'Palixia Sparks is our reader-to-author support feature. Readers will be able to support authors whose stories they enjoy. Sparks is currently in pre-launch preparation; sending support is not open yet. Never send money outside Palixia claiming it is an official Sparks payment.'],
       ['Where can I ask about a payment or wallet issue?', 'Use the Contact Support page and choose the closest topic. Include the date and relevant transaction reference if one exists, but never send card details, passwords or one-time codes.'],
     ],
   },

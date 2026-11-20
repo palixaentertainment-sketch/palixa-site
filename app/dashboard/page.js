@@ -67,10 +67,10 @@ function Dashboard() {
       <p className="fine">A read counts the first time a signed-in reader opens any chapter of your book.</p>
 
       <section className="card">
-        <div className="sechead"><h2 className="h2">Author earnings</h2><span className="badge">Coming soon</span></div>
-        <p className="muted">We're preparing a wallet where you can track reader tips and future earnings.</p>
+        <div className="sechead"><h2 className="h2">Author earnings</h2><span className="badge">Sparks · Pre-launch</span></div>
+        <p className="muted">Sparks are Palixia’s way for readers to support authors they enjoy. The public support and payout system is still being prepared.</p>
         <Link className="btn" href="/dashboard/earnings">View wallet preview</Link>
-        <p className="fine">Planned tip split: 90% to the author and 10% to Palixia. Tips and withdrawals are not available yet.</p>
+        <p className="fine">When Sparks support opens, authors receive 90% of eligible support and Palixia retains 10%. Sending Sparks and withdrawals are not open yet.</p>
       </section>
 
       <section>
