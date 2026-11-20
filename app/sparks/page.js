@@ -102,7 +102,7 @@ function SparksWallet() {
             </div>
           ))}
         </div>
-        <p className="fine">1 Spark = ₦1 of purchase value. Payments are processed securely by Paystack.</
+        <p className="fine">1 Spark = ₦1 of purchase value. Payments are processed securely by Paystack.</p>
         {notice ? <p role="alert" className="notice">{notice}</p> : null}
       </section>
 
