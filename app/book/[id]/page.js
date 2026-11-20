@@ -231,7 +231,7 @@ export default function BookPage() {
         <section className="tip-author-section" aria-label="Support the author">
           <div className="tip-author-section-copy">
             <h2>Palixia Sparks</h2>
-            <p>Support independent authors through Sparks. Reader-to-author support is being prepared for everyone on Palixia.</p>
+            <p>Readers can support independent authors through Sparks on Palixia.</p>
           </div>
           <TipAuthor authorName={author?.name} authorId={book.author_id} bookId={book.id} />
         </section>
