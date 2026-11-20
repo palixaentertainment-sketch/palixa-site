@@ -35,6 +35,10 @@ function EarningsWallet() {
   const [savedBank, setSavedBank] = useState(null);
   const [savedBankLoading, setSavedBankLoading] = useState(true);
   const [savedBankError, setSavedBankError] = useState('');
+  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [withdrawBusy, setWithdrawBusy] = useState(false);
+  const [withdrawError, setWithdrawError] = useState('');
+  const [withdrawSuccess, setWithdrawSuccess] = useState('');
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -173,6 +177,39 @@ function EarningsWallet() {
     } finally {
       setBankSaving(false);
     }
+  }
+
+  async function requestWithdrawal(event) {
+    event.preventDefault();
+    const amountKobo = Math.round(Number(withdrawAmount) * 100);
+    if (!Number.isFinite(amountKobo) || amountKobo < 100000) {
+      setWithdrawError('The minimum withdrawal request is ₦1,000.');
+      return;
+    }
+    if (amountKobo > available) {
+      setWithdrawError('This amount exceeds your available earnings.');
+      return;
+    }
+    if (!savedBank) {
+      setWithdrawError('Verify and save your payout bank account first.');
+      return;
+    }
+    if (!agreementAccepted) {
+      setWithdrawError('Accept the Sparks author agreement before requesting a withdrawal.');
+      return;
+    }
+    setWithdrawBusy(true);
+    setWithdrawError('');
+    setWithdrawSuccess('');
+    const { data, error: requestError } = await supabase.rpc('author_request_withdrawal', { p_amount_kobo: amountKobo });
+    setWithdrawBusy(false);
+    if (requestError) {
+      setWithdrawError(requestError.message || 'Your withdrawal request could not be submitted.');
+      return;
+    }
+    setWithdrawSuccess('Your withdrawal request for ' + naira(data?.amount_kobo) + ' has been submitted.');
+    setWithdrawAmount('');
+    await load();
   }
 
   async function copyStoryInviteLink() {
@@ -318,10 +355,10 @@ function EarningsWallet() {
               <span className="wallet-mark" aria-hidden="true">✦</span>
             </div>
             <div className="balance-value">{naira(available)}</div>
-            <p className="balance-note">Your available author balance · withdrawals are not open yet</p>
+            <p className="balance-note">Your available author balance</p>
           </div>
           <div className="balance-actions">
-            <button className="btn" type="button" disabled>Withdraw funds · Coming soon</button>
+            <a className="btn" href="#withdrawal-request">Request withdrawal</a>
             <a className="btn ghost" href="#earnings-activity">View activity ↓</a>
           </div>
         </div>
@@ -335,15 +372,15 @@ function EarningsWallet() {
 
       <section className="info-banner">
         <div className="wallet-section-title"><b>Readers can now support your stories with Sparks</b><span className="badge">90% to authors</span></div>
-        <p>Sparks are live for reader support. Authors receive 90% of eligible support and Palixia retains 10%. Withdrawals remain closed while payouts are prepared.</p>
+        <p>Sparks are live for reader support. Authors receive 90% of eligible support and Palixia retains 10%. Withdrawal requests are reviewed and paid manually by Palixia.</p>
       </section>
 
       <section className="wallet-card">
         <div>
           <h2 className="h2">Payout bank account</h2>
-          <p className="muted" style={{marginTop:'.35rem'}}>Prepare your payout details securely for when withdrawals open.</p>
+          <p className="muted" style={{marginTop:'.35rem'}}>Save and verify your bank details before requesting a withdrawal.</p>
         </div>
-        <p className="fine">Choose your bank and verify your account name. Your account number is encrypted before storage. Saving these details does not enable withdrawals or initiate a transfer.</p>
+        <p className="fine">Choose your bank and verify your account name. Your account number is encrypted before storage. Saving these details does not initiate a transfer.</p>
         <div className="wallet-form-grid">
           <label className="stack" style={{gap:'.35rem'}}><span className="fine">Bank</span>
             <select className="in" value={bankCode} onChange={(event) => { setBankCode(event.target.value); setVerifiedBank(null); setBankOwnershipConfirmed(false); }} disabled={bankLoading}>
@@ -385,22 +422,22 @@ function EarningsWallet() {
       </section>
 
       {!agreementLoading && !agreementAccepted && <section className="wallet-card">
-        <div><h2 className="h2">Sparks author agreement</h2><p className="muted" style={{marginTop:'.35rem'}}>Review the planned earnings and payout terms before accepting.</p></div>
+        <div><h2 className="h2">Sparks author agreement</h2><p className="muted" style={{marginTop:'.35rem'}}>Review the earnings and payout terms before accepting.</p></div>
         <ul className="fine terms-list">
           <li>You receive 90% of the eligible value of each Spark tip; Palixia retains 10%.</li>
           <li>Your author share is recorded in your Palixia earnings ledger and remains pending until released under the payout process.</li>
-          <li>The planned payout cycle is monthly, during the first week of each month.</li>
-          <li>The planned minimum withdrawal is ₦1,000. A verified Nigerian bank account in your name will be required.</li>
-          <li>Initial payouts are planned by manual bank transfer. Saving or verifying bank details does not initiate a transfer.</li>
-          <li>Withdrawals are not currently open. No payout date is promised until Palixia formally announces availability.</li>
+          <li>Payouts are processed manually and are intended to be handled monthly, during the first week of each month.</li>
+          <li>The minimum withdrawal request is ₦1,000. A verified Nigerian bank account in your name is required.</li>
+          <li>Payouts are sent by manual bank transfer. Requesting a withdrawal does not initiate an automatic transfer.</li>
+          <li>Palixia reviews requests and completes bank transfers manually. Processing time may vary.</li>
           <li>Pending earnings cannot be withdrawn or transferred. Accepting this agreement does not change earlier ledger entries.</li>
-          <li>Palixia may verify earnings and account details before approving a payout. Any applicable fees or final operational conditions will be disclosed before withdrawals open.</li>
+          <li>Palixia may verify earnings and account details before approving a payout. Any applicable fees or operational conditions will be communicated before a payout is processed.</li>
         </ul>
         <label className="row" style={{alignItems:'flex-start',gap:'.55rem'}}><input type="checkbox" checked={agreementConfirmed} onChange={(event) => setAgreementConfirmed(event.target.checked)} /><span className="fine">I have read and agree to the Sparks earnings split and planned monthly payout terms.</span></label>
         {agreementError && <p className="msg-err" role="alert">{agreementError}</p>}
         <button className="btn" type="button" disabled={!agreementConfirmed || accepting} onClick={acceptAgreement}>{accepting ? 'Saving…' : 'Accept Sparks terms'}</button>
       </section>}
-      {agreementAccepted && <p className="fine">Sparks author terms accepted. You receive 90% of eligible tip value; Palixia retains 10%. Withdrawals remain closed.</p>}
+      {agreementAccepted && <p className="fine">Sparks author terms accepted. You receive 90% of eligible tip value; Palixia retains 10%. You may request withdrawals from eligible available earnings.</p>}
 
       {error && <p className="msg-err" role="alert">{error}</p>}
       <section className="wallet-card" id="earnings-activity">
@@ -414,9 +451,25 @@ function EarningsWallet() {
         </div>}
       </section>
 
-      <section className="wallet-card soft">
-        <div className="wallet-section-title"><h2 className="h2">Withdrawal requests</h2><span className="badge">Not open yet</span></div>
-        <p className="muted">Withdrawal requests will become available when Palixia officially launches author payouts.</p>
+      <section className="wallet-card" id="withdrawal-request">
+        <div className="wallet-section-title"><h2 className="h2">Request a withdrawal</h2><span className="badge">Open</span></div>
+        <p className="muted">Request a manual bank transfer from your eligible available earnings. Minimum request: ₦1,000. You need accepted Sparks terms and a verified payout account.</p>
+        <div className="wallet-card soft stack" style={{gap:'.6rem'}}>
+          <b>Available balance: {naira(available)}</b>
+          {savedBank ? <span className="fine">Payout account: {savedBank.bankName} · •••• {savedBank.accountLast4} ({savedBank.accountName})</span> : <span className="fine">No verified payout account saved yet. Verify and save your bank details above first.</span>}
+          {!agreementAccepted && <span className="fine">Accept the Sparks author agreement below before submitting.</span>}
+          <form className="stack" onSubmit={requestWithdrawal}>
+            <label className="stack" style={{gap:'.35rem'}}><span className="fine">Amount (NGN)</span><input className="in" inputMode="decimal" type="number" min="1000" max={Math.floor(available/100)} step="1" value={withdrawAmount} onChange={e=>setWithdrawAmount(e.target.value)} placeholder="Minimum ₦1,000" required /></label>
+            {withdrawError && <p className="msg-err" role="alert">{withdrawError}</p>}
+            {withdrawSuccess && <p className="msg-ok" role="status">{withdrawSuccess}</p>}
+            <button className="btn" type="submit" disabled={withdrawBusy || loading || !savedBank || !agreementAccepted || available < 100000}>{withdrawBusy ? 'Submitting…' : 'Submit withdrawal request'}</button>
+          </form>
+        </div>
+        <p className="fine">Submitting creates a request for review; it does not send money. You will be notified after it is reviewed.</p>
+        {loading ? <p className="fine">Loading requests…</p> : requests.length === 0 ? <p className="fine">No withdrawal requests yet.</p> : requests.map((request) => <div className="activity-row" key={request.id}>
+          <div className="activity-copy"><b>{naira(request.amount_kobo)}</b><span className="fine">{new Date(request.requested_at).toLocaleDateString()} · {request.status.replaceAll('_', ' ')}</span>{request.admin_note && <span className="fine">{request.admin_note}</span></div>
+        </div>)}
+      </section>
         {loading ? <p className="fine">Loading requests…</p> : requests.length === 0 ? <p className="fine">No withdrawal requests yet.</p> : requests.map((request) => <div className="activity-row" key={request.id}>
           <div className="activity-copy"><b>{naira(request.amount_kobo)}</b><span className="fine">{new Date(request.requested_at).toLocaleDateString()} · {request.status.replaceAll('_', ' ')}</span>{request.admin_note && <span className="fine">{request.admin_note}</span>}</div>
         </div>)}
