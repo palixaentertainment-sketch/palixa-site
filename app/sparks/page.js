@@ -15,8 +15,6 @@ function SparksWallet() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(null);
   const [notice, setNotice] = useState('');
-  const [adminTestMode, setAdminTestMode] = useState(null);
-  const adminTesting = adminTestMode !== null;
 
   const loadWallet = useCallback(async () => {
     if (!user) return;
@@ -30,27 +28,10 @@ function SparksWallet() {
     setLoading(false);
   }, [user]);
 
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      const { data } = await supabase.auth.getSession();
-      const token = data?.session?.access_token;
-      if (token) {
-        try {
-          const response = await fetch('/api/sparks/access', { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' });
-          if (response.ok) {
-            const result = await response.json();
-            if (active && result.enabled) setAdminTestMode(result.mode || 'test');
-          }
-        } catch {}
-      }
-      if (active) loadWallet();
-    })();
-    return () => { active = false; };
-  }, [loadWallet]);
+  useEffect(() => { loadWallet(); }, [loadWallet]);
 
   async function buy(amountNaira) {
-    if (adminTestMode === 'live' && !window.confirm('LIVE PAYMENT: your real payment method will be charged ₦100 for 100 Sparks. Continue?')) return;
+    if (!window.confirm('You are about to purchase ' + amountNaira.toLocaleString('en-NG') + ' Sparks for ₦' + amountNaira.toLocaleString('en-NG') + '. Continue to Paystack?')) return;
     setBusy(amountNaira);
     setNotice('');
     try {
@@ -77,7 +58,7 @@ function SparksWallet() {
         <Link href="/profile" className="sparks-back">← Profile</Link>
         <span className="sparks-eyebrow">PALIXIA · READER WALLET</span>
         <h1 className="h1">Your Sparks</h1>
-        <p className="muted">Support the authors behind the stories you love. Sparks are being prepared for readers across Palixia.</p>
+        <p className="muted">Buy Sparks and support the authors behind the stories you love.</p>
       </div>
 
       <section className="sparks-reader-overview">
@@ -87,7 +68,7 @@ function SparksWallet() {
           <span className="sparks-private">ACCOUNT BALANCE</span>
         </div>
         <div className="sparks-total">{loading ? '…' : balance.toLocaleString('en-NG')} <span>✦</span></div>
-        <p>Your Sparks wallet will be used to support authors when gifting opens.</p>
+        <p>Use your Sparks to support authors whose stories you enjoy.</p>
         <div className="sparks-balance-foot"><span>✦</span> Your wallet activity is private to your account.</div>
         <span className="sparks-orbit sparks-orbit-one" aria-hidden="true" />
         <span className="sparks-orbit sparks-orbit-two" aria-hidden="true" />
@@ -106,39 +87,29 @@ function SparksWallet() {
           <div><span className="sparks-eyebrow">TOP UP YOUR READER WALLET</span><h2 className="h2">Get more Sparks</h2></div>
           <span className="sparks-topup-icon">✧</span>
         </div>
-        <p className="muted">Sparks will let readers support authors directly. The feature is in pre-launch preparation; purchases and gifts are not open yet.</p>
-        {adminTesting ? (
-          <>
-            <div className="sparks-packages">
-              {(adminTestMode === 'live' ? [100] : PACKAGES).map((amount) => (
-                <div className={`sparks-package ${amount === 500 ? 'sparks-package-featured' : ''}`} key={amount}>
-                  {amount === 500 ? <span className="sparks-package-popular">POPULAR</span> : null}
-                  <span className="sparks-package-name">{amount === 100 ? 'Starter' : amount === 200 ? 'Reader' : amount === 300 ? 'Fan' : amount === 500 ? 'Super fan' : 'Mega fan'}</span>
-                  <span className="sparks-package-amount">{amount.toLocaleString('en-NG')}</span>
-                  <span className="sparks-package-unit">SPARKS</span>
-                  <span className="sparks-package-price">₦{amount.toLocaleString('en-NG')}</span>
-                  <button className="btn" disabled={busy !== null} onClick={() => buy(amount)}>
-                    {busy === amount ? 'Opening…' : adminTestMode === 'live' ? 'Pay ₦100' : 'Choose pack'}
-                  </button>
-                </div>
-              ))}
+        <p className="muted">Buy Sparks securely, then send them to authors whose stories you love.</p>
+        <div className="sparks-packages">
+          {PACKAGES.map((amount) => (
+            <div className={`sparks-package ${amount === 500 ? 'sparks-package-featured' : ''}`} key={amount}>
+              {amount === 500 ? <span className="sparks-package-popular">POPULAR</span> : null}
+              <span className="sparks-package-name">{amount === 100 ? 'Starter' : amount === 200 ? 'Reader' : amount === 300 ? 'Fan' : amount === 500 ? 'Super fan' : 'Mega fan'}</span>
+              <span className="sparks-package-amount">{amount.toLocaleString('en-NG')}</span>
+              <span className="sparks-package-unit">SPARKS</span>
+              <span className="sparks-package-price">₦{amount.toLocaleString('en-NG')}</span>
+              <button className="btn" disabled={busy !== null} onClick={() => buy(amount)}>
+                {busy === amount ? 'Opening…' : 'Buy package'}
+              </button>
             </div>
-            {adminTestMode === 'live' ? (
-              <p className="notice" role="note">Live admin smoke test: this will charge real money. Only the ₦100 package is enabled, and ordinary readers cannot access this checkout.</p>
-            ) : (
-              <p className="fine">Admin testing only · ₦1 = 1 Spark</p>
-            )}
-          </>
-        ) : (
-          <div className="sparks-coming"><span>✦</span><div><b>Sparks are being prepared for everyone</b><small>Reader-to-author support is coming to Palixia. Top-ups and sending are not open yet.</small></div><span className="badge">Pre-launch</span></div>
-        )}
+          ))}
+        </div>
+        <p className="fine">1 Spark = ₦1 of purchase value. Payments are processed securely by Paystack.</
         {notice ? <p role="alert" className="notice">{notice}</p> : null}
       </section>
 
       <section className="sparks-history">
         <div className="sparks-section-head"><div><span className="sparks-eyebrow">YOUR GIFTING RECORD</span><h2 className="h2">Sparks activity</h2></div><span className="sparks-history-count">{history.length} recent</span></div>
         {loading ? <div className="sparks-empty">Loading your activity…</div> : history.length === 0 ? (
-          <div className="sparks-empty"><span className="sparks-empty-icon">✧</span><b>Your story starts here</b><p>Your top-ups and gifts to authors will appear here. Once you start supporting stories, this becomes your personal gifting record.</p></div>
+          <div className="sparks-empty"><span className="sparks-empty-icon">✧</span><b>Your story starts here</b><p>Your top-ups and gifts to authors appear here.</p></div>
         ) : (
           <div className="sparks-transactions">
             {history.map((entry) => {
@@ -153,7 +124,7 @@ function SparksWallet() {
         )}
       </section>
 
-      <section className="sparks-explainer"><span className="sparks-explainer-mark">✦</span><div><b>A little support goes a long way</b><p>Sparks are reader credits you can gift to authors whose stories mean something to you. Your wallet balance and gifting history are private to your account.</p></div></section>
+      <section className="sparks-explainer"><span className="sparks-explainer-mark">✦</span><div><b>A little support goes a long way</b><p>Sparks are reader credits you can send to authors whose stories mean something to you. Your wallet balance and gifting history are private.</p></div></section>
     </main>
   );
 }
