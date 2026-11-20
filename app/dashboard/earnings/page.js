@@ -470,10 +470,6 @@ function EarningsWallet() {
           <div className="activity-copy"><b>{naira(request.amount_kobo)}</b><span className="fine">{new Date(request.requested_at).toLocaleDateString()} · {request.status.replaceAll('_', ' ')}</span>{request.admin_note && <span className="fine">{request.admin_note}</span></div>
         </div>)}
       </section>
-        {loading ? <p className="fine">Loading requests…</p> : requests.length === 0 ? <p className="fine">No withdrawal requests yet.</p> : requests.map((request) => <div className="activity-row" key={request.id}>
-          <div className="activity-copy"><b>{naira(request.amount_kobo)}</b><span className="fine">{new Date(request.requested_at).toLocaleDateString()} · {request.status.replaceAll('_', ' ')}</span>{request.admin_note && <span className="fine">{request.admin_note}</span>}</div>
-        </div>)}
-      </section>
     </div>
   );
 }
