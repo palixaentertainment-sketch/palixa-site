@@ -2144,3 +2144,95 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
  .sparks-transaction { padding:.8rem .7rem; }
 }
 @media(prefers-reduced-motion:reduce) { .sparks-package { transition:none; } .sparks-package:hover { transform:none; } }
+
+
+/* Spark top-up cards — Palixia brand colours, adaptive in light/dark mode. */
+.sparks-packages {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:.8rem;
+  align-items:stretch;
+}
+.sparks-package {
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:.35rem;
+  min-width:0;
+  padding:1.15rem;
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:var(--surface);
+  color:var(--fg);
+  box-shadow:0 6px 18px rgba(55,30,90,.045);
+}
+.sparks-package-name {
+  color:var(--muted);
+  font-size:.78rem;
+  font-weight:700;
+  letter-spacing:.02em;
+}
+.sparks-package-amount {
+  margin-top:.45rem;
+  color:var(--accent);
+  font-size:clamp(1.65rem,3.5vw,2.1rem);
+  font-weight:850;
+  letter-spacing:-.045em;
+  line-height:1.05;
+}
+.sparks-package-unit {
+  color:var(--muted);
+  font-size:.64rem;
+  font-weight:800;
+  letter-spacing:.13em;
+}
+.sparks-package-price {
+  margin:.55rem 0 .8rem;
+  color:var(--fg);
+  font-size:1rem;
+  font-weight:750;
+}
+.sparks-package .btn {
+  width:100%;
+  min-height:2.7rem;
+  margin-top:auto;
+  border:1px solid var(--accent);
+  border-radius:999px;
+  background:var(--accent);
+  color:#fff;
+  font-weight:750;
+  transition:filter .18s ease,transform .18s ease;
+}
+.sparks-package .btn:hover:not(:disabled) { filter:brightness(1.08); transform:translateY(-1px); }
+.sparks-package .btn:disabled { opacity:.65; }
+.sparks-package-featured {
+  border-color:color-mix(in srgb,var(--accent) 55%,var(--line));
+  background:color-mix(in srgb,var(--accent) 7%,var(--surface));
+  box-shadow:0 10px 26px color-mix(in srgb,var(--accent) 12%,transparent);
+}
+.sparks-package-popular {
+  align-self:flex-start;
+  margin:-.2rem 0 .25rem;
+  padding:.27rem .55rem;
+  border-radius:999px;
+  background:color-mix(in srgb,var(--accent) 13%,var(--surface));
+  color:var(--accent);
+  font-size:.59rem;
+  font-weight:850;
+  letter-spacing:.1em;
+}
+:root[data-theme="dark"] .sparks-package-featured {
+  background:color-mix(in srgb,var(--accent) 14%,var(--surface));
+  border-color:color-mix(in srgb,var(--accent) 60%,var(--line));
+}
+@media(max-width:44rem) {
+  .sparks-packages { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .sparks-package { padding:1rem; }
+  .sparks-package-featured { grid-column:auto; }
+}
+@media(max-width:340px) {
+  .sparks-packages { grid-template-columns:minmax(0,1fr); }
+}
+@media(prefers-reduced-motion:reduce) { .sparks-package .btn { transition:none; } }
