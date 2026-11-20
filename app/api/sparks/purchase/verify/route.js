@@ -85,27 +85,33 @@ export async function POST(request) {
   // accepts pending rows, so recover failed rows atomically through the audited
   // service-role RPC after this route has independently verified Paystack.
   if (existingPurchase?.status === 'failed') {
-    const { data: recovered, error: recoveryError } = await userClient.rpc('recover_verified_spark_purchase_public', {
-      p_reference: reference,
-      p_amount_kobo: transaction.amount,
-      p_sparks_amount: existingPurchase.sparks_amount,
-    });
-
-    if (recoveryError || !recovered?.success) {
-      console.error('[Sparks verify] Failed-purchase recovery RPC failed', {
-        reference,
-        userId: userData.user.id,
-        code: recoveryError?.code || null,
-        message: recoveryError?.message || null,
-      });
+    // This route has authenticated the buyer, verified the successful Paystack
+    // transaction, and confirmed the purchase belongs to this buyer. Restore
+    // the failed row to pending using the trusted service client, then credit
+    // through the idempotent verified-purchase RPC.
+    const { error: restoreError } = await admin.from('spark_purchases')
+      .update({ status: 'pending' })
+      .eq('paystack_reference', reference)
+      .eq('reader_id', userData.user.id)
+      .eq('status', 'failed');
+    if (restoreError) {
+      console.error('[Sparks verify] Failed row restore error', { reference, code: restoreError.code });
       return fail('Paystack confirmed your payment, but Sparks could not be recovered automatically. Please contact support with your reference.', 500);
     }
-
+    const { data: recovered, error: recoveryError } = await admin.rpc('post_verified_spark_purchase', {
+      p_reference: reference,
+      p_amount_kobo: transaction.amount,
+      p_currency: transaction.currency,
+    });
+    if (recoveryError) {
+      console.error('[Sparks verify] Failed-purchase credit error', { reference, code: recoveryError.code });
+      return fail('Paystack confirmed your payment, but Sparks could not be recovered automatically. Please contact support with your reference.', 500);
+    }
     return NextResponse.json({
       status: 'success',
-      credited: Boolean(recovered.credited),
-      sparks: recovered.sparks_amount,
-      message: recovered.credited ? 'Your Sparks have been recovered and added.' : 'This purchase was already credited.',
+      credited: Boolean(recovered),
+      sparks: existingPurchase.sparks_amount,
+      message: recovered ? 'Your Sparks have been recovered and added.' : 'This purchase was already credited.',
     });
   }
 
@@ -169,7 +175,7 @@ export async function POST(request) {
   }
 
   // Paystack is independently verified above; invoke the guarded credit RPC with the authenticated user's JWT.
-  const { data: posted, error: postError } = await userClient.rpc('post_verified_spark_purchase', {
+  const { data: posted, error: postError } = await admin.rpc('post_verified_spark_purchase', {
     p_reference: reference,
     p_amount_kobo: transaction.amount,
     p_currency: transaction.currency,
