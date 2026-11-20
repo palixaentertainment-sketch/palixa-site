@@ -77,7 +77,7 @@ function SparksWallet() {
         <Link href="/profile" className="sparks-back">← Profile</Link>
         <span className="sparks-eyebrow">PALIXIA · READER WALLET</span>
         <h1 className="h1">Your Sparks</h1>
-        <p className="muted">Your reader wallet for celebrating the stories and authors you love.</p>
+        <p className="muted">Support the authors behind the stories you love. Sparks are being prepared for readers across Palixia.</p>
       </div>
 
       <section className="sparks-reader-overview">
@@ -87,7 +87,7 @@ function SparksWallet() {
           <span className="sparks-private">ACCOUNT BALANCE</span>
         </div>
         <div className="sparks-total">{loading ? '…' : balance.toLocaleString('en-NG')} <span>✦</span></div>
-        <p>Available to support authors and stories on Palixia.</p>
+        <p>Your Sparks wallet will be used to support authors when gifting opens.</p>
         <div className="sparks-balance-foot"><span>✦</span> Your wallet activity is private to your account.</div>
         <span className="sparks-orbit sparks-orbit-one" aria-hidden="true" />
         <span className="sparks-orbit sparks-orbit-two" aria-hidden="true" />
@@ -106,7 +106,7 @@ function SparksWallet() {
           <div><span className="sparks-eyebrow">TOP UP YOUR READER WALLET</span><h2 className="h2">Get more Sparks</h2></div>
           <span className="sparks-topup-icon">✧</span>
         </div>
-        <p className="muted">Choose a Sparks package when top-ups become available. Every Spark gives you a simple way to celebrate an author and their work.</p>
+        <p className="muted">Sparks will let readers support authors directly. The feature is in pre-launch preparation; purchases and gifts are not open yet.</p>
         {adminTesting ? (
           <>
             <div className="sparks-packages">
@@ -130,7 +130,7 @@ function SparksWallet() {
             )}
           </>
         ) : (
-          <div className="sparks-coming"><span>✦</span><div><b>Top-ups are on their way</b><small>You'll be able to add Sparks to your wallet soon.</small></div><span className="badge">Coming soon</span></div>
+          <div className="sparks-coming"><span>✦</span><div><b>Sparks are being prepared for everyone</b><small>Reader-to-author support is coming to Palixia. Top-ups and sending are not open yet.</small></div><span className="badge">Coming soon</span></div>
         )}
         {notice ? <p role="alert" className="notice">{notice}</p> : null}
       </section>
