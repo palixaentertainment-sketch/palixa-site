@@ -100,3 +100,20 @@ The login and signup pages have a "Continue with Google" button. It stays inacti
 5. In Supabase **Authentication** > **URL Configuration**, set Site URL to your site address and add it (and `https://palixa.com/**`) to **Redirect URLs**.
 6. Test with a Google account that is not already on Palixia, then with one that is.
 
+
+
+## Browser push notification test (initial implementation)
+
+The first push-notification milestone adds device subscription management and a self-test from the Notifications page. It does not yet automatically convert every existing in-site notification into a push alert.
+
+1. Run `supabase/migrations/202611210002_web_push_subscriptions.sql` in the Supabase SQL Editor.
+2. Generate a VAPID key pair with `npx web-push generate-vapid-keys`.
+3. Add these server-only Vercel environment variables:
+   - `WEB_PUSH_VAPID_PUBLIC_KEY` (the generated public key)
+   - `WEB_PUSH_VAPID_PRIVATE_KEY` (the generated private key; do not expose it)
+   - `WEB_PUSH_VAPID_SUBJECT` (a mailto: contact, e.g. `mailto:info@palixia.com`)
+   - `SUPABASE_SERVICE_ROLE_KEY` (Supabase service-role/secret key; server-only)
+4. Also set `NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY` to the same generated public key so the browser can subscribe. Never prefix the private key or service-role key with `NEXT_PUBLIC_`.
+5. Deploy the branch after review/merge and open Palixia > Notifications while signed in. Enable push on a supported browser/device and use the test composer. Optionally supply an HTTPS image to test an expanded rich notification.
+
+The initial test sends a rich Web Push payload with a Palixia icon, optional large image, two notification actions, and a same-origin click destination. Browser/OS support determines which rich fields are displayed. The test API only sends to subscriptions belonging to the authenticated user and limits test sends to three per minute per user.
