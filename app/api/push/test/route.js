@@ -95,7 +95,7 @@ export async function POST(request) {
 
     let delivered = 0;
     let expired = 0;
-    const results = await Promise.all(subscriptions.map(async (row) => {
+    await Promise.all(subscriptions.map(async (row) => {
       try {
         await webpush.sendNotification(row.subscription, JSON.stringify(payload));
         delivered += 1;
