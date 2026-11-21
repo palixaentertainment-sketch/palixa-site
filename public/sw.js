@@ -1,4 +1,4 @@
-const CACHE_NAME = 'palixia-shell-v4';
+const CACHE_NAME = 'palixia-shell-v5';
 const IMAGE_CACHE_NAME = 'palixia-images-v1';
 const OFFLINE_URL = '/offline.html';
 const APP_ICONS = ['/brand/icon-192.png', '/brand/icon-512.png'];
@@ -110,4 +110,54 @@ self.addEventListener('fetch', (event) => {
       }
     })());
   }
+});
+
+
+function pushPayload(event) {
+  try {
+    return event.data ? event.data.json() : {};
+  } catch {
+    return { body: event.data ? event.data.text() : '' };
+  }
+}
+
+self.addEventListener('push', (event) => {
+  const payload = pushPayload(event);
+  const title = typeof payload.title === 'string' && payload.title ? payload.title : 'Palixia';
+  const options = {
+    body: typeof payload.body === 'string' ? payload.body : '',
+    icon: payload.icon || '/brand/icon-192.png',
+    badge: payload.badge || '/brand/icon-192.png',
+    image: payload.image || undefined,
+    tag: payload.tag || undefined,
+    renotify: Boolean(payload.renotify),
+    data: { url: payload.url || '/' },
+    actions: Array.isArray(payload.actions) ? payload.actions.slice(0, 2) : [],
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  if (event.action === 'dismiss') return;
+
+  let targetUrl = '/';
+  try {
+    const rawTarget = event.notification.data && event.notification.data.url;
+    const target = new URL(rawTarget || '/', self.location.origin);
+    if (target.origin === self.location.origin) targetUrl = target.href;
+  } catch {
+    targetUrl = self.location.origin + '/';
+  }
+
+  event.waitUntil((async () => {
+    const windowClients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const client of windowClients) {
+      if (new URL(client.url).origin === self.location.origin) {
+        const navigated = await client.navigate(targetUrl);
+        return (navigated || client).focus();
+      }
+    }
+    return self.clients.openWindow(targetUrl);
+  })());
 });
