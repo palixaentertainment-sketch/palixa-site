@@ -27,8 +27,8 @@ export default function PushNotificationsSettings({ user }) {
       && 'Notification' in window;
     setSupported(available);
     if (!available) return;
-    navigator.serviceWorker.ready
-      .then((registration) => registration.pushManager.getSubscription())
+    navigator.serviceWorker.getRegistration()
+      .then((registration) => registration && registration.pushManager.getSubscription())
       .then((subscription) => setEnabled(Boolean(subscription)))
       .catch(() => {});
   }, []);
@@ -55,7 +55,8 @@ export default function PushNotificationsSettings({ user }) {
         setBusy(false);
         return;
       }
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (!registration) throw new Error('The push service worker is not installed here yet. Please use the deployed Palixia website');
       const existing = await registration.pushManager.getSubscription();
       const subscription = existing || await registration.pushManager.subscribe({
         userVisibleOnly: true,
