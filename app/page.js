@@ -74,7 +74,7 @@ export default function Home() {
           .limit(8);
         if (trendingError) throw trendingError;
         if (cancelled) return;
-        setData({ featured: [], trending: trendingData || [], fresh: [] });
+        setData((previous) => ({ featured: previous?.featured || [], trending: trendingData || [], fresh: previous?.fresh || [] }));
         setFailed(false);
       } catch (error) {
         console.error('[Palixia home] Primary stories could not load:', error);
@@ -99,10 +99,10 @@ export default function Home() {
 
     loadOptional('Featured stories',
       supabase.from('book_cards').select(BOOK_CARD_FIELDS).eq('featured', true).order('reads', { ascending: false }).limit(6),
-      (featuredData) => setData((previous) => previous ? { ...previous, featured: featuredData } : previous));
+      (featuredData) => setData((previous) => ({ ...(previous || { featured: [], trending: [], fresh: [] }), featured: featuredData })));
     loadOptional('Fresh stories',
       supabase.from('book_cards').select(BOOK_CARD_FIELDS).order('created_at', { ascending: false }).limit(8),
-      (freshData) => setData((previous) => previous ? { ...previous, fresh: freshData } : previous));
+      (freshData) => setData((previous) => ({ ...(previous || { featured: [], trending: [], fresh: [] }), fresh: freshData })));
     loadOptional('Genres',
       supabase.from('genres').select('*').order('sort'),
       (genreData) => {
