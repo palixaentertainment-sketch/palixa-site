@@ -52,11 +52,10 @@ export default function PushNotificationsSettings({ user }) {
         setError(permission === 'denied'
           ? 'Notifications are blocked in your browser settings. Change that permission and try again.'
           : 'Notification permission was not granted.');
-        setBusy(false);
         return;
       }
       const registration = await navigator.serviceWorker.getRegistration();
-      if (!registration) throw new Error('The push service worker is not installed here yet. Please use the deployed Palixia website');
+      if (!registration) throw new Error('The push service worker is not installed here yet. Please use the deployed Palixia website.');
       const existing = await registration.pushManager.getSubscription();
       const subscription = existing || await registration.pushManager.subscribe({
         userVisibleOnly: true,
@@ -85,8 +84,8 @@ export default function PushNotificationsSettings({ user }) {
     setNotice('');
     setBusy(true);
     try {
-      const registration = await navigator.serviceWorker.ready;
-      const subscription = await registration.pushManager.getSubscription();
+      const registration = await navigator.serviceWorker.getRegistration();
+      const subscription = registration ? await registration.pushManager.getSubscription() : null;
       if (subscription) {
         await supabase.from('push_subscriptions').delete().eq('user_id', user.id).eq('endpoint', subscription.endpoint);
         await subscription.unsubscribe();
@@ -133,7 +132,7 @@ export default function PushNotificationsSettings({ user }) {
     <section className="card stack">
       <div className="stack" style={{ gap: '.35rem' }}>
         <h2 className="h2">Push notifications</h2>
-        <p className="muted">Receive Palixia updates on this device, even when you are not browsing the website.</      </p>
+        <p className="muted">Receive Palixia updates on this device, even when you are not browsing the website.</p>
       </div>
       {!supported && <p className="notice">Push notifications are not supported by this browser. Try a supported browser on this device.</p>}
       {supported && (
