@@ -54,6 +54,23 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Please sign in again.' }, { status: 401 });
     }
 
+    const now = Date.now();
+    const previous = testSendWindow.get(authData.user.id) || { startedAt: now, count: 0 };
+    if (now - previous.startedAt >= TEST_SEND_WINDOW_MS) {
+      previous.startedAt = now;
+      previous.count = 0;
+    }
+    if (previous.count >= TEST_SEND_LIMIT) {
+      return NextResponse.json({ error: 'Please wait a minute before sending more test notifications.' }, { status: 429 });
+    }
+    previous.count += 1;
+    testSendWindow.set(authData.user.id, previous);
+    if (testSendWindow.size > 5000) {
+      for (const [userId, entry] of testSendWindow) {
+        if (now - entry.startedAt >= TEST_SEND_WINDOW_MS) testSendWindow.delete(userId);
+      }
+    }
+
     const body = await request.json();
     const title = typeof body.title === 'string' ? body.title.trim().slice(0, 80) : 'Palixia';
     const message = typeof body.message === 'string' ? body.message.trim().slice(0, 180) : '';
