@@ -19,6 +19,8 @@ const BOOK_CARD_FIELDS = 'id,author_id,title,description,cover_url,book_type,tag
 export default function Home() {
   const { user } = useAuth();
   const [data, setData] = useState(null);
+  const [featuredStories, setFeaturedStories] = useState([]);
+  const [freshStories, setFreshStories] = useState([]);
   const [originals, setOriginals] = useState([]);
   const [genres, setGenres] = useState([]);
   const [authors, setAuthors] = useState([]);
@@ -56,7 +58,9 @@ export default function Home() {
   useEffect(() => {
     let cancelled = false;
     if (!configured) {
-      setData({ featured: [], trending: [], fresh: [] });
+      setData({ trending: [] });
+      setFeaturedStories([]);
+      setFreshStories([]);
       setContinueReading([]);
       setFollowedUpdates([]);
       setRecommended([]);
@@ -74,7 +78,7 @@ export default function Home() {
           .limit(8);
         if (trendingError) throw trendingError;
         if (cancelled) return;
-        setData((previous) => ({ featured: previous?.featured || [], trending: trendingData || [], fresh: previous?.fresh || [] }));
+        setData({ trending: trendingData || [] });
         setFailed(false);
       } catch (error) {
         console.error('[Palixia home] Primary stories could not load:', error);
@@ -99,10 +103,10 @@ export default function Home() {
 
     loadOptional('Featured stories',
       supabase.from('book_cards').select(BOOK_CARD_FIELDS).eq('featured', true).order('reads', { ascending: false }).limit(6),
-      (featuredData) => setData((previous) => ({ ...(previous || { featured: [], trending: [], fresh: [] }), featured: featuredData })));
+      (featuredData) => setFeaturedStories(featuredData));
     loadOptional('Fresh stories',
       supabase.from('book_cards').select(BOOK_CARD_FIELDS).order('created_at', { ascending: false }).limit(8),
-      (freshData) => setData((previous) => ({ ...(previous || { featured: [], trending: [], fresh: [] }), fresh: freshData })));
+      (freshData) => setFreshStories(freshData));
     loadOptional('Genres',
       supabase.from('genres').select('*').order('sort'),
       (genreData) => {
@@ -251,7 +255,7 @@ export default function Home() {
     return () => { cancelled = true; };
   }, [user?.id]);
 
-  const featured = data && data.featured.length ? data.featured : data ? data.trending.slice(0, 3) : [];
+  const featured = data && featuredStories.length ? featuredStories : data ? data.trending.slice(0, 3) : [];
   const picks = user ? (recommended.length ? recommended : (data ? data.trending.slice(0, 8) : [])) : [];
 
   return (
@@ -422,8 +426,8 @@ export default function Home() {
         <section><div className="sechead"><div><h2 className="h2">Trending now</h2><p className="fine">Popular with readers.</p></div><Link href="/discover?sort=most_read">See all</Link></div><div className="shelf">{data.trending.map((b) => <BookCard key={b.id} b={b} />)}</div></section>
       )}
 
-      {data && data.fresh.length > 0 && (
-        <section><div className="sechead"><div><h2 className="h2">Just released</h2><p className="fine">Fresh stories and new chapters to discover.</p></div><Link href="/discover?sort=newest">See all</Link></div><div className="shelf">{data.fresh.map((b) => <BookCard key={b.id} b={b} />)}</div></section>
+      {freshStories.length > 0 && (
+        <section><div className="sechead"><div><h2 className="h2">Just released</h2><p className="fine">Fresh stories and new chapters to discover.</p></div><Link href="/discover?sort=newest">See all</Link></div><div className="shelf">{freshStories.map((b) => <BookCard key={b.id} b={b} />)}</div></section>
       )}
 
       {genres.length > 0 && (
