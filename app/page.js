@@ -19,6 +19,8 @@ const BOOK_CARD_FIELDS = 'id,author_id,title,description,cover_url,book_type,tag
 export default function Home() {
   const { user } = useAuth();
   const [data, setData] = useState(null);
+  const [featuredStories, setFeaturedStories] = useState([]);
+  const [freshStories, setFreshStories] = useState([]);
   const [originals, setOriginals] = useState([]);
   const [genres, setGenres] = useState([]);
   const [authors, setAuthors] = useState([]);
@@ -56,162 +58,204 @@ export default function Home() {
   useEffect(() => {
     let cancelled = false;
     if (!configured) {
-      setData({ featured: [], trending: [], fresh: [] });
+      setData({ trending: [] });
+      setFeaturedStories([]);
+      setFreshStories([]);
       setContinueReading([]);
       setFollowedUpdates([]);
       setRecommended([]);
       return () => { cancelled = true; };
     }
 
+    // Fetch the primary homepage shelf first. The page no longer waits for every
+    // secondary section, author lookup, or personalized recommendation query.
     (async () => {
       try {
-        const [f, t, n, g, a, creatorSelection, o, candidatesResult] = await Promise.all([
-          supabase.from('book_cards').select(BOOK_CARD_FIELDS).eq('featured', true).order('reads', { ascending: false }).limit(6),
-          supabase.from('book_cards').select(BOOK_CARD_FIELDS).order('reads', { ascending: false }).limit(12),
-          supabase.from('book_cards').select(BOOK_CARD_FIELDS).order('created_at', { ascending: false }).limit(12),
-          supabase.from('genres').select('*').order('sort'),
-          supabase.rpc('popular_authors', { lim: 8 }),
-          supabase.from('creator_of_week').select('book_id').eq('id', true).maybeSingle(),
-          supabase.from('palixia_originals_home_cards_v2').select(BOOK_CARD_FIELDS).order('created_at', { ascending: false }).limit(12),
-          supabase.from('book_cards').select(BOOK_CARD_FIELDS).order('reads', { ascending: false }).limit(60),
-        ]);
-        if (f.error || t.error || n.error) throw new Error('Could not load books');
-        if (candidatesResult.error) throw new Error('Could not load recommendations');
+        const { data: trendingData, error: trendingError } = await supabase
+          .from('book_cards')
+          .select(BOOK_CARD_FIELDS)
+          .order('reads', { ascending: false })
+          .limit(8);
+        if (trendingError) throw trendingError;
         if (cancelled) return;
-
-        const featured = f.data || [];
-        const trending = t.data || [];
-        const fresh = n.data || [];
-        setData({ featured, trending, fresh });
-        setOriginals(o.error ? [] : (o.data || []));
-        // Keep the Comics genre hidden until Palixia has comics ready to feature.
-        // Keep the original homepage genres; newly added genres are shown in Discover only.
-        const homepageGenreSlugs = new Set(['romance', 'thriller', 'crime', 'mystery', 'fantasy', 'horror', 'drama', 'sci-fi', 'short-stories']);
-        setGenres((g.data || []).filter((genre) => homepageGenreSlugs.has(genre.slug)));
-        setAuthors(a.data || []);
-        // Creator of the Week is selected manually by an admin. Never fall back to the newest book.
-        setCreatorBook(null);
-        const selectedBookId = creatorSelection.data?.book_id;
-        if (selectedBookId) {
-          const selected = await supabase.from('book_cards').select(BOOK_CARD_FIELDS).eq('id', selectedBookId).maybeSingle();
-          if (!cancelled && !selected.error && selected.data) setCreatorBook(selected.data);
-        }
+        setData({ trending: trendingData || [] });
         setFailed(false);
-
-        if (!user) {
-          setContinueReading([]);
-          setFollowedUpdates([]);
-          setRecommended([]);
-          setRecommendationNote('');
-          return;
-        }
-
-        const [pr, sv, fo, finished] = await Promise.all([
-          supabase.from('reading_progress').select('book_id,chapter_id,progress,updated_at')
-            .eq('user_id', user.id).lt('progress', 100).order('updated_at', { ascending: false }).limit(8),
-          supabase.from('bookmarks').select('book_id').eq('user_id', user.id).is('chapter_id', null).limit(100),
-          supabase.from('follows').select('author_id').eq('user_id', user.id).limit(100),
-          supabase.from('reading_progress').select('book_id')
-            .eq('user_id', user.id).eq('progress', 100).limit(100),
-        ]);
-        if (pr.error || sv.error || fo.error) throw new Error('Could not load personalised books');
-
-        const progressRows = pr.data || [];
-        const savedIds = (sv.data || []).map((r) => r.book_id).filter(Boolean);
-        const progressIds = progressRows.map((r) => r.book_id).filter(Boolean);
-        const finishedIds = finished.error ? [] : (finished.data || []).map((r) => r.book_id).filter(Boolean);
-        const followedAuthors = new Set((fo.data || []).map((r) => r.author_id));
-        // Include completed books in recommendation preferences and exclude them from repeat suggestions.
-        const historyIds = [...new Set([...savedIds, ...progressIds, ...finishedIds])];
-
-        let historyBooks = [];
-        if (historyIds.length) {
-          const historyResult = await supabase.from('book_cards').select(BOOK_CARD_FIELDS).in('id', historyIds);
-          if (historyResult.error) throw new Error('Could not load reading history');
-          historyBooks = historyResult.data || [];
-        }
-        const historyById = new Map(historyBooks.map((b) => [b.id, b]));
-        const continueRows = progressRows.map((row) => {
-          const book = historyById.get(row.book_id);
-          return book ? { ...book, progress: row.progress, chapter_id: row.chapter_id, updated_at: row.updated_at } : null;
-        }).filter(Boolean);
-        if (cancelled) return;
-        setContinueReading(continueRows);
-
-        // Show fresh chapters from authors the reader has chosen to follow.
-        // Keep this independent of popularity/read metrics so updates are surfaced fairly.
-        setFollowedUpdates([]);
-        if (followedAuthors.size > 0) {
-          try {
-            const followedBooksResult = await supabase.from('book_cards')
-              .select('id,title,cover_url,book_type,is_sample,author_id,author_name')
-              .in('author_id', [...followedAuthors])
-              .limit(100);
-            if (followedBooksResult.error) throw followedBooksResult.error;
-            const followedBooks = followedBooksResult.data || [];
-            const followedBookIds = followedBooks.map((book) => book.id).filter(Boolean);
-            if (followedBookIds.length) {
-              const chapterResult = await supabase.from('chapters')
-                .select('id,book_id,title,updated_at')
-                .in('book_id', followedBookIds)
-                .eq('status', 'published')
-                .order('updated_at', { ascending: false })
-                .limit(8);
-              if (chapterResult.error) throw chapterResult.error;
-              const bookById = new Map(followedBooks.map((book) => [book.id, book]));
-              const updates = (chapterResult.data || []).map((chapter) => {
-                const book = bookById.get(chapter.book_id);
-                return book ? {
-                  ...chapter,
-                  book_title: book.title,
-                  cover_url: book.cover_url,
-                  book_type: book.book_type,
-                  is_sample: book.is_sample,
-                  author_name: book.author_name || '',
-                } : null;
-              }).filter(Boolean);
-              if (!cancelled) setFollowedUpdates(updates);
-            }
-          } catch (updateError) {
-            console.warn('[Palixia home] Followed-author updates could not load:', updateError);
-          }
-        }
-
-        const genreWeights = new Map();
-        const tagWeights = new Map();
-        for (const book of historyBooks) {
-          if (book.genre_id) genreWeights.set(book.genre_id, (genreWeights.get(book.genre_id) || 0) + 2);
-          for (const tag of (book.tags || [])) {
-            const key = String(tag).toLowerCase().trim();
-            if (key) tagWeights.set(key, (tagWeights.get(key) || 0) + 1);
-          }
-        }
-
-        const alreadyKnown = new Set(historyIds);
-        const candidates = (candidatesResult.data || []).filter((b) => !alreadyKnown.has(b.id));
-        const hasHistory = genreWeights.size > 0 || tagWeights.size > 0 || followedAuthors.size > 0;
-        const ranked = candidates.map((book) => {
-          let score = 0;
-          if (book.genre_id) score += genreWeights.get(book.genre_id) || 0;
-          for (const tag of (book.tags || [])) score += tagWeights.get(String(tag).toLowerCase().trim()) || 0;
-          if (followedAuthors.has(book.author_id)) score += 3;
-          return { book, score };
-        }).sort((x, y) => y.score - x.score || (y.book.reads || 0) - (x.book.reads || 0));
-        if (cancelled) return;
-        setRecommended(ranked.slice(0, 8).map((r) => r.book));
-        setRecommendationNote(hasHistory
-          ? 'Based on genres, tags and authors connected to your reading activity.'
-          : 'Popular stories to get you started. Your picks will become more personal as you read and save books.');
-      } catch (e) {
-        console.error('[Palixia home] Could not load homepage:', e);
+      } catch (error) {
+        console.error('[Palixia home] Primary stories could not load:', error);
         if (!cancelled) setFailed(true);
       }
     })();
 
+    // Secondary homepage content is independent: slow sections must not hold back
+    // the first visible book shelf.
+    const loadOptional = (label, query, apply) => {
+      Promise.resolve(query).then(({ data: resultData, error }) => {
+        if (cancelled) return;
+        if (error) {
+          console.warn('[Palixia home] ' + label + ' could not load:', error);
+          return;
+        }
+        apply(resultData || []);
+      }).catch((error) => {
+        if (!cancelled) console.warn('[Palixia home] ' + label + ' could not load:', error);
+      });
+    };
+
+    loadOptional('Featured stories',
+      supabase.from('book_cards').select(BOOK_CARD_FIELDS).eq('featured', true).order('reads', { ascending: false }).limit(6),
+      (featuredData) => setFeaturedStories(featuredData));
+    loadOptional('Fresh stories',
+      supabase.from('book_cards').select(BOOK_CARD_FIELDS).order('created_at', { ascending: false }).limit(8),
+      (freshData) => setFreshStories(freshData));
+    loadOptional('Genres',
+      supabase.from('genres').select('*').order('sort'),
+      (genreData) => {
+        const homepageGenreSlugs = new Set(['romance', 'thriller', 'crime', 'mystery', 'fantasy', 'horror', 'drama', 'sci-fi', 'short-stories']);
+        setGenres(genreData.filter((genre) => homepageGenreSlugs.has(genre.slug)));
+      });
+    loadOptional('Popular authors',
+      supabase.rpc('popular_authors', { lim: 8 }),
+      (authorData) => setAuthors(authorData));
+    loadOptional('Palixia Originals',
+      supabase.from('palixia_originals_home_cards_v2').select(BOOK_CARD_FIELDS).order('created_at', { ascending: false }).limit(8),
+      (originalData) => setOriginals(originalData));
+
+    supabase.from('creator_of_week').select('book_id').eq('id', true).maybeSingle()
+      .then(async ({ data: creatorSelection, error }) => {
+        if (cancelled) return;
+        if (error) {
+          console.warn('[Palixia home] Creator of the Week selection could not load:', error);
+          return;
+        }
+        const selectedBookId = creatorSelection?.book_id;
+        if (!selectedBookId) {
+          setCreatorBook(null);
+          return;
+        }
+        const { data: selected, error: selectedError } = await supabase
+          .from('book_cards').select(BOOK_CARD_FIELDS).eq('id', selectedBookId).maybeSingle();
+        if (cancelled) return;
+        if (selectedError) console.warn('[Palixia home] Creator of the Week book could not load:', selectedError);
+        else if (selected) setCreatorBook(selected);
+      })
+      .catch((error) => {
+        if (!cancelled) console.warn('[Palixia home] Creator of the Week could not load:', error);
+      });
+
+    // Personalized shelves are only requested for signed-in readers and run in the
+    // background, so their larger queries never block the public homepage.
+    if (!user) {
+      setContinueReading([]);
+      setFollowedUpdates([]);
+      setRecommended([]);
+      setRecommendationNote('');
+    } else {
+      (async () => {
+        try {
+          const [progressResult, savedResult, followsResult, finishedResult, candidatesResult] = await Promise.all([
+            supabase.from('reading_progress').select('book_id,chapter_id,progress,updated_at')
+              .eq('user_id', user.id).lt('progress', 100).order('updated_at', { ascending: false }).limit(8),
+            supabase.from('bookmarks').select('book_id').eq('user_id', user.id).is('chapter_id', null).limit(100),
+            supabase.from('follows').select('author_id').eq('user_id', user.id).limit(100),
+            supabase.from('reading_progress').select('book_id').eq('user_id', user.id).eq('progress', 100).limit(100),
+            supabase.from('book_cards').select(BOOK_CARD_FIELDS).order('reads', { ascending: false }).limit(30),
+          ]);
+          if (cancelled) return;
+          if (progressResult.error || savedResult.error || followsResult.error) {
+            throw new Error('Personalized reading data could not load');
+          }
+
+          const progressRows = progressResult.data || [];
+          const savedIds = (savedResult.data || []).map((row) => row.book_id).filter(Boolean);
+          const progressIds = progressRows.map((row) => row.book_id).filter(Boolean);
+          const finishedIds = finishedResult.error ? [] : (finishedResult.data || []).map((row) => row.book_id).filter(Boolean);
+          const followedAuthors = new Set((followsResult.data || []).map((row) => row.author_id));
+          const historyIds = [...new Set([...savedIds, ...progressIds, ...finishedIds])];
+
+          const [historyResult, followedBooksResult] = await Promise.all([
+            historyIds.length
+              ? supabase.from('book_cards').select(BOOK_CARD_FIELDS).in('id', historyIds)
+              : Promise.resolve({ data: [], error: null }),
+            followedAuthors.size
+              ? supabase.from('book_cards').select('id,title,cover_url,book_type,is_sample,author_id,author_name').in('author_id', [...followedAuthors]).limit(100)
+              : Promise.resolve({ data: [], error: null }),
+          ]);
+          if (cancelled) return;
+          if (historyResult.error) throw new Error('Reading history could not load');
+          const historyBooks = historyResult.data || [];
+          const historyById = new Map(historyBooks.map((book) => [book.id, book]));
+          const continueRows = progressRows.map((row) => {
+            const book = historyById.get(row.book_id);
+            return book ? { ...book, progress: row.progress, chapter_id: row.chapter_id, updated_at: row.updated_at } : null;
+          }).filter(Boolean);
+          setContinueReading(continueRows);
+
+          setFollowedUpdates([]);
+          if (!followedBooksResult.error && followedBooksResult.data?.length) {
+            const followedBooks = followedBooksResult.data;
+            const followedBookIds = followedBooks.map((book) => book.id).filter(Boolean);
+            if (followedBookIds.length) {
+              const chapterResult = await supabase.from('chapters')
+                .select('id,book_id,title,updated_at').in('book_id', followedBookIds)
+                .eq('status', 'published').order('updated_at', { ascending: false }).limit(8);
+              if (!cancelled && !chapterResult.error) {
+                const bookById = new Map(followedBooks.map((book) => [book.id, book]));
+                setFollowedUpdates((chapterResult.data || []).map((chapter) => {
+                  const book = bookById.get(chapter.book_id);
+                  return book ? {
+                    ...chapter,
+                    book_title: book.title,
+                    cover_url: book.cover_url,
+                    book_type: book.book_type,
+                    is_sample: book.is_sample,
+                    author_name: book.author_name || '',
+                  } : null;
+                }).filter(Boolean));
+              }
+            }
+          } else if (followedBooksResult.error) {
+            console.warn('[Palixia home] Followed-author books could not load:', followedBooksResult.error);
+          }
+
+          if (candidatesResult.error) {
+            console.warn('[Palixia home] Recommendation candidates could not load:', candidatesResult.error);
+            setRecommended([]);
+            return;
+          }
+          const genreWeights = new Map();
+          const tagWeights = new Map();
+          for (const book of historyBooks) {
+            if (book.genre_id) genreWeights.set(book.genre_id, (genreWeights.get(book.genre_id) || 0) + 2);
+            for (const tag of (book.tags || [])) {
+              const key = String(tag).toLowerCase().trim();
+              if (key) tagWeights.set(key, (tagWeights.get(key) || 0) + 1);
+            }
+          }
+          const alreadyKnown = new Set(historyIds);
+          const candidates = (candidatesResult.data || []).filter((book) => !alreadyKnown.has(book.id));
+          const hasHistory = genreWeights.size > 0 || tagWeights.size > 0 || followedAuthors.size > 0;
+          const ranked = candidates.map((book) => {
+            let score = 0;
+            if (book.genre_id) score += genreWeights.get(book.genre_id) || 0;
+            for (const tag of (book.tags || [])) score += tagWeights.get(String(tag).toLowerCase().trim()) || 0;
+            if (followedAuthors.has(book.author_id)) score += 3;
+            return { book, score };
+          }).sort((left, right) => right.score - left.score || (right.book.reads || 0) - (left.book.reads || 0));
+          if (cancelled) return;
+          setRecommended(ranked.slice(0, 8).map((item) => item.book));
+          setRecommendationNote(hasHistory
+            ? 'Based on genres, tags and authors connected to your reading activity.'
+            : 'Popular stories to get you started. Your picks will become more personal as you read and save books.');
+        } catch (error) {
+          console.warn('[Palixia home] Personalized shelves could not load:', error);
+        }
+      })();
+    }
+
     return () => { cancelled = true; };
   }, [user?.id]);
 
-  const featured = data && data.featured.length ? data.featured : data ? data.trending.slice(0, 3) : [];
+  const featured = data && featuredStories.length ? featuredStories : data ? data.trending.slice(0, 3) : [];
   const picks = user ? (recommended.length ? recommended : (data ? data.trending.slice(0, 8) : [])) : [];
 
   return (
@@ -382,8 +426,8 @@ export default function Home() {
         <section><div className="sechead"><div><h2 className="h2">Trending now</h2><p className="fine">Popular with readers.</p></div><Link href="/discover?sort=most_read">See all</Link></div><div className="shelf">{data.trending.map((b) => <BookCard key={b.id} b={b} />)}</div></section>
       )}
 
-      {data && data.fresh.length > 0 && (
-        <section><div className="sechead"><div><h2 className="h2">Just released</h2><p className="fine">Fresh stories and new chapters to discover.</p></div><Link href="/discover?sort=newest">See all</Link></div><div className="shelf">{data.fresh.map((b) => <BookCard key={b.id} b={b} />)}</div></section>
+      {freshStories.length > 0 && (
+        <section><div className="sechead"><div><h2 className="h2">Just released</h2><p className="fine">Fresh stories and new chapters to discover.</p></div><Link href="/discover?sort=newest">See all</Link></div><div className="shelf">{freshStories.map((b) => <BookCard key={b.id} b={b} />)}</div></section>
       )}
 
       {genres.length > 0 && (
