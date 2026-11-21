@@ -6,11 +6,11 @@ export const runtime = 'nodejs';
 
 const SITE_ORIGIN = process.env.NEXT_PUBLIC_SITE_URL || 'https://palixa.com';
 
-function safeTarget(value) {
+function safeTarget(value, origin) {
   if (typeof value !== 'string' || !value.trim()) return '/notifications';
   try {
-    const target = new URL(value, SITE_ORIGIN);
-    if (target.origin !== SITE_ORIGIN || !['https:', 'http:'].includes(target.protocol)) return '/notifications';
+    const target = new URL(value, origin);
+    if (target.origin !== origin || !['https:', 'http:'].includes(target.protocol)) return '/notifications';
     return target.pathname + target.search + target.hash;
   } catch {
     return '/notifications';
@@ -102,7 +102,7 @@ export async function POST(request) {
       icon: '/brand/icon-192.png',
       badge: '/brand/icon-192.png',
       image: safeImage(body.image),
-      url: safeTarget(body.url),
+      url: safeTarget(body.url, new URL(request.url).origin),
       tag: 'palixia-push-test',
       actions: [
         { action: 'open', title: 'Open Palixia' },
