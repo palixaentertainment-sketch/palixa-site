@@ -87,7 +87,8 @@ export default function PushNotificationsSettings({ user }) {
       const registration = await navigator.serviceWorker.getRegistration();
       const subscription = registration ? await registration.pushManager.getSubscription() : null;
       if (subscription) {
-        await supabase.from('push_subscriptions').delete().eq('user_id', user.id).eq('endpoint', subscription.endpoint);
+        const { error: deleteError } = await supabase.from('push_subscriptions').delete().eq('user_id', user.id).eq('endpoint', subscription.endpoint);
+        if (deleteError) throw deleteError;
         await subscription.unsubscribe();
       }
       setEnabled(false);
