@@ -57,7 +57,6 @@ export default function Home({ initialTrending = [], initialTrendingLoaded = fal
 
   useEffect(() => {
     let cancelled = false;
-    if (initialTrendingLoaded) return () => { cancelled = true; };
     if (!configured) {
       setData({ trending: [] });
       setFeaturedStories([]);
@@ -68,6 +67,7 @@ export default function Home({ initialTrending = [], initialTrendingLoaded = fal
       return () => { cancelled = true; };
     }
 
+    if (!initialTrendingLoaded) {
     // Fetch the primary homepage shelf first. The page no longer waits for every
     // secondary section, author lookup, or personalized recommendation query.
     (async () => {
@@ -86,6 +86,8 @@ export default function Home({ initialTrending = [], initialTrendingLoaded = fal
         if (!cancelled) setFailed(true);
       }
     })();
+
+    }
 
     // Secondary homepage content is independent: slow sections must not hold back
     // the first visible book shelf.
