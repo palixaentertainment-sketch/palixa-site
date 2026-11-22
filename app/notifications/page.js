@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase, configured } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
+import PushNotificationsSettings from '@/components/PushNotificationsSettings';
 
 function timeLabel(value) {
   const date = new Date(value);
@@ -52,6 +53,7 @@ export default function NotificationsPage() {
   return (
     <section className="stack">
       <div className="sechead"><h1 className="h1">Notifications</h1><button className="btn ghost small" onClick={markAllRead}>Mark all read</button></div>
+      <PushNotificationsSettings user={user} />
       {error && <p className="notice">{error} Run <code>supabase/notifications.sql</code> in Supabase SQL Editor, then refresh.</p>}
       {busy && <p className="muted">Loading notifications…</p>}
       {!busy && !error && items.length === 0 && <div className="empty"><b>You’re all caught up.</b><p className="muted">Likes, comments, new followers, new books from authors you follow, and new chapters from followed or saved books will show up here.</p></div>}
