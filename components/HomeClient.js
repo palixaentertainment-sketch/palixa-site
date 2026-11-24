@@ -435,9 +435,7 @@ export default function Home({ initialTrending = [], initialTrendingLoaded = fal
         <section><div className="sechead"><div><h2 className="h2">Find your kind of story</h2><p className="fine">Browse by the mood or genre you love.</p></div><Link href="/categories">All genres</Link></div><div className="genres">{genres.map((g) => <Link key={g.id} href={'/discover?genre=' + g.slug} className="gcard" style={genreStyle(g.slug)}>{g.name}</Link>)}</div></section>
       )}
 
-      {authors.length > 0 && (
-        <section><div className="sechead"><div><h2 className="h2">Meet the authors</h2><p className="fine">Find writers whose stories you want to read next.</p></div><Link href="/authors">All authors</Link></div><div className="authors">{authors.map((a) => <Link key={a.id} href={'/author/' + a.username} className="acard"><Avatar src={a.avatar_url} name={a.name} size="4.2rem" /><b>{a.name}</b></Link>)}</div></section>
-      )}
+
 
       <section className="home-cta"><div><span className="home-eyebrow">MADE FOR STORYTELLERS</span><h2>Have a story to share?</h2><p>Publish for free and let readers around the world discover your work.</p></div><PublishLink className="btn">Start publishing</PublishLink></section>
     </>
