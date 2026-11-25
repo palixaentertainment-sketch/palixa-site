@@ -388,6 +388,8 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .rtitle strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rpanel { border-bottom: 1px solid var(--line); background: var(--surface); }
 .rpanel .wrap { max-width: 52rem; display: flex; gap: 0.6rem; flex-wrap: wrap; padding-block: 0.8rem; align-items: center; }
+.rspacing-controls { display: inline-flex; align-items: center; gap: 0.45rem; flex-wrap: wrap; }
+.rspacing-label { color: var(--muted); font-size: 0.85rem; font-weight: 600; margin-inline: 0.25rem; }
 .rbody { padding-block: 1.5rem 2rem; }
 .rtext { max-width: 44rem; margin-inline: auto; padding-inline: 18px; font-family: var(--read); line-height: 1.75; }
 .rtext h1 { font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.9rem; line-height: 1.1; margin-bottom: 1.6rem; }

@@ -25,6 +25,7 @@ export default function Reader() {
   const [pagesLoaded, setPagesLoaded] = useState(false);
   const [theme, setTheme] = useState('light');
   const [size, setSize] = useState(1.1);
+  const [lineSpacing, setLineSpacing] = useState(1.75);
   const [panel, setPanel] = useState(false);
   const [marked, setMarked] = useState(false);
   const [pct, setPct] = useState(0);
@@ -38,6 +39,8 @@ export default function Reader() {
     setTheme(load('palixa-rtheme', 'light') === 'dark' ? 'dark' : 'light');
     const s = parseFloat(load('palixa-rsize', '1.1'));
     if (s >= 0.9 && s <= 1.7) setSize(s);
+    const spacing = parseFloat(load('palixa-rline', '1.75'));
+    if ([1.5, 1.75, 2].includes(spacing)) setLineSpacing(spacing);
   }, []);
 
   const fetchAll = useCallback(async () => {
@@ -169,6 +172,7 @@ export default function Reader() {
   }
 
   function setThemeTo(t) { setTheme(t); store('palixa-rtheme', t); }
+  function setLineSpacingTo(value) { setLineSpacing(value); store('palixa-rline', value); }
   function bump(d) {
     const next = Math.min(1.7, Math.max(0.9, Math.round((size + d) * 100) / 100));
     setSize(next); store('palixa-rsize', next);
@@ -251,6 +255,14 @@ export default function Reader() {
             )}
             <button type="button" className="rbtn" aria-pressed={theme === 'light'} onClick={() => setThemeTo('light')}>Light</button>
             <button type="button" className="rbtn" aria-pressed={theme === 'dark'} onClick={() => setThemeTo('dark')}>Dark</button>
+            {!isComic && (
+              <div className="rspacing-controls" role="group" aria-label="Line spacing">
+                <span className="rspacing-label">Line spacing</span>
+                <button type="button" className="rbtn" aria-pressed={lineSpacing === 1.5} onClick={() => setLineSpacingTo(1.5)}>Compact</button>
+                <button type="button" className="rbtn" aria-pressed={lineSpacing === 1.75} onClick={() => setLineSpacingTo(1.75)}>Comfortable</button>
+                <button type="button" className="rbtn" aria-pressed={lineSpacing === 2} onClick={() => setLineSpacingTo(2)}>Relaxed</button>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -287,7 +299,7 @@ export default function Reader() {
             ))}
           </div>
         ) : (
-          <article className="rtext" style={{ fontSize: size + 'rem' }}
+          <article className="rtext" style={{ fontSize: size + 'rem', lineHeight: lineSpacing }}
             onCopy={(e) => e.preventDefault()}
             onCut={(e) => e.preventDefault()}
             onContextMenu={(e) => e.preventDefault()}
