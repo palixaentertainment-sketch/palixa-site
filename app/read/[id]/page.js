@@ -28,6 +28,7 @@ export default function Reader() {
   const [size, setSize] = useState(1.1);
   const [lineSpacing, setLineSpacing] = useState(1.75);
   const [panel, setPanel] = useState(false);
+  const [chapterListOpen, setChapterListOpen] = useState(false);
   const [marked, setMarked] = useState(false);
   const [pct, setPct] = useState(0);
   const [msg, setMsg] = useState('');
@@ -88,6 +89,13 @@ export default function Reader() {
   }, [id, user]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
+
+  useEffect(() => {
+    if (!chapterListOpen) return undefined;
+    function onKeyDown(event) { if (event.key === 'Escape') setChapterListOpen(false); }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [chapterListOpen]);
 
   useEffect(() => {
     if (ch) setChapterHtml(richTextToDisplayHtml(ch.content || ''));
@@ -246,10 +254,38 @@ export default function Reader() {
             <strong>{book.title}</strong>
             <span className="fine">Chapter {ch.chapter_number} of {total || ch.chapter_number} &middot; {bookPct}% of book</span>
           </div>
+          <button type="button" className="rbtn rchapters-toggle" aria-expanded={chapterListOpen} aria-controls="reader-chapter-list" onClick={() => setChapterListOpen((open) => !open)}>Chapters <span>{total || '—'}</span></button>
           <button type="button" className="rbtn" aria-pressed={panel} aria-expanded={panel} onClick={() => setPanel(!panel)}>Aa</button>
           <button type="button" className="rbtn" aria-pressed={marked} onClick={toggleBookmark} aria-label={marked ? 'Remove bookmark' : 'Bookmark this chapter'}>{marked ? 'Saved' : 'Mark'}</button>
         </div>
       </header>
+      {chapterListOpen && (
+        <>
+          <button type="button" className="rchapter-backdrop" aria-label="Close chapter list" onClick={() => setChapterListOpen(false)} />
+          <section id="reader-chapter-list" className="rchapter-list" aria-label="Book chapters">
+            <div className="rchapter-list-head">
+              <div><strong>Chapters</strong><span>{total} {total === 1 ? 'chapter' : 'chapters'}</span></div>
+              <button type="button" className="rbtn" onClick={() => setChapterListOpen(false)} aria-label="Close chapter list">×</button>
+            </div>
+            <div className="rchapter-list-items">
+              {sibs.map((item, itemIndex) => (
+                <Link
+                  key={item.id}
+                  href={'/read/' + item.id}
+                  className={'rchapter-item' + (item.id === ch.id ? ' is-current' : '')}
+                  aria-current={item.id === ch.id ? 'page' : undefined}
+                  onClick={() => setChapterListOpen(false)}
+                >
+                  <span className="rchapter-number">{item.chapter_number}</span>
+                  <span className="rchapter-name">{item.title || 'Chapter ' + item.chapter_number}</span>
+                  {item.id === ch.id && <span className="rchapter-current">Reading</span>}
+                </Link>
+              ))}
+              {sibs.length === 0 && <p className="fine">No chapters are available yet.</p>}
+            </div>
+          </section>
+        </>
+      )}
       {panel && (
         <div className="rpanel">
           <div className="wrap">
@@ -282,6 +318,10 @@ export default function Reader() {
       )}
 
       <main className="rbody">
+        <nav className="rnav rnav-top" aria-label="Chapter navigation">
+          {prev ? <Link className="btn ghost" href={'/read/' + prev.id}>&larr; Previous</Link> : <span />}
+          {next ? <Link className="btn" href={'/read/' + next.id}>Next chapter &rarr;</Link> : <Link className="btn ghost" href={'/book/' + book.id}>Back to book</Link>}
+        </nav>
         {isComic ? (
           <div className="rstrip" aria-label={ch.title}
             onCopy={(e) => e.preventDefault()}
