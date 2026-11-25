@@ -2293,3 +2293,28 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
   .help-contact-card { align-items:stretch; flex-direction:column; }
   .help-contact-card .btn { width:100%; }
 }
+
+/* Rich-text chapter editor */
+.writer-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:.4rem; padding:.65rem; border:1px solid var(--line); border-bottom:0; border-radius:8px 8px 0 0; background:var(--soft); }
+.writer-tool { min-width:2.35rem; padding-inline:.55rem!important; }
+.writer-divider { width:1px; height:1.7rem; background:var(--line); margin-inline:.15rem; }
+.writer-editor { min-height:55vh; padding:1rem; border:1px solid var(--line); border-radius:0 0 8px 8px; background:var(--bg); color:var(--fg); font-family:var(--read); font-size:1.05rem; line-height:1.8; outline-offset:2px; overflow-wrap:anywhere; }
+.writer-editor:empty::before { content:attr(data-placeholder); color:var(--muted); pointer-events:none; }
+.writer-editor p, .writer-preview-content p { margin:0 0 1rem; }
+.writer-editor h2, .writer-preview-content h2 { margin:1.5rem 0 .7rem; font-size:1.45rem; line-height:1.25; }
+.writer-editor h3, .writer-preview-content h3 { margin:1.25rem 0 .55rem; font-size:1.2rem; line-height:1.3; }
+.writer-editor ul, .writer-editor ol, .writer-preview-content ul, .writer-preview-content ol { margin:.75rem 0 1rem 1.5rem; padding:0; }
+.writer-editor ul, .writer-preview-content ul { list-style:disc; }
+.writer-editor ol, .writer-preview-content ol { list-style:decimal; }
+.writer-editor li, .writer-preview-content li { margin:.25rem 0; }
+.writer-editor blockquote, .writer-preview-content blockquote { margin:1rem 0; padding:.7rem 1rem; border-left:3px solid var(--accent); background:var(--soft); color:var(--muted); }
+.writer-preview { padding:1rem; border:1px solid var(--line); border-radius:8px; background:var(--bg); }
+.writer-preview-content { margin-top:1rem; font-family:var(--read); font-size:1.05rem; line-height:1.8; overflow-wrap:anywhere; }
+.rformatted p { margin:0 0 1.25em; }
+.rformatted h2 { margin:1.7em 0 .65em; font-size:1.35em; line-height:1.25; }
+.rformatted h3 { margin:1.4em 0 .55em; font-size:1.15em; line-height:1.3; }
+.rformatted ul, .rformatted ol { margin:.8em 0 1.2em 1.5em; padding:0; }
+.rformatted ul { list-style:disc; }
+.rformatted ol { list-style:decimal; }
+.rformatted li { margin:.3em 0; }
+.rformatted blockquote { margin:1.2em 0; padding:.7em 1em; border-left:3px solid var(--lav); background:rgba(109,40,217,.06); }
