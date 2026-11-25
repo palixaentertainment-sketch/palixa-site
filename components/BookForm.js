@@ -44,7 +44,7 @@ export default function BookForm({ userId, book, locked, onSaved }) {
   async function save(status) {
     setErr(''); setOk('');
     if (!title.trim()) { setErr('Add a book title.'); return; }
-    if (status === 'published' && !description.trim()) { setErr('Add a description before publishing.'); return; }
+    if (status === 'published' && !description.trim()) { setErr('Add a synopsis before publishing.'); return; }
     setBusy(true);
     try {
       let cover_url = book ? book.cover_url : null;
@@ -87,8 +87,8 @@ export default function BookForm({ userId, book, locked, onSaved }) {
 
   return (
     <form className="card book-form-studio" onSubmit={(e) => { e.preventDefault(); save(null); }} noValidate>
-      <div className="book-form-intro"><p className="mono">YOUR BOOK SETUP</p><h2 className="h2">Give your story its home.</h2><p className="muted">A clear title, inviting description and strong cover help readers decide to open your book.</p><div className="book-form-progress"><span style={{width:completion + "%"}} /></div><div className="row between"><span className="fine">Setup checklist</span><b className="book-form-percent">{completion}% ready</b></div><div className="book-form-checks"><span className={readyItems[0] ? "done" : ""}>Title</span><span className={readyItems[1] ? "done" : ""}>Description</span><span className={readyItems[2] ? "done" : ""}>Genre</span><span className={readyItems[3] ? "done" : ""}>Cover</span></div></div>
-      <section className="book-form-section"><div><p className="mono">01 · THE BASICS</p><h3>Tell readers what they are opening</h3></div>
+      <div className="book-form-intro"><p className="mono">NEW BOOK</p><h2 className="h2">Create your book</h2><p className="muted">Add your book details, synopsis, genre and cover.</p><div className="book-form-progress"><span style={{width:completion + "%"}} /></div><div className="row between"><span className="fine">Book checklist</span><b className="book-form-percent">{completion}% ready</b></div><div className="book-form-checks"><span className={readyItems[0] ? "done" : ""}>Title</span><span className={readyItems[1] ? "done" : ""}>Synopsis</span><span className={readyItems[2] ? "done" : ""}>Genre</span><span className={readyItems[3] ? "done" : ""}>Cover</span></div></div>
+      <section className="book-form-section"><div><h3>Book details</h3></div>
       <div className="field">
         <label htmlFor="b-title">Book title</label>
         <input id="b-title" className="in" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} />
@@ -111,11 +111,11 @@ export default function BookForm({ userId, book, locked, onSaved }) {
         <span className="fine">You can change this later from the book editor.</span>
       </div>
       <div className="field">
-        <div className="row between"><label htmlFor="b-desc">Description</label><span className="fine">{description.length}/2,000</span></div>
-        <textarea id="b-desc" className="in book-description" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={2000} placeholder="Introduce the main character, the central conflict and what makes this story worth reading." />
-        <span className="fine">Give readers a reason to care without revealing every twist.</span>
+        <div className="row between"><label htmlFor="b-desc">Synopsis</label><span className="fine">{description.length}/2,000</span></div>
+        <textarea id="b-desc" className="in book-description" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={2000} placeholder="Write a synopsis of your story. Introduce the main characters, the central conflict and what readers can expect." />
+        <span className="fine">Summarise the story and its central conflict. Avoid revealing major spoilers.</span>
       </div></section>
-      <section className="book-form-section"><div><p className="mono">02 · DISCOVERY</p><h3>Help the right readers find it</h3></div>
+      <section className="book-form-section"><div><h3>Genre and tags</h3></div>
       <div className="field">
         <label htmlFor="b-genre">Genre</label>
         <select id="b-genre" className="in" value={genreId} onChange={(e) => setGenreId(e.target.value)}>
@@ -128,7 +128,7 @@ export default function BookForm({ userId, book, locked, onSaved }) {
         <input id="b-tags" className="in" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="lagos, family, secrets" />
         <span className="fine">Separate with commas. Readers can find your book by tag.</span>
       </div>
-      </section><section className="book-form-section"><div><p className="mono">03 · FIRST IMPRESSION</p><h3>Choose your book cover</h3></div>
+      </section><section className="book-form-section"><div><h3>Book cover</h3></div>
       <div className="field">
         <label htmlFor="b-cover">Cover</label>
         <div className="coverpick">
