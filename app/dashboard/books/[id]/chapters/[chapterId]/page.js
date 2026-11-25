@@ -1,5 +1,6 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { cleanRichHtml, richTextToEditorHtml, richTextWordCount } from '@/lib/richText';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
@@ -26,6 +27,10 @@ function Editor() {
   const [err, setErr] = useState('');
   const [ok, setOk] = useState('');
   const [busy, setBusy] = useState(false);
+  const [preview, setPreview] = useState(false);
+  const [dirty, setDirty] = useState(false);
+  const [saveState, setSaveState] = useState('');
+  const editorRef = useRef(null);
 
   useEffect(() => {
     (async () => {
@@ -38,6 +43,8 @@ function Editor() {
       setChapter(c);
       setTitle(c.title);
       setContent(c.content || '');
+      setDirty(false);
+      setSaveState('');
       setScheduledAt(c.scheduled_at ? new Date(new Date(c.scheduled_at).getTime() - new Date(c.scheduled_at).getTimezoneOffset() * 60000).toISOString().slice(0, 16) : '');
       if (b.book_type === 'comic') {
         const { data: pg } = await supabase.from('chapter_pages').select('id,page_number,image_url').eq('chapter_id', c.id).order('page_number');
@@ -47,6 +54,40 @@ function Editor() {
   }, [id, chapterId, isNew, user]);
 
   useEffect(() => () => { items.forEach((i) => { if (i.file) URL.revokeObjectURL(i.url); }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!editorRef.current || preview || document.activeElement === editorRef.current) return;
+    editorRef.current.innerHTML = richTextToEditorHtml(content);
+  }, [content, preview]);
+
+  // Existing drafts are quietly saved after the author pauses typing. Published chapters are never autosaved.
+  useEffect(() => {
+    if (!dirty || !chapter || chapter.status !== 'draft' || isComic) return undefined;
+    setSaveState('Saving…');
+    const timer = setTimeout(async () => {
+      const { error } = await supabase.from('chapters').update({ content: cleanRichHtml(content), updated_at: new Date().toISOString() }).eq('id', chapter.id).eq('status', 'draft');
+      if (error) setSaveState('Autosave failed — use Save Draft.');
+      else { setDirty(false); setSaveState('All changes saved'); }
+    }, 1600);
+    return () => clearTimeout(timer);
+  }, [content, dirty, chapter, isComic]);
+
+  function format(command, value) {
+    if (!editorRef.current) return;
+    editorRef.current.focus();
+    document.execCommand(command, false, value);
+    const next = cleanRichHtml(editorRef.current.innerHTML);
+    setContent(next);
+    setDirty(true);
+    setSaveState('Unsaved changes');
+  }
+
+  function handleEditorInput() {
+    if (!editorRef.current) return;
+    setContent(cleanRichHtml(editorRef.current.innerHTML));
+    setDirty(true);
+    setSaveState('Unsaved changes');
+  }
 
   function addFiles(e) {
     setErr('');
@@ -75,9 +116,10 @@ function Editor() {
   async function save(status) {
     setErr(''); setOk('');
     const isComic = book.book_type === 'comic';
+    const safeContent = isComic ? null : cleanRichHtml(content);
     if (!title.trim()) { setErr('Give the chapter a title.'); return; }
     if (status === 'published' || status === 'scheduled') {
-      if (!isComic && !content.trim()) { setErr('Write some text before publishing this chapter.'); return; }
+      if (!isComic && !richTextWordCount(safeContent)) { setErr('Write some text before publishing this chapter.'); return; }
       if (isComic && items.length === 0) { setErr('Add at least one page image before publishing.'); return; }
     }
     setBusy(true);
@@ -90,14 +132,14 @@ function Editor() {
         const { data: last } = await supabase.from('chapters').select('chapter_number').eq('book_id', book.id).order('chapter_number', { ascending: false }).limit(1);
         const number = last && last[0] ? last[0].chapter_number + 1 : 1;
         const { data, error } = await supabase.from('chapters')
-          .insert({ book_id: book.id, chapter_number: number, title: title.trim(), content: isComic ? null : content, status: finalStatus, scheduled_at: scheduledIso })
+          .insert({ book_id: book.id, chapter_number: number, title: title.trim(), content: safeContent, status: finalStatus, scheduled_at: scheduledIso })
           .select('id,book_id,chapter_number,title,content,status,scheduled_at').single();
         if (error) throw error;
         cid = data.id;
         setChapter(data);
       } else {
         const { error } = await supabase.from('chapters')
-          .update({ title: title.trim(), content: isComic ? null : content, status: finalStatus, scheduled_at: scheduledIso, updated_at: new Date().toISOString() })
+          .update({ title: title.trim(), content: safeContent, status: finalStatus, scheduled_at: scheduledIso, updated_at: new Date().toISOString() })
           .eq('id', cid);
         if (error) throw error;
       }
@@ -120,6 +162,8 @@ function Editor() {
         }));
       }
       setChapter((c) => (c ? { ...c, status: finalStatus, scheduled_at: scheduledIso } : c));
+      setDirty(false);
+      setSaveState('All changes saved');
       setOk(finalStatus === 'published' ? 'Chapter published.' : finalStatus === 'scheduled' ? 'Chapter scheduled for automatic release.' : 'Draft saved.');
       if (isNew) router.replace('/dashboard/books/' + book.id + '/chapters/' + cid);
     } catch (e) {
@@ -177,9 +221,49 @@ function Editor() {
           </div>
         ) : (
           <div className="field">
-            <label htmlFor="c-body">Chapter text</label>
-            <textarea id="c-body" className="in tall" value={content} onChange={(e) => setContent(e.target.value)} placeholder="Write or paste your chapter here. Leave a blank line between paragraphs." />
-            <span className="fine">{content.trim() ? content.trim().split(/\s+/).length.toLocaleString() : 0} words</span>
+            <div className="row between">
+              <label htmlFor="c-body">Chapter text</label>
+              <span className="fine">{richTextWordCount(content).toLocaleString()} words</span>
+            </div>
+            <div className="writer-toolbar" role="toolbar" aria-label="Text formatting">
+              <button type="button" className="btn ghost small writer-tool" title="Bold" aria-label="Bold" onMouseDown={(e) => e.preventDefault()} onClick={() => format('bold')}><b>B</b></button>
+              <button type="button" className="btn ghost small writer-tool" title="Italic" aria-label="Italic" onMouseDown={(e) => e.preventDefault()} onClick={() => format('italic')}><i>I</i></button>
+              <button type="button" className="btn ghost small writer-tool" title="Underline" aria-label="Underline" onMouseDown={(e) => e.preventDefault()} onClick={() => format('underline')}><u>U</u></button>
+              <span className="writer-divider" aria-hidden="true" />
+              <button type="button" className="btn ghost small" onMouseDown={(e) => e.preventDefault()} onClick={() => format('formatBlock', 'h2')}>Heading</button>
+              <button type="button" className="btn ghost small" onMouseDown={(e) => e.preventDefault()} onClick={() => format('formatBlock', 'h3')}>Subheading</button>
+              <button type="button" className="btn ghost small" onMouseDown={(e) => e.preventDefault()} onClick={() => format('insertUnorderedList')}>• List</button>
+              <button type="button" className="btn ghost small" onMouseDown={(e) => e.preventDefault()} onClick={() => format('insertOrderedList')}>1. List</button>
+              <button type="button" className="btn ghost small" onMouseDown={(e) => e.preventDefault()} onClick={() => format('formatBlock', 'blockquote')}>Quote</button>
+              <span className="writer-divider" aria-hidden="true" />
+              <button type="button" className="btn ghost small" onMouseDown={(e) => e.preventDefault()} onClick={() => format('undo')}>Undo</button>
+              <button type="button" className="btn ghost small" onMouseDown={(e) => e.preventDefault()} onClick={() => format('redo')}>Redo</button>
+            </div>
+            {preview ? (
+              <div className="writer-preview" aria-label="Chapter preview">
+                <div className="row between"><b>Preview</b><button type="button" className="linkbtn" onClick={() => setPreview(false)}>Back to editing</button></div>
+                <div className="writer-preview-content" dangerouslySetInnerHTML={{ __html: cleanRichHtml(content) || '<p>Your chapter preview will appear here.</p>' }} />
+              </div>
+            ) : (
+              <div
+                id="c-body"
+                ref={editorRef}
+                className="writer-editor"
+                contentEditable
+                suppressContentEditableWarning
+                role="textbox"
+                aria-label="Chapter text editor"
+                aria-multiline="true"
+                data-placeholder="Start writing your chapter here…"
+                onInput={handleEditorInput}
+                onPaste={() => setTimeout(handleEditorInput, 0)}
+              />
+            )}
+            <div className="row between">
+              <span className="fine">Formatting is shown to readers. Your existing chapter text is preserved.</span>
+              <button type="button" className="btn ghost small" onClick={() => setPreview(true)} disabled={preview}>Preview chapter</button>
+            </div>
+            {saveState && <span className="fine" role="status">{saveState}</span>}
           </div>
         )}
 
