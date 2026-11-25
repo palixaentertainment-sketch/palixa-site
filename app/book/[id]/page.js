@@ -28,11 +28,9 @@ export default function BookPage() {
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [loadError, setLoadError] = useState('');
   const [authorBadge, setAuthorBadge] = useState(null);
-  const [wordCount, setWordCount] = useState(null);
 
   const load = useCallback(async () => {
     setLoadError('');
-    setWordCount(null);
     const bookId = Array.isArray(id) ? id[0] : id;
     if (!bookId) {
       setBook(null);
@@ -62,14 +60,13 @@ export default function BookPage() {
     // make readers wait before they can see the title, cover, and description.
     setBook({ ...data, profiles: null, genres: null });
 
-    const [authorResult, genreResult, chaptersResult, statsResult, wordCountResult, badgeResult] = await Promise.all([
+    const [authorResult, genreResult, chaptersResult, statsResult, badgeResult] = await Promise.all([
       supabase.from('profiles').select('id,name,username,avatar_url,bio').eq('id', data.author_id).maybeSingle(),
       data.genre_id
         ? supabase.from('genres').select('name,slug').eq('id', data.genre_id).maybeSingle()
         : Promise.resolve({ data: null, error: null }),
-      supabase.from('chapters').select('id,chapter_number,title,status,reads,created_at,updated_at').eq('book_id', bookId).order('chapter_number'),
+      supabase.from('chapters').select('id,chapter_number,title,content,status,reads,created_at,updated_at').eq('book_id', bookId).order('chapter_number'),
       supabase.rpc('author_stats', { p_author: data.author_id }),
-      supabase.rpc('book_published_word_count', { p_book_id: bookId }),
       supabase.from('profile_badges').select('badge_type').eq('profile_id', data.author_id).maybeSingle(),
     ]);
 
@@ -84,7 +81,6 @@ export default function BookPage() {
     setChapters(chaptersResult.data || []);
     setStats(statsResult.data || null);
     setAuthorBadge(badgeResult.data ? badgeResult.data.badge_type : null);
-    setWordCount(wordCountResult.error ? null : Number(wordCountResult.data || 0));
   }, [id]);
 
   useEffect(() => { load(); }, [load]);
@@ -181,7 +177,9 @@ export default function BookPage() {
   const author = book.profiles;
   const isOwner = user && user.id === book.author_id;
   const live = chapters.filter((c) => c.status === 'published');
-  const totalWords = book.book_type === 'text' ? wordCount : null;
+  const totalWords = book.book_type === 'text'
+    ? live.reduce((total, chapter) => total + (String(chapter.content || '').trim().match(/\\S+/g) || []).length, 0)
+    : null;
   const visible = isOwner ? chapters : live;
   const first = live[0] || visible[0];
   const resumeId = progress && progress.chapter_id && live.some((c) => c.id === progress.chapter_id) ? progress.chapter_id : null;
