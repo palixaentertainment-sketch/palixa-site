@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth';
 import { friendly } from '@/lib/errors';
 import LikeButton from '@/components/LikeButton';
 import Comments from '@/components/Comments';
+import { cleanRichHtml, richTextToDisplayHtml } from '@/lib/richText';
 
 function load(key, fallback) {
   try { const v = window.localStorage.getItem(key); return v === null ? fallback : v; } catch (e) { return fallback; }
@@ -30,6 +31,7 @@ export default function Reader() {
   const [marked, setMarked] = useState(false);
   const [pct, setPct] = useState(0);
   const [msg, setMsg] = useState('');
+  const [chapterHtml, setChapterHtml] = useState('');
   const barRef = useRef(null);
   const frac = useRef(0);
   const saveTimer = useRef(null);
@@ -86,6 +88,10 @@ export default function Reader() {
   }, [id, user]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
+
+  useEffect(() => {
+    if (ch) setChapterHtml(richTextToDisplayHtml(ch.content || ''));
+  }, [ch]);
 
   // Per-reader state: bookmark, resume position, and the read count.
   useEffect(() => {
@@ -305,8 +311,8 @@ export default function Reader() {
             onContextMenu={(e) => e.preventDefault()}
             onSelectStart={(e) => e.preventDefault()}>
             <h1>{ch.title}</h1>
-            {paragraphs.length === 0 && <p>This chapter has no text yet.</p>}
-            {paragraphs.map((p, n) => <p key={n}>{p}</p>)}
+            {!chapterHtml && paragraphs.length === 0 && <p>This chapter has no text yet.</p>}
+            {chapterHtml ? <div className="rformatted" dangerouslySetInnerHTML={{ __html: cleanRichHtml(chapterHtml) }} /> : paragraphs.map((p, n) => <p key={n}>{p}</p>)}
           </article>
         )}
 
