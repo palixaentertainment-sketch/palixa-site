@@ -49,6 +49,7 @@ export default function Providers({ children }) {
               <div className="foot-column">
                 <h2 className="foot-heading">Resources</h2>
                 <Link href="/about">About Palixia</Link>
+                <Link href="/roadmap">Development Roadmap</Link>
                 <Link href="/authors">Explore Authors</Link>
                 <Link href="/help">Help Centre</Link>
                 <Link href="/contact">Contact Us</Link>
