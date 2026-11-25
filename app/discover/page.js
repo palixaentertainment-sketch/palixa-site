@@ -24,6 +24,7 @@ function Discover() {
   const genre = params.get('genre') || '';
   const sort = params.get('sort') || 'popular';
   const storyStatus = params.get('status') || '';
+  const hasFilters = Boolean(q || genre || storyStatus || sort !== 'popular');
 
   const [input, setInput] = useState(q);
   const [genres, setGenres] = useState([]);
@@ -139,7 +140,7 @@ function Discover() {
       <div className="stack discover-intro">
         <h1 className="h1">Find your next favourite story.</h1>
         <p className="fine">Explore books from independent authors around the world. Your next great read might come from a voice you have not discovered yet.</p>
-        <form onSubmit={submit} role="search" className="row" style={{ flexWrap: 'nowrap' }}>
+        <form onSubmit={submit} role="search" className="row discover-search">
           <label className="sr-only" htmlFor="dq">Search for a book, author or genre</label>
           <input id="dq" className="in" type="search" placeholder="Search for a book, author or genre" value={input} onChange={(e) => setInput(e.target.value)} />
           <button className="btn" type="submit">Search</button>
@@ -147,15 +148,15 @@ function Discover() {
         <div className="chips" role="group" aria-label="Format">
           <span className="chip" aria-current="true">Books</span>
         </div>
-        <div className="row">
-          <div className="field" style={{ minWidth: '10rem', flex: 1 }}>
+        <div className="discover-filter-grid">
+          <div className="field">
             <label htmlFor="dg">Genre</label>
             <select id="dg" className="in" value={genre} onChange={(e) => go({ genre: e.target.value })}>
               <option value="">All genres</option>
               {genres.map((g) => <option key={g.id} value={g.slug}>{g.name}</option>)}
             </select>
           </div>
-          <div className="field" style={{ minWidth: '10rem', flex: 1 }}>
+          <div className="field">
             <label htmlFor="dstatus">Story status</label>
             <select id="dstatus" className="in" value={storyStatus} onChange={(e) => go({ status: e.target.value })}>
               <option value="">Any status</option>
@@ -171,6 +172,12 @@ function Discover() {
             </select>
           </div>
         </div>
+        {hasFilters && (
+          <div className="discover-active-filters">
+            <span className="fine">Filters are active</span>
+            <button type="button" className="linkbtn" onClick={() => { setInput(''); router.replace('/discover'); }}>Clear all</button>
+          </div>
+        )}
       </div>
 
       {!q && !genre && !storyStatus && (
