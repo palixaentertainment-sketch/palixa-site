@@ -23,7 +23,7 @@ function Manage() {
   const load = useCallback(async () => {
     const { data } = await supabase
       .from('books')
-      .select('id,author_id,title,description,cover_url,genre_id,tags,book_type,status,story_status,reads,read_adjustment,is_sample')
+      .select('id,author_id,title,description,cover_url,genre_id,tags,book_type,status,story_status,reads,read_adjustment,language,book_length')
       .eq('id', id).maybeSingle();
     if (!data || data.author_id !== user.id) { setBook(null); return; }
     setBook(data);

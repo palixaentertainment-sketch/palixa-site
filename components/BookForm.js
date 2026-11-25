@@ -5,7 +5,8 @@ import { friendly } from '@/lib/errors';
 import { checkImage, uploadImage } from '@/lib/upload';
 import Cover from '@/components/Cover';
 
-// Shared by "Create New Book" and "Edit book". `book` is null when creating.
+const QUICK_TAGS = ['romance', 'fantasy', 'mystery', 'werewolf', 'billionaire', 'campus', 'revenge', 'thriller', 'supernatural', 'family', 'friendship', 'dark romance'];
+
 export default function BookForm({ userId, book, locked, onSaved }) {
   const [genres, setGenres] = useState([]);
   const [title, setTitle] = useState(book ? book.title : '');
@@ -14,6 +15,8 @@ export default function BookForm({ userId, book, locked, onSaved }) {
   const [tags, setTags] = useState(book ? (book.tags || []).filter((t) => t !== 'sample').join(', ') : '');
   const [type, setType] = useState(book ? book.book_type : 'text');
   const [storyStatus, setStoryStatus] = useState(book ? (book.story_status || 'ongoing') : 'ongoing');
+  const [language, setLanguage] = useState(book ? book.language || 'English' : 'English');
+  const [bookLength, setBookLength] = useState(book ? book.book_length || '' : '');
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState('');
   const [err, setErr] = useState('');
@@ -41,6 +44,13 @@ export default function BookForm({ userId, book, locked, onSaved }) {
     setFile(f);
   }
 
+  function addTag(tag) {
+    const current = tags.split(',').map((t) => t.trim()).filter(Boolean);
+    if (!current.some((t) => t.toLowerCase() === tag.toLowerCase()) && current.length < 8) {
+      setTags([...current, tag].join(', '));
+    }
+  }
+
   async function save(status) {
     setErr(''); setOk('');
     if (!title.trim()) { setErr('Add a book title.'); return; }
@@ -58,6 +68,8 @@ export default function BookForm({ userId, book, locked, onSaved }) {
         cover_url,
         book_type: type,
         story_status: storyStatus,
+        language: language || 'English',
+        book_length: bookLength || null,
       };
       if (book) {
         const patch = { ...fields, updated_at: new Date().toISOString() };
@@ -81,6 +93,7 @@ export default function BookForm({ userId, book, locked, onSaved }) {
   }
 
   const shownCover = { title: title || 'Your title', book_type: type, cover_url: preview || (book ? book.cover_url : null), author_name: '' };
+  const selectedTags = tags.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean);
 
   return (
     <form className="card" onSubmit={(e) => { e.preventDefault(); save(null); }} noValidate>
@@ -106,8 +119,9 @@ export default function BookForm({ userId, book, locked, onSaved }) {
         <span className="fine">You can change this later from the book editor.</span>
       </div>
       <div className="field">
-        <label htmlFor="b-desc">Description</label>
-        <textarea id="b-desc" className="in" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={2000} placeholder="What is this story about? Two or three sentences that make a stranger tap Read." />
+        <label htmlFor="b-desc">Synopsis</label>
+        <textarea id="b-desc" className="in" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={2000} placeholder="What is this story about? Give readers a reason to open the first chapter." />
+        <span className="fine">{description.length}/2,000 characters</span>
       </div>
       <div className="field">
         <label htmlFor="b-genre">Genre</label>
@@ -117,9 +131,31 @@ export default function BookForm({ userId, book, locked, onSaved }) {
         </select>
       </div>
       <div className="field">
-        <label htmlFor="b-tags">Tags (optional)</label>
-        <input id="b-tags" className="in" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="lagos, family, secrets" />
-        <span className="fine">Separate with commas. Readers can find your book by tag.</span>
+        <label htmlFor="b-language">Language</label>
+        <select id="b-language" className="in" value={language} onChange={(e) => setLanguage(e.target.value)}>
+          {['English', 'French', 'Portuguese', 'Spanish', 'Arabic', 'Hausa', 'Igbo', 'Yoruba', 'Other'].map((item) => <option key={item} value={item}>{item}</option>)}
+        </select>
+      </div>
+      <div className="field">
+        <label htmlFor="b-length">Book length <span className="fine">(optional)</span></label>
+        <select id="b-length" className="in" value={bookLength} onChange={(e) => setBookLength(e.target.value)}>
+          <option value="">Not specified</option>
+          <option value="short_story">Short story</option>
+          <option value="novella">Novella</option>
+          <option value="novel">Novel</option>
+          <option value="long_novel">Long novel</option>
+        </select>
+      </div>
+      <div className="field">
+        <label htmlFor="b-tags">Tags <span className="fine">(optional, up to 8)</span></label>
+        <input id="b-tags" className="in" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="campus, secrets, friendship" />
+        <span className="fine">Add specific themes, tropes or subjects readers might search for. Separate tags with commas.</span>
+        <div className="row" style={{ gap: '.45rem', flexWrap: 'wrap', marginTop: '.55rem' }}>
+          {QUICK_TAGS.map((tag) => {
+            const active = selectedTags.includes(tag);
+            return <button key={tag} type="button" className={'btn small ' + (active ? '' : 'ghost')} disabled={active || selectedTags.length >= 8} onClick={() => addTag(tag)}>{active ? '✓ ' : '+ '}{tag}</button>;
+          })}
+        </div>
       </div>
       <div className="field">
         <label htmlFor="b-cover">Cover</label>
