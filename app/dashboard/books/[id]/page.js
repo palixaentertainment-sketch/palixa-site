@@ -56,6 +56,20 @@ function Manage() {
     await load();
   }
 
+  async function moveChapter(c, direction) {
+    setMsg('');
+    const index = chapters.findIndex((item) => item.id === c.id);
+    const other = chapters[index + direction];
+    if (!other) return;
+    const first = await supabase.from('chapters').update({ chapter_number: -999999, updated_at: new Date().toISOString() }).eq('id', c.id);
+    if (first.error) { setMsg(friendly(first.error, 'Could not reorder chapters.')); return; }
+    const second = await supabase.from('chapters').update({ chapter_number: c.chapter_number, updated_at: new Date().toISOString() }).eq('id', other.id);
+    if (second.error) { await supabase.from('chapters').update({ chapter_number: c.chapter_number }).eq('id', c.id); setMsg(friendly(second.error, 'Could not reorder chapters.')); return; }
+    const final = await supabase.from('chapters').update({ chapter_number: other.chapter_number, updated_at: new Date().toISOString() }).eq('id', c.id);
+    if (final.error) setMsg(friendly(final.error, 'Could not finish reordering chapters.'));
+    await load();
+  }
+
   async function toggleChapter(c) {
     setMsg('');
     const status = c.status === 'published' ? 'draft' : 'published';
@@ -105,7 +119,7 @@ function Manage() {
         ) : (
           <div className="tablewrap">
             <table>
-              <thead><tr><th className="num">No.</th><th>Title</th><th>Status</th><th /></tr></thead>
+              <thead><tr><th className="num">No.</th><th>Title</th><th>Status</th><th>Manage</th></tr></thead>
               <tbody>
                 {chapters.map((c) => (
                   <tr key={c.id}>
@@ -120,6 +134,8 @@ function Manage() {
                         </div>
                       ) : (
                         <div className="row" style={{ flexWrap: 'nowrap' }}>
+                          <button type="button" className="btn ghost small" onClick={() => moveChapter(c, -1)} disabled={chapters[0]?.id === c.id} aria-label="Move chapter up">↑</button>
+                          <button type="button" className="btn ghost small" onClick={() => moveChapter(c, 1)} disabled={chapters[chapters.length - 1]?.id === c.id} aria-label="Move chapter down">↓</button>
                           <Link className="btn ghost small" href={'/dashboard/books/' + book.id + '/chapters/' + c.id}>Edit</Link>
                           <button type="button" className="btn ghost small" onClick={() => toggleChapter(c)}>{c.status === 'published' ? 'Unpublish' : 'Publish'}</button>
                           <button type="button" className="btn ghost small" onClick={() => setConfirm(c.id)}>Delete</button>
