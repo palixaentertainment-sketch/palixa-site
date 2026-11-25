@@ -472,6 +472,15 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .community-post-by { flex: 1; overflow-wrap: anywhere; }
 .community-category { flex: none; max-width: 48%; padding: 0.25rem 0.5rem; border-radius: 99px; background: var(--soft); color: var(--accent-deep); font-size: 0.72rem; font-weight: 600; }
 .community-post-body { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.7; }
+.community-post-copy { min-width: 0; }
+.community-post-body-collapsed {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  line-clamp: 5;
+  overflow: hidden;
+}
+.community-read-more { margin-top: -0.35rem; font-weight: 600; }
 .community-book-link { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; border: 1px solid var(--line); border-radius: 7px; padding: 0.7rem; background: var(--surface); font-weight: 600; overflow-wrap: anywhere; }
 .community-book-link span { color: var(--accent); font-size: 0.85rem; white-space: nowrap; }
 .community-post-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; border-top: 1px solid var(--line); padding-top: 0.75rem; }

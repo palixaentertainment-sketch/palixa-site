@@ -40,6 +40,7 @@ export default function CommunityPage() {
   const [sendingComment, setSendingComment] = useState({});
   const [commentErrors, setCommentErrors] = useState({});
   const [openComments, setOpenComments] = useState({});
+  const [expandedPosts, setExpandedPosts] = useState({});
   const [editingPost, setEditingPost] = useState(null);
   const [postEditBody, setPostEditBody] = useState('');
   const [editingComment, setEditingComment] = useState(null);
@@ -365,7 +366,21 @@ export default function CommunityPage() {
                   <textarea className="in" rows={4} maxLength={2000} value={postEditBody} onChange={(e) => setPostEditBody(e.target.value)} aria-label="Edit your community post" />
                   <div className="row"><button className="btn small" disabled={savingEdit}>{savingEdit ? 'Saving…' : 'Save changes'}</button><button className="btn ghost small" type="button" onClick={() => setEditingPost(null)}>Cancel</button></div>
                 </form>
-              ) : <p className="community-post-body">{post.body}</p>}
+              ) : (
+                <div className="community-post-copy">
+                  <p className={'community-post-body' + (post.body.length > 280 && !expandedPosts[post.id] ? ' community-post-body-collapsed' : '')}>{post.body}</p>
+                  {post.body.length > 280 && (
+                    <button
+                      type="button"
+                      className="linkbtn community-read-more"
+                      aria-expanded={Boolean(expandedPosts[post.id])}
+                      onClick={() => setExpandedPosts((old) => ({ ...old, [post.id]: !old[post.id] }))}
+                    >
+                      {expandedPosts[post.id] ? 'Show less' : 'Read more'}
+                    </button>
+                  )}
+                </div>
+              )}
               {post.image_url && <a className="community-post-image-link" href={post.image_url} target="_blank" rel="noreferrer" aria-label="Open attached image in full size"><img className="community-post-image" src={post.image_url} alt={'Image shared by ' + (post.profiles ? post.profiles.name : 'a community member')} loading="lazy" /></a>}
               {post.books && <Link className="community-book-link" href={'/book/' + post.books.id}>📚 {post.books.title}{post.books.book_type === 'comic' ? ' · Comic' : ''} <span>Open story →</span></Link>}
               <div className="community-post-actions">
