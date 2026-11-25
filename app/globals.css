@@ -2525,3 +2525,26 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
   .reader .rnav { padding-inline:1.2rem; gap:.5rem; }
   .reader .rnav .btn { min-width:0; padding-inline:.85rem; font-size:.84rem; }
 }
+
+
+/* Discover controls: compact filter panel and mobile-friendly search. */
+.discover-intro { gap:.8rem; }
+.discover-intro > p { max-width:48rem; line-height:1.65; }
+.discover-search { display:flex; flex-wrap:nowrap; gap:.55rem; width:100%; max-width:46rem; }
+.discover-search .in { min-width:0; flex:1; }
+.discover-search .btn { flex:none; min-width:5.5rem; }
+.discover-filter-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.75rem; max-width:54rem; }
+.discover-filter-grid .field { min-width:0; }
+.discover-filter-grid .field label { display:block; margin-bottom:.3rem; color:var(--muted); font-size:.8rem; font-weight:650; }
+.discover-active-filters { display:flex; align-items:center; gap:.7rem; padding-top:.1rem; }
+.discover-active-filters .linkbtn { font-size:.84rem; }
+@media(max-width:560px) {
+  .discover-intro { gap:.7rem; }
+  .discover-filter-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:.65rem; }
+  .discover-filter-grid .field:last-child { grid-column:1 / -1; }
+  .discover-search .btn { min-width:4.8rem; padding-inline:.8rem; }
+}
+@media(max-width:360px) {
+  .discover-filter-grid { grid-template-columns:minmax(0,1fr); }
+  .discover-filter-grid .field:last-child { grid-column:auto; }
+}
