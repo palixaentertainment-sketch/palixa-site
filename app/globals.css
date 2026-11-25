@@ -2318,3 +2318,5 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 .rformatted ol { list-style:decimal; }
 .rformatted li { margin:.3em 0; }
 .rformatted blockquote { margin:1.2em 0; padding:.7em 1em; border-left:3px solid var(--lav); background:rgba(109,40,217,.06); }
+
+.writer-editor em, .writer-editor i, .writer-preview-content em, .writer-preview-content i, .rformatted em, .rformatted i { font-style: italic; }
