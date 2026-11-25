@@ -16,7 +16,6 @@ export default function BookForm({ userId, book, locked, onSaved }) {
   const [type, setType] = useState(book ? book.book_type : 'text');
   const [storyStatus, setStoryStatus] = useState(book ? (book.story_status || 'ongoing') : 'ongoing');
   const [language, setLanguage] = useState(book ? book.language || 'English' : 'English');
-  const [targetAudience, setTargetAudience] = useState(book ? book.target_audience || '' : '');
   const [bookLength, setBookLength] = useState(book ? book.book_length || '' : '');
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState('');
@@ -70,7 +69,6 @@ export default function BookForm({ userId, book, locked, onSaved }) {
         book_type: type,
         story_status: storyStatus,
         language: language || 'English',
-        target_audience: targetAudience || null,
         book_length: bookLength || null,
       };
       if (book) {
@@ -137,16 +135,6 @@ export default function BookForm({ userId, book, locked, onSaved }) {
         <select id="b-language" className="in" value={language} onChange={(e) => setLanguage(e.target.value)}>
           {['English', 'French', 'Portuguese', 'Spanish', 'Arabic', 'Hausa', 'Igbo', 'Yoruba', 'Other'].map((item) => <option key={item} value={item}>{item}</option>)}
         </select>
-      </div>
-      <div className="field">
-        <label htmlFor="b-audience">Target audience <span className="fine">(optional)</span></label>
-        <select id="b-audience" className="in" value={targetAudience} onChange={(e) => setTargetAudience(e.target.value)}>
-          <option value="">Not specified</option>
-          <option value="all">All readers</option>
-          <option value="male">Primarily male readers</option>
-          <option value="female">Primarily female readers</option>
-        </select>
-        <span className="fine">This helps readers understand who a story is written for. It does not restrict who can read it.</span>
       </div>
       <div className="field">
         <label htmlFor="b-length">Book length <span className="fine">(optional)</span></label>
