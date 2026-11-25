@@ -2449,3 +2449,28 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
  .writer-editor-actions > .row .btn { flex:1; }
  .writer-focus-mode { padding: .75rem .8rem 4rem; }
 }
+
+
+/* Guided book setup studio. */
+.book-form-studio { display:grid; gap:1.25rem; padding:clamp(1rem,3vw,1.5rem); }
+.book-form-intro { display:grid; gap:.65rem; padding:1.2rem; border:1px solid var(--line); border-radius:14px; background:linear-gradient(135deg,#fbf9ff,#f1eafb); }
+.book-form-intro .h2 { letter-spacing:-.035em; }
+.book-form-intro > p:not(.mono) { max-width:38rem; line-height:1.6; }
+.book-form-progress { height:7px; margin-top:.35rem; overflow:hidden; border-radius:99px; background:#e5dcf3; }
+.book-form-progress span { display:block; height:100%; border-radius:inherit; background:var(--accent); transition:width .2s ease; }
+.book-form-percent { color:var(--accent); font-size:.8rem; }
+.book-form-checks { display:flex; flex-wrap:wrap; gap:.45rem; }
+.book-form-checks span { padding:.3rem .6rem; border:1px solid var(--line); border-radius:99px; color:var(--muted); font-size:.72rem; font-weight:650; }
+.book-form-checks span.done { border-color:#c9b5ee; background:#eee6fb; color:#55259a; }
+.book-form-section { display:grid; gap:1rem; padding-top:1.1rem; border-top:1px solid var(--line); }
+.book-form-section > div:first-child { display:grid; gap:.25rem; }
+.book-form-section h3 { font-size:1.05rem; font-weight:750; letter-spacing:-.015em; }
+.book-description { min-height:8rem; line-height:1.65; resize:vertical; }
+:root[data-theme="dark"] .book-form-intro { background:linear-gradient(135deg,#21172f,#2b1c40); }
+:root[data-theme="dark"] .book-form-progress { background:#3c3150; }
+:root[data-theme="dark"] .book-form-checks span.done { background:#35234c; border-color:#65458b; color:#e4d4fb; }
+@media(max-width:42rem) {
+ .book-form-studio { padding:.9rem; }
+ .book-form-intro { padding:1rem; }
+ .book-form-section { gap:.85rem; }
+}
