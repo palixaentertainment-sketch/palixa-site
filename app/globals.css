@@ -2487,3 +2487,41 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 .reader-book-author { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .reader-book-genre { justify-self:start; margin-top:.12rem; padding:.13rem .48rem; border-radius:99px; background:var(--soft); color:var(--muted); font-size:.7rem; line-height:1.4; }
 :root[data-theme="dark"] .reader-book-card:hover { background:var(--surface); }
+
+
+/* Comfortable reading layout: improve rhythm without changing reader controls or behavior. */
+.reader .rbody { padding-block:1.15rem 2.5rem; }
+.reader .rtext {
+  max-width:42rem;
+  padding-inline:clamp(1.15rem, 4vw, 2rem);
+  font-size:inherit;
+  line-height:1.82;
+  letter-spacing:.002em;
+  overflow-wrap:break-word;
+}
+.reader .rtext h1 {
+  margin-bottom:1.9rem;
+  font-size:clamp(1.65rem, 5vw, 2.15rem);
+  line-height:1.16;
+  letter-spacing:-.025em;
+}
+.reader .rtext p + p { margin-top:1.05em; }
+.reader .rtext .rformatted { line-height:inherit; }
+.reader .rnav { max-width:42rem; padding-inline:clamp(1.15rem, 4vw, 2rem); }
+.reader .rnav .btn { min-height:2.8rem; border-radius:9px; }
+.reader .rbar .wrap { min-height:3.8rem; }
+.reader .rbtn { border-radius:8px; }
+.reader .rpanel .wrap { row-gap:.65rem; }
+.reader .rspacing-controls { padding-top:.15rem; }
+.reader .rchapter-list { border-radius:12px; }
+.reader .rchapter-item { min-height:3rem; }
+@media (max-width:520px) {
+  .reader .rbar .wrap { padding-inline:10px; gap:.3rem; }
+  .reader .rbar .rbtn { min-width:2.35rem; min-height:2.45rem; padding-inline:.48rem; font-size:.8rem; }
+  .reader .rtitle strong { font-size:.84rem; }
+  .reader .rtitle .fine { font-size:.68rem; }
+  .reader .rtext { padding-inline:1.2rem; line-height:1.78; }
+  .reader .rbody { padding-top:.85rem; }
+  .reader .rnav { padding-inline:1.2rem; gap:.5rem; }
+  .reader .rnav .btn { min-width:0; padding-inline:.85rem; font-size:.84rem; }
+}
