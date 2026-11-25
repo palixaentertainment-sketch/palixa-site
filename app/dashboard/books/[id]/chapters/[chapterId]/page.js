@@ -28,6 +28,10 @@ function Editor() {
   const [ok, setOk] = useState('');
   const [busy, setBusy] = useState(false);
   const [preview, setPreview] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
+  const [wordGoal, setWordGoal] = useState(1500);
+  const [notes, setNotes] = useState('');
+  const [notesOpen, setNotesOpen] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [saveState, setSaveState] = useState('');
   const editorRef = useRef(null);
@@ -38,6 +42,7 @@ function Editor() {
       const { data: b } = await supabase.from('books').select('id,title,author_id,book_type,status').eq('id', id).maybeSingle();
       if (!b || b.author_id !== user.id) { setBook(null); return; }
       setBook(b);
+      try { setWordGoal(Number(localStorage.getItem('palixia-word-goal') || 1500)); setNotes(localStorage.getItem('palixia-book-notes-' + b.id) || ''); } catch {}
       if (isNew) return;
       const { data: c } = await supabase.from('chapters').select('id,book_id,chapter_number,title,content,status,scheduled_at').eq('id', chapterId).maybeSingle();
       if (!c || c.book_id !== b.id) { setBook(null); return; }
@@ -83,6 +88,13 @@ function Editor() {
     setContent(next);
     setDirty(true);
     setSaveState('Unsaved changes');
+  }
+
+  function insertSceneBreak() {
+    if (!editorRef.current) return;
+    editorRef.current.focus();
+    document.execCommand('insertHTML', false, '<p class="writer-scene-break">* * *</p><p><br></p>');
+    handleEditorInput();
   }
 
   function handleEditorInput() {
@@ -182,12 +194,14 @@ function Editor() {
   const isComic = book.book_type === 'comic';
   const published = chapter && chapter.status === 'published';
   const scheduled = chapter && chapter.status === 'scheduled';
+  const wordCount = richTextWordCount(content);
+  const readingMinutes = Math.max(1, Math.ceil(wordCount / 200));
 
   return (
-    <div className="stack writer-page">
+    <div className={"stack writer-page" + (focusMode ? " writer-focus-mode" : "")}>
       <Link className="linkbtn" href={'/dashboard/books/' + book.id}>&larr; {book.title}</Link>
       <div className="row between">
-        <h1 className="h1">{chapter ? 'Chapter ' + chapter.chapter_number : 'New chapter'}</h1>
+        <div><h1 className="h1">{chapter ? 'Chapter ' + chapter.chapter_number : 'New chapter'}</h1><p className="fine">{book.title}</p></div>
         {chapter && <span className={'badge ' + (published ? 'live' : 'draft')}>{published ? 'Published' : scheduled ? 'Scheduled' : 'Draft'}</span>}
       </div>
 
@@ -227,8 +241,10 @@ function Editor() {
           <div className="field writer-writing-field">
             <div className="row between writer-writing-meta">
               <label htmlFor="c-body">Your writing</label>
-              <span className="fine">{richTextWordCount(content).toLocaleString()} words</span>
+              <div className="writer-live-stats"><span>{wordCount.toLocaleString()} words</span><span>About {readingMinutes} min read</span></div>
             </div>
+            <div className="writer-goal-row"><label htmlFor="writer-goal">Chapter word goal</label><input id="writer-goal" className="in" type="number" min="100" max="20000" step="100" value={wordGoal} onChange={(e) => { const v=Math.max(100,Math.min(20000,Number(e.target.value)||100)); setWordGoal(v); try { localStorage.setItem('palixia-word-goal',String(v)); } catch {} }} /><span>{Math.min(100,Math.round(wordCount / Math.max(1,wordGoal) * 100))}%</span></div>
+            <div className="writer-goal-track"><span style={{width: Math.min(100,wordCount / Math.max(1,wordGoal) * 100) + '%'}} /></div>
             <div className="writer-toolbar" role="toolbar" aria-label="Text formatting">
               <button type="button" className="btn ghost small writer-tool" title="Bold" aria-label="Bold" onMouseDown={(e) => e.preventDefault()} onClick={() => format('bold')}><b>B</b></button>
               <button type="button" className="btn ghost small writer-tool" title="Italic" aria-label="Italic" onMouseDown={(e) => e.preventDefault()} onClick={() => format('italic')}><i>I</i></button>
@@ -239,6 +255,7 @@ function Editor() {
               <button type="button" className="btn ghost small" onMouseDown={(e) => e.preventDefault()} onClick={() => format('insertUnorderedList')}>• List</button>
               <button type="button" className="btn ghost small" onMouseDown={(e) => e.preventDefault()} onClick={() => format('insertOrderedList')}>1. List</button>
               <button type="button" className="btn ghost small" onMouseDown={(e) => e.preventDefault()} onClick={() => format('formatBlock', 'blockquote')}>Quote</button>
+              <button type="button" className="btn ghost small" onMouseDown={(e) => e.preventDefault()} onClick={insertSceneBreak}>Scene break</button>
               <span className="writer-divider" aria-hidden="true" />
               <button type="button" className="btn ghost small" onMouseDown={(e) => e.preventDefault()} onClick={() => format('undo')}>Undo</button>
               <button type="button" className="btn ghost small" onMouseDown={(e) => e.preventDefault()} onClick={() => format('redo')}>Redo</button>
@@ -263,13 +280,15 @@ function Editor() {
                 onPaste={() => setTimeout(handleEditorInput, 0)}
               />
             )}
-            <div className="row between">
+            <div className="row between writer-editor-actions">
               <span className="fine">Formatting is shown to readers. Your existing chapter text is preserved.</span>
-              <button type="button" className="btn ghost small" onClick={() => setPreview(true)} disabled={preview}>Preview chapter</button>
+              <div className="row"><button type="button" className="btn ghost small" onClick={() => setFocusMode((v) => !v)}>{focusMode ? 'Exit focus mode' : 'Focus mode'}</button><button type="button" className="btn ghost small" onClick={() => setPreview(true)} disabled={preview}>Preview chapter</button></div>
             </div>
             {saveState && <span className="fine" role="status">{saveState}</span>}
           </div>
         )}
+
+        {!isComic && <section className="writer-notes"><div className="row between"><div><b>Private book notes</b><p className="fine">Only stored in this browser. Use for plot ideas, character details or reminders.</p></div><button type="button" className="btn ghost small" onClick={() => setNotesOpen((v) => !v)}>{notesOpen ? 'Close notes' : 'Open notes'}</button></div>{notesOpen && <textarea className="in" rows="5" value={notes} onChange={(e) => { setNotes(e.target.value); try { localStorage.setItem('palixia-book-notes-' + book.id,e.target.value); } catch {} }} placeholder="Character names, plot threads, future scenes…" />}</section>}
 
         <div className="field writer-schedule"><label htmlFor="c-scheduled-at">Schedule publishing</label><input id="c-scheduled-at" className="in" type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} /><span className="fine">Uses your device's local time. Leave blank to save a draft or publish immediately.</span></div>
         <p className="msg-err" role="alert">{err}</p>
