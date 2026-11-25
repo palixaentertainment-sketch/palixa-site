@@ -31,6 +31,7 @@ function Editor() {
   const [dirty, setDirty] = useState(false);
   const [saveState, setSaveState] = useState('');
   const editorRef = useRef(null);
+  const editVersion = useRef(0);
 
   useEffect(() => {
     (async () => {
@@ -65,9 +66,10 @@ function Editor() {
     if (!dirty || !chapter || chapter.status !== 'draft' || book?.book_type === 'comic') return undefined;
     setSaveState('Saving…');
     const timer = setTimeout(async () => {
+      const version = editVersion.current;
       const { error } = await supabase.from('chapters').update({ content: cleanRichHtml(content), updated_at: new Date().toISOString() }).eq('id', chapter.id).eq('status', 'draft');
       if (error) setSaveState('Autosave failed — use Save Draft.');
-      else { setDirty(false); setSaveState('All changes saved'); }
+      else if (version === editVersion.current) { setDirty(false); setSaveState('All changes saved'); }
     }, 1600);
     return () => clearTimeout(timer);
   }, [content, dirty, chapter, book]);
@@ -77,6 +79,7 @@ function Editor() {
     editorRef.current.focus();
     document.execCommand(command, false, value);
     const next = cleanRichHtml(editorRef.current.innerHTML);
+    editVersion.current += 1;
     setContent(next);
     setDirty(true);
     setSaveState('Unsaved changes');
@@ -84,6 +87,7 @@ function Editor() {
 
   function handleEditorInput() {
     if (!editorRef.current) return;
+    editVersion.current += 1;
     setContent(cleanRichHtml(editorRef.current.innerHTML));
     setDirty(true);
     setSaveState('Unsaved changes');
