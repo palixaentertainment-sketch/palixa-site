@@ -268,7 +268,7 @@ export default function Reader() {
               <button type="button" className="rbtn" onClick={() => setChapterListOpen(false)} aria-label="Close chapter list">×</button>
             </div>
             <div className="rchapter-list-items">
-              {sibs.map((item, itemIndex) => (
+              {sibs.map((item) => (
                 <Link
                   key={item.id}
                   href={'/read/' + item.id}
