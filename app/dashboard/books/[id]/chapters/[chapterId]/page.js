@@ -184,15 +184,15 @@ function Editor() {
   const scheduled = chapter && chapter.status === 'scheduled';
 
   return (
-    <div className="stack" style={{ maxWidth: '46rem' }}>
+    <div className="stack writer-page">
       <Link className="linkbtn" href={'/dashboard/books/' + book.id}>&larr; {book.title}</Link>
       <div className="row between">
         <h1 className="h1">{chapter ? 'Chapter ' + chapter.chapter_number : 'New chapter'}</h1>
         {chapter && <span className={'badge ' + (published ? 'live' : 'draft')}>{published ? 'Published' : scheduled ? 'Scheduled' : 'Draft'}</span>}
       </div>
 
-      <div className="card">
-        <div className="field">
+      <div className="writer-studio">
+        <div className="field writer-title-field">
           <label htmlFor="c-title">Chapter title</label>
           <input id="c-title" className="in" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} />
         </div>
@@ -224,9 +224,9 @@ function Editor() {
             )}
           </div>
         ) : (
-          <div className="field">
-            <div className="row between">
-              <label htmlFor="c-body">Chapter text</label>
+          <div className="field writer-writing-field">
+            <div className="row between writer-writing-meta">
+              <label htmlFor="c-body">Your writing</label>
               <span className="fine">{richTextWordCount(content).toLocaleString()} words</span>
             </div>
             <div className="writer-toolbar" role="toolbar" aria-label="Text formatting">
@@ -271,7 +271,7 @@ function Editor() {
           </div>
         )}
 
-        <div className="field"><label htmlFor="c-scheduled-at">Schedule publishing</label><input id="c-scheduled-at" className="in" type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} /><span className="fine">Uses your device's local time. Leave blank to save a draft or publish immediately.</span></div>
+        <div className="field writer-schedule"><label htmlFor="c-scheduled-at">Schedule publishing</label><input id="c-scheduled-at" className="in" type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} /><span className="fine">Uses your device's local time. Leave blank to save a draft or publish immediately.</span></div>
         <p className="msg-err" role="alert">{err}</p>
         {ok && <p className="msg-ok" role="status">{ok}</p>}
         <div className="row">
