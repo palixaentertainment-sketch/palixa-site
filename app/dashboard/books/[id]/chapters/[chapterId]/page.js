@@ -62,7 +62,7 @@ function Editor() {
 
   // Existing drafts are quietly saved after the author pauses typing. Published chapters are never autosaved.
   useEffect(() => {
-    if (!dirty || !chapter || chapter.status !== 'draft' || isComic) return undefined;
+    if (!dirty || !chapter || chapter.status !== 'draft' || book?.book_type === 'comic') return undefined;
     setSaveState('Saving…');
     const timer = setTimeout(async () => {
       const { error } = await supabase.from('chapters').update({ content: cleanRichHtml(content), updated_at: new Date().toISOString() }).eq('id', chapter.id).eq('status', 'draft');
@@ -70,7 +70,7 @@ function Editor() {
       else { setDirty(false); setSaveState('All changes saved'); }
     }, 1600);
     return () => clearTimeout(timer);
-  }, [content, dirty, chapter, isComic]);
+  }, [content, dirty, chapter, book]);
 
   function format(command, value) {
     if (!editorRef.current) return;
