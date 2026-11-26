@@ -113,6 +113,13 @@ export default function PalixiaFridaysPage() {
         <div className="fridays-hero-tags"><span>🔎 Multi-stage mysteries</span><span>📚 Stories to discover</span><span>🧩 Test your detective skills</span></div>
       </section>
 
+      <section className="fridays-hunt" style={{ display: 'grid', gap: 12 }}>
+        <p className="mono">SPECIAL READER CHALLENGE</p>
+        <h2 className="h2">The Campus Gist Investigation</h2>
+        <p className="muted">Read Chapters 1–8, examine the evidence and submit your theory about Tomi’s disappearance.</p>
+        <Link className="btn" href="/fridays/campus-gist-investigation">Open the investigation →</Link>
+      </section>
+
       {notice && <p className={'notice fridays-notice ' + noticeType} role="status">{notice}</p>}
       {loadError && <div className="notice"><b>We're preparing the next hunt.</b><p>{loadError}</p></div>}
       {loading && <div className="fridays-loading" aria-live="polite"><span className="fridays-loader" />Loading the hunt…</div>}
