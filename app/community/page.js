@@ -34,7 +34,6 @@ export default function CommunityPage() {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
   const [bookId, setBookId] = useState('');
-  const [quotedPost, setQuotedPost] = useState(null);
   const [books, setBooks] = useState([]);
   const [comments, setComments] = useState({});
   const [commentDrafts, setCommentDrafts] = useState({});
@@ -57,7 +56,7 @@ export default function CommunityPage() {
     if (!configured) { setPosts([]); setLoadError(true); setLoadErrorMessage('Supabase is not configured in this deployment.'); return; }
     const { data, error: queryError } = await supabase
       .from('community_posts')
-      .select('id,user_id,category,body,image_url,book_id,quoted_post_id,created_at,profiles!community_posts_user_id_fkey(name,username,avatar_url),books(id,title,book_type),quoted_post:community_posts!community_posts_quoted_post_id_fkey(id,user_id,body,created_at,profiles!community_posts_user_id_fkey(name,username,avatar_url)),community_likes(user_id),community_comments(id)')
+      .select('id,user_id,category,body,image_url,book_id,created_at,profiles!community_posts_user_id_fkey(name,username,avatar_url),books(id,title,book_type),community_likes(user_id),community_comments(id)')
       .eq('status', 'visible')
       .order('created_at', { ascending: false })
       .limit(60);
@@ -129,7 +128,7 @@ export default function CommunityPage() {
 
     const { error: insertError } = await supabase.from('community_posts').insert({
       user_id: user.id, category: postCategory,
-      body: body.trim(), image_url: imageUrl, book_id: bookId || null, quoted_post_id: quotedPost?.id || null,
+      body: body.trim(), image_url: imageUrl, book_id: bookId || null,
     });
     if (insertError) {
       console.error('Community post could not be published:', insertError);
@@ -139,19 +138,12 @@ export default function CommunityPage() {
       return;
     }
     setBusy(false);
-    setBody(''); setBookId(''); setPostCategory('general'); setQuotedPost(null);
+    setBody(''); setBookId(''); setPostCategory('general');
     setImageFile(null); setImagePreview('');
     const fileInput = document.getElementById('community-image');
     if (fileInput) fileInput.value = '';
     setNotice('Your post is live.');
     await loadPosts();
-  }
-
-  function startQuote(post) {
-    if (!user) { setNotice('Log in to quote community posts.'); return; }
-    setQuotedPost(post);
-    setError('');
-    document.getElementById('community-compose')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   async function toggleLike(post) {
@@ -310,7 +302,6 @@ export default function CommunityPage() {
               <Avatar src={profile && profile.avatar_url} name={profile ? profile.name : 'You'} size="2.5rem" />
               <span><b>{profile ? profile.name : 'Your account'}</b><span className="fine">Share something with the community</span></span>
             </div>
-            {quotedPost && <div className="community-quote-compose"><div className="row"><b>Quoting {quotedPost.profiles?.name || 'a reader'}</b><button type="button" className="linkbtn fine" onClick={() => setQuotedPost(null)}>Remove quote</button></div><p>{quotedPost.body}</p></div>}
             <label className="sr-only" htmlFor="community-body">Your post</label>
             <textarea id="community-body" className="in community-textarea" maxLength={2000} rows={4}
               placeholder="What are you reading, writing, or thinking about?" value={body}
@@ -409,13 +400,11 @@ export default function CommunityPage() {
                   )}
                 </div>
               )}
-              {post.quoted_post && <div className="community-quoted-post"><div className="community-quoted-by"><Avatar src={post.quoted_post.profiles?.avatar_url} name={post.quoted_post.profiles?.name || 'Reader'} size="1.8rem" /><span><b>{post.quoted_post.profiles?.name || 'Reader'}</b><span className="fine">{post.quoted_post.profiles?.username ? '@' + post.quoted_post.profiles.username : ''}</span></span></div><p>{post.quoted_post.body}</p></div>}
               {post.image_url && <a className="community-post-image-link" href={post.image_url} target="_blank" rel="noreferrer" aria-label="Open attached image in full size"><img className="community-post-image" src={post.image_url} alt={'Image shared by ' + (post.profiles ? post.profiles.name : 'a community member')} loading="lazy" /></a>}
               {post.books && <Link className="community-book-link" href={'/book/' + post.books.id}>📚 {post.books.title}{post.books.book_type === 'comic' ? ' · Comic' : ''} <span>Open story →</span></Link>}
               <div className="community-post-actions">
                 <button className={'linkbtn' + (post.liked ? ' community-liked' : '')} type="button" onClick={() => toggleLike(post)} aria-pressed={post.liked}>♥ {post.likeCount} {post.likeCount === 1 ? 'like' : 'likes'}</button>
                 <button className="linkbtn" type="button" onClick={() => openComments[post.id] ? setOpenComments((old) => ({ ...old, [post.id]: false })) : loadComments(post.id)}>💬 {post.commentCount} replies</button>
-                <button className="linkbtn" type="button" onClick={() => startQuote(post)}>❞ Quote</button>
                 <button className="linkbtn" type="button" onClick={() => sharePost(post.id)} aria-label="Share post link" title="Share post link">
                   <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: 'middle' }}>
                     <path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />

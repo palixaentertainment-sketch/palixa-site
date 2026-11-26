@@ -2592,11 +2592,3 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
   .community-section-heading > .fine { display:none; }
   .community-sort { justify-content:flex-start; }
 }
-
-/* Community quote posts. */
-.community-quoted-post,.community-quote-compose { display:grid; gap:.65rem; margin:.85rem 0; padding:.9rem 1rem; border:1px solid var(--line); border-radius:12px; background:var(--surface); }
-.community-quoted-post { margin-top:.8rem; }
-.community-quoted-by { display:flex; align-items:center; gap:.55rem; }
-.community-quoted-by > span { display:grid; gap:.05rem; }
-.community-quoted-post > p,.community-quote-compose > p { margin:0; white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.55; }
-.community-quote-compose .row { justify-content:space-between; align-items:center; }
