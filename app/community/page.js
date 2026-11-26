@@ -29,6 +29,7 @@ export default function CommunityPage() {
   const { user, profile } = useAuth();
   const [posts, setPosts] = useState(null);
   const [category, setCategory] = useState('all');
+  const [feedSort, setFeedSort] = useState('recent');
   const [postCategory, setPostCategory] = useState('general');
   const [body, setBody] = useState('');
   const [imageFile, setImageFile] = useState(null);
@@ -261,19 +262,31 @@ export default function CommunityPage() {
     setNotice(reportError ? 'The report could not be saved. Please try again.' : 'Thank you. Your report has been submitted to Palixia moderation.');
   }
 
-  const visiblePosts = (posts || []).filter((post) => category === 'all' || post.category === category);
+  const visiblePosts = (posts || []).filter((post) => category === 'all' || post.category === category).slice().sort((a, b) => feedSort === 'discussed' ? (b.commentCount + b.likeCount) - (a.commentCount + a.likeCount) : new Date(b.created_at) - new Date(a.created_at));
+  const trendingPosts = (posts || []).filter((post) => post.likeCount + post.commentCount > 0).slice().sort((a, b) => (b.commentCount * 2 + b.likeCount) - (a.commentCount * 2 + a.likeCount)).slice(0, 3);
 
   return (
     <div className="community stack">
       <section className="community-hero">
         <p className="mono">READ · PUBLISH · CONNECT</p>
         <h1 className="h1">The Palixia Community</h1>
-        <p>Talk about the stories you love, meet other writers, and share what you’re creating.</p>
-        <div className="row" style={{ marginTop: '1rem' }}>
-          <Link className="btn" href="/groups">Explore Reading Groups</Link>
+        <p>A place for readers and writers to meet, exchange ideas, discover stories and support each other.</p>
+        <div className="community-hero-actions">
+          <a className="btn" href="#community-compose">Start a conversation</a>
+          <Link className="btn community-hero-secondary" href="/groups">Explore reading groups</Link>
         </div>
       </section>
 
+      <section className="community-spaces" aria-label="Explore community spaces">
+        <div className="community-section-heading"><div><p className="mono">FIND YOUR PEOPLE</p><h2 className="h2">Explore the community</h2></div><span className="fine">Choose a conversation</span></div>
+        <div className="community-space-grid">
+          <button type="button" className="community-space-card" onClick={() => { setCategory('reading-room'); document.getElementById('community-feed')?.scrollIntoView({ behavior: 'smooth' }); }}><span className="community-space-icon">📖</span><b>Reading Room</b><span>Reviews, recommendations and book talk.</span></button>
+          <button type="button" className="community-space-card" onClick={() => { setCategory('writers-corner'); document.getElementById('community-feed')?.scrollIntoView({ behavior: 'smooth' }); }}><span className="community-space-icon">✍️</span><b>Writers’ Corner</b><span>Writing questions, ideas and encouragement.</span></button>
+          <button type="button" className="community-space-card" onClick={() => { setCategory('share-your-work'); document.getElementById('community-feed')?.scrollIntoView({ behavior: 'smooth' }); }}><span className="community-space-icon">📚</span><b>Share Your Work</b><span>Introduce your stories to new readers.</span></button>
+          <button type="button" className="community-space-card" onClick={() => { setCategory('general'); document.getElementById('community-feed')?.scrollIntoView({ behavior: 'smooth' }); }}><span className="community-space-icon">💬</span><b>General Lounge</b><span>Meet people and talk about anything bookish.</span></button>
+        </div>
+      </section>
+      <section className="community-weekly-prompt"><div><p className="mono">A LITTLE COMMUNITY PROMPT</p><h2>What book stayed with you long after you finished it?</h2><p>Tell us the title and what made it unforgettable. Your next favourite read might come from someone else's answer.</p></div><a className="btn" href="#community-compose">Answer the prompt</a></section>
       <CommunityBookPolls />
 
       {notice && <p className="notice" role="status">{notice}</p>}
@@ -284,8 +297,8 @@ export default function CommunityPage() {
         </div>
       )}
 
-      <section className="community-compose">
-        <h2 className="h2">Start a conversation</h2>
+      <section className="community-compose" id="community-compose">
+        <div className="community-compose-title"><div><p className="mono">YOUR VOICE BELONGS HERE</p><h2 className="h2">Start a conversation</h2></div><span className="community-compose-mark">✦</span></div>
         {user ? (
           <form className="stack" onSubmit={createPost}>
             <div className="community-compose-head">
@@ -334,14 +347,23 @@ export default function CommunityPage() {
         )}
       </section>
 
-      <section className="stack">
+      {trendingPosts.length > 0 && <section className="community-trending">
+        <div className="community-section-heading"><div><p className="mono">PEOPLE ARE TALKING</p><h2 className="h2">Trending discussions</h2></div></div>
+        <div className="community-trending-list">{trendingPosts.map((post) => <button type="button" key={post.id} className="community-trending-item" onClick={() => document.getElementById('post-' + post.id)?.scrollIntoView({ behavior: 'smooth', block: 'center' })}><span className="community-trending-category">{LABELS[post.category] || 'General Lounge'}</span><b>{post.body.length > 105 ? post.body.slice(0, 105).trim() + '…' : post.body}</b><span className="fine">{post.commentCount} replies · {post.likeCount} likes</span></button>)}</div>
+      </section>}
+      <section className="stack" id="community-feed">
         <div className="community-feed-head">
           <h2 className="h2">Community feed</h2>
           <span className="fine">{visiblePosts.length} {visiblePosts.length === 1 ? 'post' : 'posts'}</span>
         </div>
-        <div className="community-categories" role="group" aria-label="Filter posts by category">
-          {CATEGORIES.map(([id, label]) => <button key={id} type="button" className={'chip' + (category === id ? ' active' : '')}
-            aria-pressed={category === id} onClick={() => setCategory(id)}>{label}</button>)}
+        <div className="community-feed-toolbar">
+          <div className="community-categories" role="group" aria-label="Filter posts by category">
+            {CATEGORIES.map(([id, label]) => <button key={id} type="button" className={'chip' + (category === id ? ' active' : '')} aria-pressed={category === id} onClick={() => setCategory(id)}>{label}</button>)}
+          </div>
+          <div className="community-sort" role="group" aria-label="Sort community posts">
+            <button type="button" className={feedSort === 'recent' ? 'active' : ''} onClick={() => setFeedSort('recent')}>Recent</button>
+            <button type="button" className={feedSort === 'discussed' ? 'active' : ''} onClick={() => setFeedSort('discussed')}>Most discussed</button>
+          </div>
         </div>
 
         {posts === null && <p className="muted">Loading community posts…</p>}
