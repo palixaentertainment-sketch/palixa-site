@@ -32,12 +32,12 @@ export default function PalixiaFridaysBanner() {
   const prelaunch = !hunt && Date.now() < LAUNCH_DATE.getTime();
   const title = hunt
     ? (upcoming ? 'A new story hunt is coming.' : 'Your next clue is waiting.')
-    : prelaunch ? 'Palixia Fridays launches next week.' : 'The next story hunt is being prepared.';
+    : prelaunch ? 'Palixia Fridays launches next week.' : 'New stories, fresh clues, and exciting challenges.';
   const detail = hunt
     ? hunt.title
     : prelaunch
       ? 'Explore stories, solve clues, and compete for a prize every Friday.'
-      : 'Check back soon for the next round of clues and prizes.';
+      : 'Your next hunt awaits! 💜';
   const action = hunt ? (upcoming ? 'Get ready' : 'Join the hunt') : 'See what it is';
   const ariaLabel = hunt ? (upcoming ? 'See the upcoming Palixia Fridays hunt' : 'Join the Palixia Fridays hunt') : 'See Palixia Fridays details';
 
