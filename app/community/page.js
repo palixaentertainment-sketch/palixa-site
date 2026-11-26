@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { supabase, configured } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 import Avatar from '@/components/Avatar';
-import CommunityBookPolls from '@/components/CommunityBookPolls';
 
 const CATEGORIES = [
   ['all', 'All posts'],
@@ -286,8 +285,6 @@ export default function CommunityPage() {
           <button type="button" className="community-space-card" onClick={() => { setCategory('general'); document.getElementById('community-feed')?.scrollIntoView({ behavior: 'smooth' }); }}><span className="community-space-icon">💬</span><b>General Lounge</b><span>Meet people and talk about anything bookish.</span></button>
         </div>
       </section>
-      <section className="community-weekly-prompt"><div><p className="mono">A LITTLE COMMUNITY PROMPT</p><h2>What book stayed with you long after you finished it?</h2><p>Tell us the title and what made it unforgettable. Your next favourite read might come from someone else's answer.</p></div><a className="btn" href="#community-compose">Answer the prompt</a></section>
-      <CommunityBookPolls />
 
       {notice && <p className="notice" role="status">{notice}</p>}
       {loadError && (
