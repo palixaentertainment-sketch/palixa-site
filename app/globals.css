@@ -2592,3 +2592,35 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
   .community-section-heading > .fine { display:none; }
   .community-sort { justify-content:flex-start; }
 }
+
+
+/* Campus Gist Palixia Friday investigation page */
+.campus-case-page{max-width:54rem;margin-inline:auto;gap:1.25rem}
+.campus-case-hero{position:relative;overflow:hidden;padding:clamp(1.4rem,5vw,3rem);border:1px solid #493263;border-radius:18px;background:radial-gradient(circle at 90% 5%,#59377c 0,transparent 35%),linear-gradient(145deg,#160e24,#29163c 65%,#21122f);color:#fff;display:grid;gap:1rem}
+.campus-case-hero .mono,.campus-case-hero .campus-case-meta{color:#d6c5e9}
+.campus-case-hero .h1{max-width:13ch;font-size:clamp(2.2rem,8vw,4rem);letter-spacing:-.045em}
+.campus-case-lead{max-width:38rem;color:#eee5f7;font-size:1.08rem;line-height:1.65}
+.campus-case-stamp{justify-self:start;border:1px solid #c7a8ed;border-radius:4px;padding:.25rem .55rem;color:#e8d9fa;font: .68rem var(--mono);letter-spacing:.1em}
+.campus-case-meta{display:flex;flex-wrap:wrap;gap:.55rem 1rem;font-size:.82rem}
+.campus-case-hero .btn{justify-self:start;background:#fff;color:#32154d}
+.campus-case-intro,.campus-case-evidence,.campus-case-mission,.campus-case-rules,.campus-case-scoring,.campus-case-submit{padding:1.25rem;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.campus-case-page h2{letter-spacing:-.025em}
+.campus-exhibit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}
+.campus-exhibit{padding:1rem;border:1px solid var(--line);border-radius:10px;background:var(--bg);display:grid;align-content:start;gap:.5rem}
+.campus-exhibit>span{font: .67rem var(--mono);letter-spacing:.08em;color:var(--accent)}
+.campus-exhibit h3{font-size:1.05rem}
+.campus-exhibit p,.campus-case-intro>p,.campus-case-mission li,.campus-case-rules li{color:var(--muted);line-height:1.65}
+.campus-case-mission ol{list-style:decimal;padding-left:1.3rem;display:grid;gap:.65rem}
+.campus-case-rules ul{list-style:disc;padding-left:1.2rem;display:grid;gap:.55rem}
+.campus-score-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.55rem}
+.campus-score-grid>div{padding:.85rem .55rem;background:var(--bg);border:1px solid var(--line);border-radius:10px;display:grid;gap:.25rem;text-align:center}
+.campus-score-grid b{font-size:1.7rem;color:var(--accent)}
+.campus-score-grid span{font-size:.75rem;color:var(--muted)}
+.campus-case-submit .field{display:grid;gap:.45rem}
+.campus-case-submit textarea{resize:vertical;min-height:5rem}
+.campus-submitted{padding:1.5rem;border-radius:12px;background:var(--soft);display:grid;gap:.6rem}
+.campus-submitted>span{display:grid;place-items:center;width:2.5rem;height:2.5rem;border-radius:50%;background:var(--accent);color:white;font-size:1.4rem}
+.campus-case-footer{text-align:center;color:var(--muted);font: .68rem var(--mono);letter-spacing:.06em}
+:root[data-theme="dark"] .campus-case-intro,:root[data-theme="dark"] .campus-case-evidence,:root[data-theme="dark"] .campus-case-mission,:root[data-theme="dark"] .campus-case-rules,:root[data-theme="dark"] .campus-case-scoring,:root[data-theme="dark"] .campus-case-submit{background:var(--surface);border-color:var(--line)}
+:root[data-theme="dark"] .campus-exhibit,:root[data-theme="dark"] .campus-score-grid>div{background:var(--bg)}
+@media(max-width:36rem){.campus-exhibit-grid{grid-template-columns:1fr}.campus-score-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.campus-case-intro,.campus-case-evidence,.campus-case-mission,.campus-case-rules,.campus-case-scoring,.campus-case-submit{padding:1rem}}
