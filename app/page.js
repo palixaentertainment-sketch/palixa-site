@@ -12,6 +12,7 @@ import Avatar from '@/components/Avatar';
 import PalixiaFridaysBanner from '@/components/PalixiaFridaysBanner';
 import HomepagePromotionalBanners from '@/components/HomepagePromotionalBanners';
 import ComingSoonPreview from '@/components/ComingSoonPreview';
+import PalixiaDaily from '@/components/PalixiaDaily';
 
 // Keep catalogue list queries lean: the view also exposes computed chapter_count/search fields.
 const BOOK_CARD_FIELDS = 'id,author_id,title,description,cover_url,book_type,tags,reads,featured,is_sample,created_at,genre_id,genre_name,genre_slug,author_name,author_username,author_avatar,story_status';
@@ -277,6 +278,8 @@ export default function Home() {
           <div className="hero-spark">✦</div>
         </div>
       </section>
+
+      <PalixiaDaily />
 
       <HomepagePromotionalBanners />
 
