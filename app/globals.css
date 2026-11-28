@@ -2707,3 +2707,238 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
   .promo-banner-stage > img,
   .promo-banner-image-link img { animation: none; }
 }
+
+
+/* Homepage refinement v2 — layout, readability and touch comfort.
+   Uses Palixia's existing colour tokens, type and components only. */
+.page:has(.homehero) {
+  gap: clamp(1.15rem, 2.5vw, 2rem);
+}
+.page:has(.homehero) > section {
+  min-width: 0;
+}
+.page:has(.homehero) .sechead {
+  align-items: end;
+  margin-bottom: .95rem;
+}
+.page:has(.homehero) .sechead .h2 {
+  letter-spacing: -.025em;
+}
+.homehero {
+  min-height: 22rem;
+  box-shadow: 0 12px 34px rgba(46, 16, 101, .055);
+}
+.homehero-copy {
+  gap: 1rem;
+}
+.homehero h1 {
+  text-wrap: pretty;
+}
+.homehero-actions .btn {
+  min-height: 2.85rem;
+  padding-inline: 1.15rem;
+}
+.homehero-free-note {
+  max-width: 34rem;
+  font-size: .86rem;
+  line-height: 1.55;
+  font-weight: 600;
+}
+.promo-banner-carousel {
+  margin-block: 0;
+  box-shadow: 0 10px 28px rgba(46, 16, 101, .07);
+}
+.promo-banner-stage img {
+  max-width: 100%;
+}
+.fridays-home-banner {
+  min-height: 6.6rem;
+}
+.publish-benefit-card {
+  background: var(--bg);
+}
+.creator-week {
+  border: 1px solid var(--line);
+}
+.shelf {
+  overscroll-behavior-inline: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--lav) transparent;
+}
+.shelf > .bcard {
+  min-width: 0;
+}
+.grid > .bcard {
+  min-width: 0;
+}
+
+@media (min-width: 641px) {
+  .page:has(.homehero) {
+    gap: 2rem;
+  }
+  .homehero {
+    padding: clamp(2rem, 4vw, 3.4rem);
+  }
+  .homehero-art {
+    min-height: 19rem;
+  }
+  .promo-banner-carousel {
+    border-radius: 15px;
+  }
+  .publish-benefits {
+    grid-template-columns: minmax(0, .9fr) minmax(18rem, 1.1fr);
+    align-items: center;
+    gap: clamp(1.5rem, 4vw, 3rem);
+  }
+  .publish-benefits-slider {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .page:has(.homehero) {
+    padding-top: .85rem;
+    padding-bottom: 2rem;
+    gap: 1.25rem;
+  }
+  .homehero {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 1.15rem;
+    gap: .15rem;
+    border-radius: 12px;
+  }
+  .homehero-copy {
+    gap: .8rem;
+  }
+  .home-eyebrow {
+    font-size: .64rem;
+    letter-spacing: .075em;
+  }
+  .homehero h1 {
+    max-width: 11ch;
+    font-size: clamp(2.15rem, 10.5vw, 3.15rem);
+    line-height: 1;
+  }
+  .homehero-copy > p {
+    font-size: .94rem;
+    line-height: 1.58;
+  }
+  .homehero-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    width: 100%;
+    gap: .55rem;
+  }
+  .homehero-actions .btn {
+    width: 100%;
+    min-width: 0;
+    min-height: 2.8rem;
+    padding: .55rem .65rem;
+    font-size: .83rem;
+    white-space: normal;
+  }
+  .homehero-free-note {
+    margin-top: .05rem;
+    font-size: .78rem;
+    line-height: 1.5;
+    font-weight: 500;
+  }
+  .homehero-art {
+    min-height: 10.5rem;
+    margin-top: .2rem;
+  }
+  .hero-book {
+    width: 6.8rem;
+    padding: .75rem;
+  }
+  .hero-book span, .hero-book small {
+    font-size: .48rem;
+  }
+  .hero-book b {
+    font-size: 1.15rem;
+  }
+  .hero-spark {
+    top: 0;
+    right: 10%;
+    font-size: 1.8rem;
+  }
+  .promo-banner-carousel {
+    border-radius: 11px;
+  }
+  .promo-banner-arrow {
+    width: 1.85rem;
+    height: 1.85rem;
+  }
+  .fridays-home-banner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: .7rem;
+    padding: .95rem 1rem .95rem 1.1rem;
+  }
+  .fridays-home-banner-action {
+    justify-self: start;
+    min-height: 2.55rem;
+  }
+  .publish-benefits {
+    padding: 1.05rem;
+    gap: .85rem;
+  }
+  .publish-benefit-card {
+    min-height: 6rem;
+    padding: .85rem;
+    gap: .75rem;
+  }
+  .publish-benefit-card > span {
+    width: 2.55rem;
+    height: 2.55rem;
+    font-size: 1.3rem;
+  }
+  .creator-week {
+    grid-template-columns: minmax(0, 1fr) 5.25rem;
+    gap: .7rem;
+    padding: .85rem;
+  }
+  .creator-week-cover {
+    max-width: 5.25rem;
+  }
+  .shelf {
+    grid-auto-columns: minmax(0, 7.15rem);
+    gap: .7rem;
+    padding-bottom: .75rem;
+  }
+  .bcard h3 {
+    font-size: .86rem;
+    line-height: 1.3;
+  }
+  .bcard .sub {
+    font-size: .76rem;
+  }
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+    gap: .95rem .65rem;
+  }
+  .page:has(.homehero) .sechead {
+    gap: .6rem;
+    margin-bottom: .7rem;
+  }
+  .page:has(.homehero) .sechead .h2 {
+    font-size: 1.28rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .homehero-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .homehero-actions .btn {
+    min-height: 2.65rem;
+  }
+  .shelf {
+    grid-auto-columns: minmax(0, 6.65rem);
+  }
+}
+
+:root[data-theme="dark"] .publish-benefit-card {
+  background: var(--surface);
+  border-color: var(--line);
+}
