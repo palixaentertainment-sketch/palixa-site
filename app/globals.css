@@ -2624,3 +2624,51 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 :root[data-theme="dark"] .campus-case-intro,:root[data-theme="dark"] .campus-case-evidence,:root[data-theme="dark"] .campus-case-mission,:root[data-theme="dark"] .campus-case-rules,:root[data-theme="dark"] .campus-case-scoring,:root[data-theme="dark"] .campus-case-submit{background:var(--surface);border-color:var(--line)}
 :root[data-theme="dark"] .campus-exhibit,:root[data-theme="dark"] .campus-score-grid>div{background:var(--bg)}
 @media(max-width:36rem){.campus-exhibit-grid{grid-template-columns:1fr}.campus-score-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.campus-case-intro,.campus-case-evidence,.campus-case-mission,.campus-case-rules,.campus-case-scoring,.campus-case-submit{padding:1rem}}
+
+
+/* Stable horizontal book shelves: prevent cards from shrinking into each other. */
+.shelf {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: flex-start;
+  gap: .8rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+}
+.shelf > * {
+  flex: 0 0 7.7rem;
+  width: 7.7rem;
+  min-width: 0;
+  max-width: 7.7rem;
+  scroll-snap-align: start;
+}
+.shelf .bcard > div,
+.shelf .bcard .reader-book-info {
+  min-width: 0;
+  max-width: 100%;
+}
+.shelf .bcard h3,
+.shelf .bcard .sub {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.shelf .continue-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+}
+.shelf .continue-card > .cover {
+  width: 100%;
+  min-width: 0;
+}
+@media (min-width: 52rem) {
+  .shelf > * {
+    flex-basis: 9rem;
+    width: 9rem;
+    max-width: 9rem;
+  }
+}
