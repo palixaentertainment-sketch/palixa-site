@@ -80,21 +80,7 @@ export default function PalixiaDaily() {
           </div>
           <span className={completedToday ? 'palixia-daily-status is-complete' : 'palixia-daily-status'}>{completedToday ? 'Completed ✓' : '1 chapter'}</span>
         </div>
-        <div className="palixia-daily-footer">
-          <div className="palixia-daily-streak">
-            <span aria-hidden="true">🔥</span>
-            <div><b>{user && loaded ? streak : '—'} day{streak === 1 ? '' : 's'}</b><small>Reading streak</small></div>
-          </div>
-          <Link className="palixia-daily-link" href={user ? '/discover' : '/login'}>{user ? 'Find a story to read' : 'Sign in to join'} <span aria-hidden="true">→</span></Link>
-        </div>
       </div>
-      <aside className="palixia-daily-recognition">
-        <span className="palixia-daily-label">READER RECOGNITION</span>
-        <div className="palixia-daily-award" aria-hidden="true">✧</div>
-        <h3>Readers deserve a spotlight.</h3>
-        <p>Our weekly reader shout-outs are coming soon. Keep reading, reviewing, and supporting the stories you love.</p>
-        <span className="palixia-daily-coming">WEEKLY RECOGNITION · COMING SOON</span>
-      </aside>
     </section>
   );
 }

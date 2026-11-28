@@ -2674,10 +2674,10 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 }
 
 
-/* Palixia Daily: reader challenge and recognition panel. */
+/* Palixia Daily: daily reading challenge. */
 .palixia-daily {
   display:grid;
-  grid-template-columns:minmax(0,1.45fr) minmax(15rem,.75fr);
+  grid-template-columns:minmax(0,1fr);
   gap:1rem;
   padding:1.15rem;
   border:1px solid var(--line);
@@ -2737,21 +2737,6 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 .palixia-daily-streak b { font-size:.9rem; }
 .palixia-daily-streak small { color:var(--muted); font-size:.7rem; }
 .palixia-daily-link { color:var(--accent); font-size:.8rem; font-weight:700; }
-.palixia-daily-recognition {
-  display:flex;
-  flex-direction:column;
-  align-items:flex-start;
-  justify-content:center;
-  padding:1rem;
-  border:1px solid #dfd0f6;
-  border-radius:12px;
-  background:rgba(255,255,255,.68);
-  min-width:0;
-}
-.palixia-daily-award { display:grid; place-items:center; width:2.2rem; height:2.2rem; margin:.5rem 0; border-radius:50%; background:#e9ddfa; color:var(--accent); font-size:1.35rem; }
-.palixia-daily-recognition h3 { margin-bottom:.35rem; font-size:1rem; }
-.palixia-daily-recognition p { color:var(--muted); font-size:.78rem; line-height:1.55; }
-.palixia-daily-coming { margin-top:.75rem; color:var(--accent); font-family:var(--mono); font-size:.6rem; font-weight:700; letter-spacing:.04em; }
 :root[data-theme="dark"] .palixia-daily { background:linear-gradient(135deg,#21172f 0%,#2a1c3d 100%); }
 :root[data-theme="dark"] .palixia-daily-challenge { background:var(--surface); }
 :root[data-theme="dark"] .palixia-daily-recognition { background:#21172f; border-color:#49365e; }
@@ -2759,7 +2744,6 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 :root[data-theme="dark"] .palixia-daily-status.is-complete { background:#153b2a; color:#86efac; }
 @media(max-width:42rem) {
   .palixia-daily { grid-template-columns:minmax(0,1fr); padding:.9rem; gap:.75rem; }
-  .palixia-daily-recognition { padding:.85rem; }
   .palixia-daily-challenge { align-items:flex-start; flex-wrap:wrap; }
   .palixia-daily-status { margin-left:3.5rem; }
 }
