@@ -670,9 +670,8 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobile { display: none !important; }
 
 
-/* Keep the app install feature out of the interface for now. */
-.get-app-trigger, .get-app-mobile { display: none !important; }
-.bottomnav .wrap { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+/* Keep the install action available in both desktop and mobile navigation. */
+.bottomnav .wrap { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 
 
 /* Community image attachments */
