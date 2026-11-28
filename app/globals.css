@@ -2626,84 +2626,49 @@ html.palixia-standalone .get-app-trigger, html.palixia-standalone .get-app-mobil
 @media(max-width:36rem){.campus-exhibit-grid{grid-template-columns:1fr}.campus-score-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.campus-case-intro,.campus-case-evidence,.campus-case-mission,.campus-case-rules,.campus-case-scoring,.campus-case-submit{padding:1rem}}
 
 
-/* Mobile homepage polish — preserve Palixia's existing identity and behaviour. */
-@media (max-width: 640px) {
-  .homehero {
-    gap: .35rem;
-    padding: 1.15rem;
-    border-radius: 13px;
-  }
-  .homehero-copy { gap: .85rem; }
-  .homehero-art { min-height: 11.5rem; margin-top: .15rem; }
-
-  .promo-banner-carousel {
-    margin: .1rem 0 .9rem;
-    border-radius: 13px;
-  }
-  .promo-banner-stage > img,
-  .promo-banner-image-link img {
-    width: 100%;
-    max-height: none;
-    object-fit: contain;
-  }
-  .promo-banner-arrow {
-    width: 2rem;
-    height: 2rem;
-    font-size: 1.3rem;
-    background: rgba(30, 16, 48, .62);
-  }
-  .promo-banner-dots { bottom: .55rem; }
-
-  .fridays-home-banner {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    gap: .8rem;
-    padding: 1rem;
-    border-radius: 13px;
-  }
-  .fridays-home-banner-copy { gap: .3rem; }
-  .fridays-home-banner h2 {
-    max-width: 28ch;
-    font-size: clamp(1.02rem, 4vw, 1.2rem);
-    line-height: 1.28;
-  }
-  .fridays-home-banner p { font-size: .82rem; line-height: 1.45; }
-  .fridays-home-banner-action {
-    justify-content: center;
-    padding: .68rem .78rem;
-    font-size: .78rem;
-    white-space: nowrap;
-  }
-
-  .shelf {
-    grid-auto-columns: minmax(0, 7.7rem);
-    gap: .7rem;
-    padding: .1rem .05rem .7rem;
-    scroll-padding-inline: .5rem;
-  }
-  .bcard:has(.coming-soon-preview-trigger) {
-    gap: .6rem;
-  }
-  .bcard:has(.coming-soon-preview-trigger) > div:first-child {
-    border-radius: .65rem !important;
-    box-shadow: 0 5px 16px rgba(46, 16, 101, .12);
-  }
-  .bcard:has(.coming-soon-preview-trigger) h3 {
-    font-size: .9rem;
-    line-height: 1.3;
-  }
+/* Stable horizontal book shelves: prevent cards from shrinking into each other. */
+.shelf {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: flex-start;
+  gap: .8rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
 }
-
-@media (max-width: 380px) {
-  .fridays-home-banner {
-    grid-template-columns: minmax(0, 1fr);
-    gap: .75rem;
-  }
-  .fridays-home-banner-action { justify-self: start; }
+.shelf > * {
+  flex: 0 0 7.7rem;
+  width: 7.7rem;
+  min-width: 0;
+  max-width: 7.7rem;
+  scroll-snap-align: start;
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .promo-banner-stage > img,
-  .promo-banner-image-link img { animation: none; }
+.shelf .bcard > div,
+.shelf .bcard .reader-book-info {
+  min-width: 0;
+  max-width: 100%;
+}
+.shelf .bcard h3,
+.shelf .bcard .sub {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.shelf .continue-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+}
+.shelf .continue-card > .cover {
+  width: 100%;
+  min-width: 0;
+}
+@media (min-width: 52rem) {
+  .shelf > * {
+    flex-basis: 9rem;
+    width: 9rem;
+    max-width: 9rem;
+  }
 }
