@@ -1,4 +1,4 @@
-const CACHE_NAME = 'palixia-shell-v4';
+const CACHE_NAME = 'palixia-shell-v5';
 const IMAGE_CACHE_NAME = 'palixia-images-v1';
 const OFFLINE_URL = '/offline.html';
 const APP_ICONS = ['/brand/icon-192.png', '/brand/icon-512.png'];
@@ -71,21 +71,27 @@ self.addEventListener('fetch', (event) => {
 
   if (url.origin !== self.location.origin) return;
 
-  // Keep the offline library and downloaded reader pages available after they
-  // have first been opened online. Actual chapter text is stored separately in IndexedDB.
+  // Keep explicitly supported offline-reader routes cached after they have
+  // first been opened online. Do not cache normal pages because they may contain
+  // account-specific or private reader information.
   if (request.mode === 'navigate') {
     const isOfflineRoute =
       url.pathname === '/offline' || url.pathname.startsWith('/offline/read/');
-    if (!isOfflineRoute) return;
 
     event.respondWith((async () => {
       const cache = await caches.open(CACHE_NAME);
       try {
         const response = await fetch(request);
-        if (response && response.ok) await cache.put(request, response.clone());
+        if (isOfflineRoute && response && response.ok) {
+          await cache.put(request, response.clone());
+        }
         return response;
       } catch {
-        return (await cache.match(request)) || (await cache.match(OFFLINE_URL)) || Response.error();
+        if (isOfflineRoute) {
+          const savedPage = await cache.match(request);
+          if (savedPage) return savedPage;
+        }
+        return (await cache.match(OFFLINE_URL)) || Response.error();
       }
     })());
     return;
